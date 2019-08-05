@@ -1,6 +1,7 @@
 package pi
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -41,39 +42,45 @@ var SwabCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		client := http.Client{
-			Timeout: 5 * time.Second,
-		}
-
-		req, err := http.NewRequest("GET", fmt.Sprintf("http://%s:7012/replication/start", device.Address), nil)
+		err = swab(context.TODO(), device.Address)
 		if err != nil {
-			fmt.Printf("unable to build replication request: %s\n", err)
+			fmt.Printf("unable to swab %s: %s\n", device.ID, err)
 			os.Exit(1)
 		}
 
-		// TODO actually validate that it worked
-		_, err = client.Do(req)
-		if err != nil {
-			fmt.Printf("unable to start replication: %s\n", err)
-			os.Exit(1)
-		}
-
-		fmt.Printf("Replication started\n")
-		time.Sleep(3 * time.Second)
-
-		req, err = http.NewRequest("PUT", fmt.Sprintf("http://%s:8888/refresh", device.Address), nil)
-		if err != nil {
-			fmt.Printf("unable to build refresh request: %s\n", err)
-			os.Exit(1)
-		}
-
-		_, err = client.Do(req)
-		if err != nil {
-			fmt.Printf("unable to refresh pi: %s\n", err)
-			os.Exit(1)
-		}
-
-		fmt.Printf("UI refreshed\n")
-		fmt.Printf("Done!\n")
+		fmt.Printf("Successfully swabbed %s\n", device.ID)
 	},
+}
+
+func swab(ctx context.Context, address string) error {
+	req, err := http.NewRequest("GET", fmt.Sprintf("http://%s:7012/replication/start", address), nil)
+	if err != nil {
+		return fmt.Errorf("unable to build replication request: %s", err)
+	}
+
+	req = req.WithContext(ctx)
+
+	// TODO actually validate that it worked
+	_, err = http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("unable to start replication: %s", err)
+	}
+
+	fmt.Printf("%s\tReplication started\n", address)
+	time.Sleep(3 * time.Second) // TODO make sure this doesn't overrun ctx
+
+	req, err = http.NewRequest("PUT", fmt.Sprintf("http://%s:8888/refresh", address), nil)
+	if err != nil {
+		return fmt.Errorf("unable to build refresh request: %s", err)
+	}
+
+	req = req.WithContext(ctx)
+
+	_, err = http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("unable to start replication: %s", err)
+	}
+
+	fmt.Printf("%s\tUI refreshed\n", address)
+	return nil
 }

@@ -8,9 +8,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// DeployCmd .
-var DeployCmd = &cobra.Command{
-	Use:   "deploy [device ID]",
+// FloatshipCmd .
+var FloatshipCmd = &cobra.Command{
+	Use:   "floatship [device ID]",
 	Short: "Deploys to the device with the given ID",
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
