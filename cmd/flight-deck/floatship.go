@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/byuoitav/av-cli/cmd/wso2"
+	"github.com/cheggaaa/pb/v3"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
@@ -55,6 +56,9 @@ var FloatshipCmd = &cobra.Command{
 }
 
 func floatship(deviceID, designation string) error {
+	count := 7
+	bar := pb.StartNew(count)
+
 	var dbDesignation string
 	switch designation {
 	case "development":
@@ -64,21 +68,38 @@ func floatship(deviceID, designation string) error {
 	case "production":
 		dbDesignation = "PRD"
 	}
+
+	//1
+	bar.Increment()
+
 	flightDeck := os.Getenv(fmt.Sprintf("%s_DEPLOY_ADDR", dbDesignation))
 	if flightDeck == "" {
 		return fmt.Errorf("%s not set", fmt.Sprintf("%s_DEPLOY_ADDR", dbDesignation))
 	}
+
+	//2
+	bar.Increment()
+
 	req, err := http.NewRequest("GET", fmt.Sprintf("http://%v/%v", flightDeck, deviceID), nil)
 	if err != nil {
 		return fmt.Errorf("Couldn't make request: %v", err)
 	}
+
+	//3
+	bar.Increment()
 
 	token, err := wso2.GetToken()
 	if err != nil {
 		return fmt.Errorf("unable to get token: %s", err)
 	}
 
+	//4
+	bar.Increment()
+
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", token))
+
+	//5
+	bar.Increment()
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -86,9 +107,16 @@ func floatship(deviceID, designation string) error {
 	}
 	defer resp.Body.Close()
 
+	//6
+	bar.Increment()
+
 	if resp.StatusCode/100 != 2 {
 		return fmt.Errorf("Non-200 status code: %v", resp.StatusCode)
 	}
+
+	//7
+	bar.Increment()
+	bar.Finish()
 
 	fmt.Printf("Deployment successful\n")
 	return nil
