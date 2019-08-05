@@ -18,9 +18,16 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.av.yaml)")
 
 	// add all subcommands here
+
+	//Deploying
 	rootCmd.AddCommand(flightdeck.FloatshipCmd)
+	rootCmd.AddCommand(flightdeck.FloatfleetCmd)
+	rootCmd.AddCommand(flightdeck.FloatarmadaCmd)
+
+	//Swab
 	rootCmd.AddCommand(pi.SwabCmd)
 	rootCmd.AddCommand(pi.SwabRoomCmd)
+	rootCmd.AddCommand(pi.SwabBuildingCmd)
 }
 
 func initConfig() {
