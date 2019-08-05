@@ -3,7 +3,6 @@ package flightdeck
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/byuoitav/av-cli/cmd/wso2"
@@ -72,15 +71,10 @@ func floatship(deviceID, designation string) error {
 	//1
 	bar.Increment()
 
-	flightDeck := os.Getenv(fmt.Sprintf("%s_DEPLOY_ADDR", dbDesignation))
-	if flightDeck == "" {
-		return fmt.Errorf("%s not set", fmt.Sprintf("%s_DEPLOY_ADDR", dbDesignation))
-	}
-
 	//2
 	bar.Increment()
 
-	req, err := http.NewRequest("GET", fmt.Sprintf("http://%v/%v", flightDeck, deviceID), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/dev/webhook_device/%v", deviceID), nil)
 	if err != nil {
 		return fmt.Errorf("Couldn't make request: %v", err)
 	}
