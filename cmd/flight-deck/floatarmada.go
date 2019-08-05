@@ -91,7 +91,6 @@ func floatarmada(designation string) error {
 				return
 			}
 
-			fmt.Printf("Deployed to %s\n", rooms[idx].ID)
 		}(i)
 	}
 

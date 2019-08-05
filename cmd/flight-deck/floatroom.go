@@ -83,22 +83,24 @@ func floatfleet(roomID, designation string) error {
 	}
 
 	wg := sync.WaitGroup{}
-
+	failedCount := 0
+	failedList := ""
 	for i := range devices {
 		wg.Add(1)
 
 		go func(idx int) {
 			defer wg.Done()
 			fmt.Printf("Deploying to %s\n", devices[idx].ID)
-			err := floatship(devices[idx].ID, designation)
+			err := floatship(devices[idx].ID, designation, false)
 			if err != nil {
-				fmt.Printf("unable to deploy to %s: %s\n", devices[idx].ID, err)
+				failedList = fmt.Sprintf("%v %v", failedList, devices[idx])
+				failedCount++
 				return
 			}
 
-			fmt.Printf("Deployed to %s\n", devices[idx].ID)
 		}(i)
 	}
+	fmt.Printf("%v failures: %v", failedCount, failedList)
 
 	wg.Wait()
 	return nil

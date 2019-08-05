@@ -43,20 +43,21 @@ var FloatshipCmd = &cobra.Command{
 
 		fmt.Printf("result: %s\n", result)
 
-		err = floatship(args[0], result)
+		err = floatship(args[0], result, true)
 		if err != nil {
 			fmt.Printf("Error floating ship: %v", err)
 			return
 		}
 
-		// use result to build flight-deck addr
-		// hit webhook_deploy/
 	},
 }
 
-func floatship(deviceID, designation string) error {
-	count := 7
-	bar := pb.StartNew(count)
+func floatship(deviceID, designation string, verbose bool) error {
+	var count int64
+	count = 7
+	tmpl := `{{ red "With funcs:" }} {{ bar . "<" "-" (cycle . "↖" "↗" "↘" "↙" ) "." ">"}} {{speed . | rndcolor }} {{percent .}} {{string . "my_green_string" | green}} {{string . "my_blue_string" | blue}} }} }}`
+
+	bar := pb.ProgressBarTemplate(tmpl).Start64(count)
 
 	var dbDesignation string
 	switch designation {
@@ -112,6 +113,8 @@ func floatship(deviceID, designation string) error {
 	bar.Increment()
 	bar.Finish()
 
-	fmt.Printf("Deployment successful\n")
+	if verbose {
+		fmt.Printf("Deployment successful\n")
+	}
 	return nil
 }
