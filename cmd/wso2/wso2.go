@@ -18,8 +18,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-// To use this you have to have both AVCLI_WSO2_KEY and AVCLI_WSO2_SECRET set
-
 var (
 	accessToken string
 	once        sync.Once
@@ -67,9 +65,17 @@ func getToken() (string, error) {
 		// get a new token
 		toks, err = getTokens("refresh", viper.GetString("wso2.refresh-token"), config)
 		if err != nil {
-			return "", fmt.Errorf("unable to get tokens: %s", err)
+			if strings.Contains(err.Error(), "Provided Authorization Grant is invalid.") {
+				// invalidate the current refresh token, it's probably invalid
+				viper.Set("wso2.refresh-token", "")
+				viper.WriteConfig()
+			} else {
+				return "", fmt.Errorf("unable to get tokens: %s", err)
+			}
 		}
-	} else {
+	}
+
+	if len(toks.AccessToken) == 0 {
 		// get an auth code
 		code := getAuthCode(config)
 
@@ -213,5 +219,4 @@ func openBrowser(url string) {
 	if err != nil {
 		fmt.Printf("unable to open browser (%s). copy and paste the url into a browser", err)
 	}
-
 }
