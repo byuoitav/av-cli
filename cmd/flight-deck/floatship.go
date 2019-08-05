@@ -61,11 +61,11 @@ func floatship(deviceID, designation string) error {
 	var dbDesignation string
 	switch designation {
 	case "development":
-		dbDesignation = "DEV"
+		dbDesignation = "dev"
 	case "stage":
-		dbDesignation = "STG"
+		dbDesignation = "stg"
 	case "production":
-		dbDesignation = "PRD"
+		dbDesignation = "prd"
 	}
 
 	//1
@@ -74,7 +74,7 @@ func floatship(deviceID, designation string) error {
 	//2
 	bar.Increment()
 
-	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/dev/webhook_device/%v", deviceID), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/%v/webhook_device/%v", dbDesignation, deviceID), nil)
 	if err != nil {
 		return fmt.Errorf("Couldn't make request: %v", err)
 	}
