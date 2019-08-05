@@ -17,6 +17,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.av.yaml)")
 
+	viper.SetConfigType("yaml")
 	viper.SetEnvPrefix("avcli")
 	viper.AutomaticEnv()
 
@@ -39,7 +40,7 @@ func initConfig() {
 	} else {
 		home, err := homedir.Dir()
 		if err != nil {
-			fmt.Println(err)
+			fmt.Printf("unable to initalize config: %s", err)
 			os.Exit(1)
 		}
 
@@ -49,7 +50,24 @@ func initConfig() {
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			fmt.Printf("no config file found\n")
+			if cfgFile != "" {
+				// if they gave us an invalid config location
+				fmt.Printf("no config file found at %s\n", cfgFile)
+				os.Exit(1)
+			}
+
+			home, err := homedir.Dir()
+			if err != nil {
+				fmt.Printf("unable to create default config file: %s\n", err)
+				os.Exit(1)
+			}
+
+			if err = viper.WriteConfigAs(home + "/.av.yaml"); err != nil {
+				fmt.Printf("unable to create default config file: %s\n", err)
+				os.Exit(1)
+			}
+
+			fmt.Printf("created empty config file\n")
 		} else {
 			fmt.Printf("unable to read config: %s\n", err)
 			os.Exit(1)
