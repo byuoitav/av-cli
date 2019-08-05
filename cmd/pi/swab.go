@@ -31,15 +31,6 @@ var SwabCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		/*
-			token, err := wso2.GetWSO2Token()
-			if err != nil {
-				fmt.Printf("unable to get wso2 token: %s\n", err)
-				os.Exit(1)
-			}
-		*/
-
-		fmt.Printf("token: %s\n", "TODO") //token)
 		fmt.Printf("Swabbing %s\n", args[0])
 
 		// TODO add a select for the database?

@@ -17,6 +17,9 @@ func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.av.yaml)")
 
+	viper.SetEnvPrefix("avcli")
+	viper.AutomaticEnv()
+
 	// add all subcommands here
 
 	//Deploying
