@@ -67,7 +67,7 @@ func floatship(deviceID, designation string) error {
 	if flightDeck == "" {
 		return fmt.Errorf("%s not set", fmt.Sprintf("%s_DEPLOY_ADDR", dbDesignation))
 	}
-	req, err := http.NewRequest("GET", fmt.Sprintf("%v/%v", flightDeck, deviceID), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("http://%v/%v", flightDeck, deviceID), nil)
 	if err != nil {
 		return fmt.Errorf("Couldn't make request: %v", err)
 	}
