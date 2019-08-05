@@ -82,15 +82,10 @@ func floatship(deviceID, designation string) error {
 	//3
 	bar.Increment()
 
-	token, err := wso2.GetToken()
-	if err != nil {
-		return fmt.Errorf("unable to get token: %s", err)
-	}
-
 	//4
 	bar.Increment()
 
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", token))
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", wso2.GetToken()))
 
 	//5
 	bar.Increment()
