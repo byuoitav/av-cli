@@ -8,7 +8,9 @@ require (
 	github.com/labstack/echo v3.3.10+incompatible // indirect
 	github.com/labstack/gommon v0.2.9 // indirect
 	github.com/manifoldco/promptui v0.3.2
+	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v0.0.5
+	github.com/spf13/viper v1.3.2
 	go.uber.org/atomic v1.4.0 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
 	go.uber.org/zap v1.10.0 // indirect

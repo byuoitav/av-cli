@@ -6,56 +6,50 @@ import (
 
 	flightdeck "github.com/byuoitav/av-cli/cmd/flight-deck"
 	"github.com/byuoitav/av-cli/cmd/pi"
+	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
+var cfgFile string
+
 func init() {
+	cobra.OnInitialize(initConfig)
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.av.yaml)")
+
 	// add all commands here
 	rootCmd.AddCommand(flightdeck.FloatshipCmd)
 	rootCmd.AddCommand(pi.SwabCmd)
 	rootCmd.AddCommand(pi.SwabRoomCmd)
 }
 
+func initConfig() {
+	if cfgFile != "" {
+		viper.SetConfigFile(cfgFile)
+	} else {
+		home, err := homedir.Dir()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		viper.AddConfigPath(home)
+		viper.SetConfigName(".av")
+	}
+
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			fmt.Printf("no config file found\n")
+		} else {
+			fmt.Printf("unable to read config: %s\n", err)
+			os.Exit(1)
+		}
+	}
+}
+
 var rootCmd = &cobra.Command{
 	Use:   "av",
 	Short: "BYU OIT AV's cli",
-	Long:  "",
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		/*
-			// TODO check if already logged in
-
-			// prompt for username/password
-			fmt.Printf("Logging into CAS...\n")
-
-			unamePrompt := promptui.Prompt{
-				Label: "Username",
-			}
-
-			passPrompt := promptui.Prompt{
-				Label: "Password",
-				Mask:  '*',
-			}
-
-			uname, err := unamePrompt.Run()
-			if err != nil {
-				fmt.Printf("prompt failed: %v\n", err)
-				os.Exit(1)
-			}
-
-			pass, err := passPrompt.Run()
-			if err != nil {
-				fmt.Printf("prompt failed: %v\n", err)
-				os.Exit(1)
-			}
-
-			fmt.Printf("uname: %s, pass: %s\n", uname, pass)
-
-			// authenticate with cas
-			cas.Login(uname, pass)
-
-			os.Exit(1)
-		*/
-	},
 }
 
 // Execute .
