@@ -61,6 +61,7 @@ var FloatfleetCmd = &cobra.Command{
 		os.Setenv("DB_ADDRESS", finalAddr)
 
 		err = floatfleet(args[0], result)
+
 		os.Setenv("DB_ADDRESS", prevAddr)
 		os.Setenv("DB_USERNAME", prevName)
 		if err != nil {

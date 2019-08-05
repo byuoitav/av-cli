@@ -2,6 +2,8 @@ package flightdeck
 
 import (
 	"fmt"
+	"os"
+	"strings"
 	"sync"
 
 	"github.com/byuoitav/common/db"
@@ -34,7 +36,29 @@ var FloatarmadaCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("Deploying to all %s rooms\n", args[0])
 
+		var dbDesignation string
+		switch args[0] {
+		case "development":
+			dbDesignation = "dev"
+		case "stage":
+			dbDesignation = "stg"
+		case "production":
+			dbDesignation = "prd"
+		}
+
+		prevAddr := os.Getenv("DB_ADDRESS")
+		prevName := os.Getenv("DB_USERNAME")
+		finalAddr := strings.Replace(prevAddr, "dev", dbDesignation, 1)
+		finalAddr = strings.Replace(finalAddr, "stg", dbDesignation, 1)
+		finalAddr = strings.Replace(finalAddr, "prd", dbDesignation, 1)
+
+		os.Setenv("DB_USERNAME", dbDesignation)
+		os.Setenv("DB_ADDRESS", finalAddr)
+
 		err := floatarmada(args[0])
+
+		os.Setenv("DB_ADDRESS", prevAddr)
+		os.Setenv("DB_USERNAME", prevName)
 		if err != nil {
 			fmt.Printf("Error floating armada: %v", err)
 			return
