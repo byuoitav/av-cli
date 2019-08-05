@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	// add all commands here
+	// add all subcommands here
 	rootCmd.AddCommand(flightdeck.FloatshipCmd)
 	rootCmd.AddCommand(pi.SwabCmd)
 	rootCmd.AddCommand(pi.SwabRoomCmd)
