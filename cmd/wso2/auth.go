@@ -33,14 +33,9 @@ type authCodeResponse struct {
 
 // GetToken .
 func GetToken() (string, error) {
-	if len(viper.GetString("wso2_key")) == 0 || len(viper.GetString("wso2_secret")) == 0 {
-		// check env vars, set in the config file
-		return "", fmt.Errorf("wso2 key/secret is not set")
-	}
-
 	config := config{
-		clientID:     viper.GetString("wso2_key"),
-		clientSecret: viper.GetString("wso2_secret"),
+		clientID:     "nkvyVWVBiqOKs_o7dLkUF2KHv2Ya",
+		clientSecret: "HR_ssS_Kv1q_9xq1j_wJr1F8Fn0a", // i'm allowed to do this :)
 		redirect:     "http://localhost:7444",
 		port:         7444,
 	}
