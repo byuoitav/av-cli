@@ -8,15 +8,22 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"os/exec"
 	"runtime"
 	"strings"
+	"sync"
 
 	"github.com/fatih/color"
 	"github.com/spf13/viper"
 )
 
 // To use this you have to have both AVCLI_WSO2_KEY and AVCLI_WSO2_SECRET set
+
+var (
+	accessToken string
+	once        sync.Once
+)
 
 type config struct {
 	clientID     string
@@ -32,7 +39,20 @@ type authCodeResponse struct {
 }
 
 // GetToken .
-func GetToken() (string, error) {
+func GetToken() string {
+	once.Do(func() {
+		var err error
+		accessToken, err = getToken()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	})
+
+	return accessToken
+}
+
+func getToken() (string, error) {
 	config := config{
 		clientID:     "nkvyVWVBiqOKs_o7dLkUF2KHv2Ya",
 		clientSecret: "HR_ssS_Kv1q_9xq1j_wJr1F8Fn0a", // i'm allowed to do this :)
@@ -60,7 +80,9 @@ func GetToken() (string, error) {
 		}
 	}
 
-	viper.Set("wso2.refresh-token", toks.RefreshToken)
+	if len(toks.RefreshToken) > 0 {
+		viper.Set("wso2.refresh-token", toks.RefreshToken)
+	}
 
 	err = viper.WriteConfig()
 	if err != nil {
@@ -160,6 +182,10 @@ func getTokens(method, auth string, config config) (authCodeResponse, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return ret, fmt.Errorf("unable to read response: %s", err)
+	}
+
+	if resp.StatusCode != 200 {
+		return ret, fmt.Errorf("non-200 response: %s", body)
 	}
 
 	err = json.Unmarshal(body, &ret)
