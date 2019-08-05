@@ -55,7 +55,7 @@ var FloatshipCmd = &cobra.Command{
 func floatship(deviceID, designation string, verbose bool) error {
 	var count int64
 	count = 7
-	tmpl := `{{ red "With funcs:" }} {{ bar . "<" "-" (cycle . "↖" "↗" "↘" "↙" ) "." ">"}} {{speed . | rndcolor }} {{percent .}} {{string . "my_green_string" | green}} {{string . "my_blue_string" | blue}} }} }}`
+	tmpl := `{{ green "Deploying:" }} {{ bar . "O" "-" (cycle . "\\" "|" "/" "-" ) "."  ">"}} {{speed . | rndcolor }} {{percent .}} {{string . "my_green_string" | green}} {{string . "my_blue_string" | blue}} }} }}`
 
 	bar := pb.ProgressBarTemplate(tmpl).Start64(count)
 
