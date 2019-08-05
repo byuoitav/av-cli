@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/byuoitav/av-cli/cmd/wso2"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
@@ -71,15 +72,24 @@ func floatship(deviceID, designation string) error {
 	if err != nil {
 		return fmt.Errorf("Couldn't make request: %v", err)
 	}
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", "WSO-TODO")) //TODO ADD DANNY'S FUNCTION
-	client := &http.Client{}
-	resp, err := client.Do(req)
+
+	token, err := wso2.GetToken()
+	if err != nil {
+		return fmt.Errorf("unable to get token: %s", err)
+	}
+
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", token))
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("Couldn't perform request: %v", err)
 	}
+	defer resp.Body.Close()
+
 	if resp.StatusCode/100 != 2 {
 		return fmt.Errorf("Non-200 status code: %v", resp.StatusCode)
 	}
+
 	fmt.Printf("Deployment successful\n")
 	return nil
 }

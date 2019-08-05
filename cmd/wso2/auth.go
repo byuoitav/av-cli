@@ -31,8 +31,8 @@ type authCodeResponse struct {
 	IDToken      string `json:"id_token"`
 }
 
-// GetWSO2Token .
-func GetWSO2Token() (string, error) {
+// GetToken .
+func GetToken() (string, error) {
 	if len(viper.GetString("wso2_key")) == 0 || len(viper.GetString("wso2_secret")) == 0 {
 		// check env vars, set in the config file
 		return "", fmt.Errorf("wso2 key/secret is not set")
