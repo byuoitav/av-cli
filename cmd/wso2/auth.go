@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"os/exec"
@@ -16,6 +15,8 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/viper"
 )
+
+// To use this you have to have both AVCLI_WSO2_KEY and AVCLI_WSO2_SECRET set
 
 type config struct {
 	clientID     string
@@ -27,18 +28,19 @@ type config struct {
 type authCodeResponse struct {
 	RefreshToken string `json:"refresh_token"`
 	AccessToken  string `json:"access_token"`
+	IDToken      string `json:"id_token"`
 }
 
 // GetWSO2Token .
 func GetWSO2Token() (string, error) {
-	if len(viper.GetString("wso2.key")) == 0 || len(viper.GetString("wso2.secret")) == 0 {
+	if len(viper.GetString("wso2_key")) == 0 || len(viper.GetString("wso2_secret")) == 0 {
 		// check env vars, set in the config file
 		return "", fmt.Errorf("wso2 key/secret is not set")
 	}
 
 	config := config{
-		clientID:     viper.GetString("wso2.key"),
-		clientSecret: viper.GetString("wso2.secret"),
+		clientID:     viper.GetString("wso2_key"),
+		clientSecret: viper.GetString("wso2_secret"),
 		redirect:     "http://localhost:7444",
 		port:         7444,
 	}
@@ -64,8 +66,11 @@ func GetWSO2Token() (string, error) {
 	}
 
 	viper.Set("wso2.refresh-token", toks.RefreshToken)
-	viper.Set("wso2.access-token", toks.AccessToken)
-	viper.WriteConfig()
+
+	err = viper.WriteConfig()
+	if err != nil {
+		fmt.Printf("unable to save refresh token: %s\n", err)
+	}
 
 	return toks.AccessToken, nil
 }
@@ -73,7 +78,7 @@ func GetWSO2Token() (string, error) {
 func getAuthCode(config config) string {
 	codeChan := make(chan string)
 
-	url := fmt.Sprintf("https://api.byu.edu/authorize?response_type=code&client_id=%s&redirect_uri=%s&scope=PRODUCTION", config.clientID, config.redirect)
+	url := fmt.Sprintf("https://api.byu.edu/authorize?response_type=code&client_id=%s&redirect_uri=%s&scope=openid", config.clientID, config.redirect)
 
 	// run the server
 	go func() {
@@ -85,49 +90,43 @@ func getAuthCode(config config) string {
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 			code, ok := r.URL.Query()["code"]
 			if !ok {
-				log.Print("Auth code not found")
-				io.WriteString(w, "Auth code not found. please try again")
+				io.WriteString(w, fmt.Sprintf(`
+				<html>
+					<script>
+						window.onload = function() {
+							window.location.replace("%s")
+						}
+					</script>
+					<body>
+						<span>no auth code found. please retry</span>
+					</body>
+				</html>
+				`, url))
+				return
 			}
 
 			io.WriteString(w, `
-<html>
-<script>
-	window.onload = function() {
-		window.close();
-	}
-</script>
-<body>
-<span>success</span>
-</body>
-</html>
-`)
+			<html>
+				<script>
+					window.onload = function() {
+						window.close();
+					}
+				</script>
+				<body>
+					<span>success. you can close this window</span>
+				</body>
+			</html>
+			`)
 			codeChan <- code[len(code)-1]
 			stop <- struct{}{}
 		})
-
-		fmt.Printf("Waiting for callback from wso2...\n")
 
 		go srv.ListenAndServe()
 		<-stop
 		srv.Close()
 	}()
 
-	fmt.Printf("opening %s in the background\n", color.BlueString(url))
-
-	var err error
-	switch runtime.GOOS {
-	case "linux":
-		err = exec.Command("xdg-open", url).Start()
-	case "windows":
-		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
-	case "darwin":
-		err = exec.Command("open", url).Start()
-	default:
-	}
-
-	if err != nil {
-		fmt.Printf("unable to open browser (%s). copy and paste the url into a browser", err)
-	}
+	openBrowser(url)
 
 	code := <-codeChan
 	return code
@@ -174,4 +173,24 @@ func getTokens(method, auth string, config config) (authCodeResponse, error) {
 	}
 
 	return ret, nil
+}
+
+func openBrowser(url string) {
+	fmt.Printf("opening %s in the background\n", color.BlueString(url))
+
+	var err error
+	switch runtime.GOOS {
+	case "linux":
+		err = exec.Command("xdg-open", url).Start()
+	case "windows":
+		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
+	case "darwin":
+		err = exec.Command("open", url).Start()
+	default:
+	}
+
+	if err != nil {
+		fmt.Printf("unable to open browser (%s). copy and paste the url into a browser", err)
+	}
+
 }

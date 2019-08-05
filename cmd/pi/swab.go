@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/byuoitav/av-cli/cmd/wso2"
+	"github.com/byuoitav/common/db"
 	"github.com/spf13/cobra"
 )
 
@@ -31,33 +31,24 @@ var SwabCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		/*
-		token, err := wso2.GetWSO2Token()
+		fmt.Printf("Swabbing %s\n", args[0])
+
+		// TODO add a select for the database?
+
+		// look it up in the database
+		device, err := db.GetDB().GetDevice(args[0])
 		if err != nil {
-			fmt.Printf("unable to get wso2 token: %s\n", err)
+			fmt.Printf("unable to get device from database: %s\n", err)
 			os.Exit(1)
 		}
-		*/
 
-		fmt.Printf("token: %s\n", token)
-			fmt.Printf("Swabbing %s\n", args[0])
+		err = swab(context.TODO(), device.Address)
+		if err != nil {
+			fmt.Printf("unable to swab %s: %s\n", device.ID, err)
+			os.Exit(1)
+		}
 
-			// TODO add a select for the database?
-
-			// look it up in the database
-			device, err := db.GetDB().GetDevice(args[0])
-			if err != nil {
-				fmt.Printf("unable to get device from database: %s\n", err)
-				os.Exit(1)
-			}
-
-			err = swab(context.TODO(), device.Address)
-			if err != nil {
-				fmt.Printf("unable to swab %s: %s\n", device.ID, err)
-				os.Exit(1)
-			}
-
-			fmt.Printf("Successfully swabbed %s\n", device.ID)
+		fmt.Printf("Successfully swabbed %s\n", device.ID)
 	},
 }
 
