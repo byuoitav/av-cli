@@ -3,7 +3,7 @@ module github.com/byuoitav/av-cli
 go 1.12
 
 require (
-	github.com/byuoitav/common v0.0.0-20190801214731-426d7e664a4a
+	github.com/byuoitav/common v0.0.0-20190806211430-113882103812
 	github.com/cheggaaa/pb/v3 v3.0.1
 	github.com/fatih/color v1.7.0
 	github.com/labstack/echo v3.3.10+incompatible // indirect

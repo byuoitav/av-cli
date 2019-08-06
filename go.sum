@@ -5,6 +5,8 @@ github.com/alecthomas/gometalinter v2.0.11+incompatible/go.mod h1:qfIpQGGz3d+Nmg
 github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6/go.mod h1:grANhF5doyWs3UAsr3K4I6qtAmlQcZDesFNEHPZAzj8=
 github.com/byuoitav/common v0.0.0-20190801214731-426d7e664a4a h1:148hZmNikhKb5jmK7sHRoFlJhKER0mpXb5/aBXXa8Wc=
 github.com/byuoitav/common v0.0.0-20190801214731-426d7e664a4a/go.mod h1:YTDTFEmez7HU3oyCIWjU3RfQ/P6v24LEzH5YUebph7I=
+github.com/byuoitav/common v0.0.0-20190806211430-113882103812 h1:KstnsqpytdTivns79dO+/1z+GUCVvWUlIWoevj1JsZ8=
+github.com/byuoitav/common v0.0.0-20190806211430-113882103812/go.mod h1:YTDTFEmez7HU3oyCIWjU3RfQ/P6v24LEzH5YUebph7I=
 github.com/cheggaaa/pb/v3 v3.0.1 h1:m0BngUk2LuSRYdx4fujDKNRXNDpbNCfptPfVT2m6OJY=
 github.com/cheggaaa/pb/v3 v3.0.1/go.mod h1:SqqeMF/pMOIu3xgGoxtPYhMNQP258xE4x/XRTYua+KU=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
