@@ -9,7 +9,7 @@ import (
 )
 
 var fixTimeCmd = &cobra.Command{
-	Use:   "fixtime",
+	Use:   "fixtime [device ID]",
 	Short: "fix a pi who's time is off",
 	Long:  "force an NTP sync of a pi to fix time drift",
 	Args: func(cmd *cobra.Command, args []string) error {

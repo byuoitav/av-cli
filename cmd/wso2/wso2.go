@@ -149,7 +149,7 @@ func getAuthCode(config config) string {
 		srv.Close()
 	}()
 
-	openBrowser(url)
+	OpenBrowser(url)
 
 	code := <-codeChan
 	return code
@@ -202,7 +202,8 @@ func getTokens(method, auth string, config config) (authCodeResponse, error) {
 	return ret, nil
 }
 
-func openBrowser(url string) {
+// OpenBrowser .
+func OpenBrowser(url string) {
 	fmt.Printf("opening %s in the background\n", color.BlueString(url))
 
 	var err error
@@ -214,6 +215,7 @@ func openBrowser(url string) {
 	case "darwin":
 		err = exec.Command("open", url).Start()
 	default:
+		err = fmt.Errorf("don't know how to open browser on %s", runtime.GOOS)
 	}
 
 	if err != nil {
