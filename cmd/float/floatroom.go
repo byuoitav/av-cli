@@ -1,4 +1,4 @@
-package flightdeck
+package float
 
 import (
 	"fmt"
@@ -11,8 +11,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// FleetCmd .
-var FleetCmd = &cobra.Command{
+// fleetCmd .
+var fleetCmd = &cobra.Command{
 	Use:   "fleet [room ID]",
 	Short: "Deploys to the room with the given ID",
 	Args: func(cmd *cobra.Command, args []string) error {

@@ -1,4 +1,4 @@
-package pi
+package swab
 
 import (
 	"context"
@@ -10,9 +10,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// SwabBuildingCmd .
-var SwabBuildingCmd = &cobra.Command{
-	Use:   "swabbuilding [building ID]",
+// swabBuildingCmd .
+var swabBuildingCmd = &cobra.Command{
+	Use:   "building [building ID]",
 	Short: "Refreshes the database/ui of all the pi's in a building",
 	Long:  "Forces a replication of the couch database, and causes the ui to refresh shortly after",
 	Args: func(cmd *cobra.Command, args []string) error {

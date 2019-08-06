@@ -1,4 +1,4 @@
-package flightdeck
+package float
 
 import (
 	"fmt"
@@ -11,8 +11,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// ShipCmd .
-var ShipCmd = &cobra.Command{
+// shipCmd .
+var shipCmd = &cobra.Command{
 	Use:   "ship [device ID]",
 	Short: "Deploys to the device with the given ID",
 	Args: func(cmd *cobra.Command, args []string) error {

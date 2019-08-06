@@ -1,4 +1,4 @@
-package flightdeck
+package float
 
 import (
 	"fmt"
@@ -17,8 +17,7 @@ const (
 	test = "testing"
 )
 
-// ArmadaCmd .
-var ArmadaCmd = &cobra.Command{
+var armadaCmd = &cobra.Command{
 	Use:   "armada [designation ID]",
 	Short: "Deploys to all rooms with the given designation",
 	Args: func(cmd *cobra.Command, args []string) error {

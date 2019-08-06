@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/byuoitav/av-cli/cmd/pi"
+	"github.com/byuoitav/av-cli/cmd/float"
+	"github.com/byuoitav/av-cli/cmd/swab"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -23,13 +24,8 @@ func init() {
 	viper.SetEnvPrefix("avcli")
 	viper.AutomaticEnv()
 
-	// add all subcommands here
-	rootCmd.AddCommand(floatCmd)
-
-	//Swab
-	rootCmd.AddCommand(pi.SwabCmd)
-	rootCmd.AddCommand(pi.SwabRoomCmd)
-	rootCmd.AddCommand(pi.SwabBuildingCmd)
+	rootCmd.AddCommand(float.Cmd)
+	rootCmd.AddCommand(swab.Cmd)
 }
 
 func initConfig() {

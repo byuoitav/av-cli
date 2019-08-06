@@ -1,4 +1,4 @@
-package pi
+package swab
 
 import (
 	"context"
@@ -12,8 +12,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// SwabCmd .
-var SwabCmd = &cobra.Command{
+func init() {
+	Cmd.AddCommand(swabRoomCmd)
+	Cmd.AddCommand(swabBuildingCmd)
+}
+
+// Cmd .
+var Cmd = &cobra.Command{
 	Use:   "swab [device ID]",
 	Short: "Refreshes the database/ui of a pi",
 	Long:  "Forces a replication of the couch database, and causes the ui to refresh shortly after",
