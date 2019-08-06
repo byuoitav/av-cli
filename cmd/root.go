@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	flightdeck "github.com/byuoitav/av-cli/cmd/flight-deck"
 	"github.com/byuoitav/av-cli/cmd/pi"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -25,11 +24,7 @@ func init() {
 	viper.AutomaticEnv()
 
 	// add all subcommands here
-
-	//Deploying
-	rootCmd.AddCommand(flightdeck.FloatshipCmd)
-	rootCmd.AddCommand(flightdeck.FloatfleetCmd)
-	rootCmd.AddCommand(flightdeck.FloatarmadaCmd)
+	rootCmd.AddCommand(floatCmd)
 
 	//Swab
 	rootCmd.AddCommand(pi.SwabCmd)

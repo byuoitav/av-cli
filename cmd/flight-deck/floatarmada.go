@@ -17,9 +17,9 @@ const (
 	test = "testing"
 )
 
-// FloatarmadaCmd .
-var FloatarmadaCmd = &cobra.Command{
-	Use:   "floatarmada [designation ID]",
+// ArmadaCmd .
+var ArmadaCmd = &cobra.Command{
+	Use:   "armada [designation ID]",
 	Short: "Deploys to all rooms with the given designation",
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {

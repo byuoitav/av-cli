@@ -11,9 +11,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// FloatfleetCmd .
-var FloatfleetCmd = &cobra.Command{
-	Use:   "floatfleet [room ID]",
+// FleetCmd .
+var FleetCmd = &cobra.Command{
+	Use:   "fleet [room ID]",
 	Short: "Deploys to the room with the given ID",
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {

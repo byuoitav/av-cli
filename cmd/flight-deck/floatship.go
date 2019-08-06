@@ -11,9 +11,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// FloatshipCmd .
-var FloatshipCmd = &cobra.Command{
-	Use:   "floatship [device ID]",
+// ShipCmd .
+var ShipCmd = &cobra.Command{
+	Use:   "ship [device ID]",
 	Short: "Deploys to the device with the given ID",
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
