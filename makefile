@@ -10,7 +10,7 @@ linux:
 	env GOOS=linux GOARCH=amd64 go build -o $(NAME)
 
 windows:
-	env GOOS=windows GOARCH=amd64 go build -o $(NAME)
+	env GOOS=windows GOARCH=amd64 go build -o $(NAME).exe
 
 mac:
 	env GOOS=darwin GOARCH=amd64 go build -o $(NAME)
@@ -18,4 +18,5 @@ mac:
 clean:
 	go clean
 	rm -f $(NAME)
+	rm -f $(NAME).exe
 	rm -f ${GOPATH}/bin/$(NAME)
