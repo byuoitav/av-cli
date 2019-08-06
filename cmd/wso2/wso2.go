@@ -204,8 +204,6 @@ func getTokens(method, auth string, config config) (authCodeResponse, error) {
 
 // OpenBrowser .
 func OpenBrowser(url string) {
-	fmt.Printf("opening %s in the background\n", color.BlueString(url))
-
 	var err error
 	switch runtime.GOOS {
 	case "linux":
@@ -219,6 +217,7 @@ func OpenBrowser(url string) {
 	}
 
 	if err != nil {
-		fmt.Printf("unable to open browser (%s). copy and paste the url into a browser", err)
+		fmt.Printf("unable to open browser (%s). copy and paste the below url into a browser:\n", err)
+		fmt.Printf("%s\n", color.New(color.FgBlue, color.Underline, color.Bold).Sprint(url))
 	}
 }
