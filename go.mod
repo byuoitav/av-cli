@@ -3,8 +3,9 @@ module github.com/byuoitav/av-cli
 go 1.12
 
 require (
-	github.com/byuoitav/common v0.0.0-20190801214731-426d7e664a4a
+	github.com/byuoitav/common v0.0.0-20190806211430-113882103812
 	github.com/cheggaaa/pb/v3 v3.0.1
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fatih/color v1.7.0
 	github.com/labstack/echo v3.3.10+incompatible // indirect
 	github.com/labstack/gommon v0.2.9 // indirect
@@ -15,4 +16,5 @@ require (
 	go.uber.org/atomic v1.4.0 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
 	go.uber.org/zap v1.10.0 // indirect
+	golang.org/x/crypto v0.0.0-20181203042331-505ab145d0a9
 )

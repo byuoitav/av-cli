@@ -3,8 +3,8 @@ package float
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
+	"github.com/byuoitav/av-cli/cmd/args"
 	"github.com/byuoitav/av-cli/cmd/wso2"
 	"github.com/byuoitav/pb/v3"
 	"github.com/manifoldco/promptui"
@@ -15,19 +15,7 @@ import (
 var shipCmd = &cobra.Command{
 	Use:   "ship [device ID]",
 	Short: "Deploys to the device with the given ID",
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return fmt.Errorf("device ID required to deploy")
-		}
-
-		// validate that it is in the correct format
-		split := strings.Split(args[0], "-")
-		if len(split) != 3 {
-			return fmt.Errorf("invalid device ID %s. must be in format BLDG-ROOM-CP#", args[0])
-		}
-
-		return nil
-	},
+	Args:  args.ValidDeviceID,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("Deploying to %s\n", args[0])
 
@@ -68,7 +56,7 @@ func floatship(deviceID, designation string) error {
 		return fmt.Errorf("Couldn't make request: %v", err)
 	}
 
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", wso2.GetToken()))
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", wso2.GetAccessToken()))
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -110,7 +98,7 @@ func floatshipWithBar(deviceID, designation string, bar *pb.ProgressBar) error {
 	//3
 	bar.Increment()
 
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", wso2.GetToken()))
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", wso2.GetAccessToken()))
 
 	//4
 	bar.Increment()

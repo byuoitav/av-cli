@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 	"sync"
 
+	"github.com/byuoitav/av-cli/cmd/args"
 	"github.com/byuoitav/common/db"
 	"github.com/spf13/cobra"
 )
@@ -16,19 +16,7 @@ var swabRoomCmd = &cobra.Command{
 	Use:   "room [room ID]",
 	Short: "Refreshes the database/ui of all the pi's in a room",
 	Long:  "Forces a replication of the couch database, and causes the ui to refresh shortly after",
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return fmt.Errorf("room ID required to swab room")
-		}
-
-		// validate that it is in the correct format
-		split := strings.Split(args[0], "-")
-		if len(split) != 2 {
-			return fmt.Errorf("invalid room ID %s. must be in format BLDG-ROOM", args[0])
-		}
-
-		return nil
-	},
+	Args:  args.ValidRoomID,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("Swabbing %s\n", args[0])
 

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/byuoitav/av-cli/cmd/args"
 	"github.com/byuoitav/common/db"
 	"github.com/byuoitav/common/structs"
 	"github.com/byuoitav/pb/v3"
@@ -17,19 +18,7 @@ import (
 var fleetCmd = &cobra.Command{
 	Use:   "fleet [room ID]",
 	Short: "Deploys to the room with the given ID",
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return fmt.Errorf("room ID required to deploy")
-		}
-
-		// validate that it is in the correct format
-		split := strings.Split(args[0], "-")
-		if len(split) != 2 {
-			return fmt.Errorf("invalid room ID %s. must be in format BLDG-ROOM", args[0])
-		}
-
-		return nil
-	},
+	Args:  args.ValidRoomID,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("Deploying to %s\n", args[0])
 
