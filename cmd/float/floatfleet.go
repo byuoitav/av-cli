@@ -7,6 +7,8 @@ import (
 	"sync"
 
 	"github.com/byuoitav/common/db"
+	"github.com/byuoitav/common/structs"
+	"github.com/byuoitav/pb/v3"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
@@ -82,26 +84,46 @@ func floatfleet(roomID, designation string) error {
 		return fmt.Errorf("no devices found in %s", roomID)
 	}
 
+	var toDeploy []structs.Device
+	var bars []*pb.ProgressBar
+	for _, dev := range devices {
+		if idParts := strings.Split(dev.ID, "-"); strings.Contains(strings.ToUpper(idParts[2]), "CP") {
+			toDeploy = append(toDeploy, dev)
+			tmpl := fmt.Sprintf(`{{ white "%v" }} {{ bar . (green "[") (green "#") (cycle . "\\" "|" "/" "-") (red "-") (green "]") }} {{ percent . | white}}`, dev.ID)
+			bars = append(bars, pb.ProgressBarTemplate(tmpl).New(6).SetWidth(50))
+			//bars = append(bars, pb.New(6).SetWidth(50))
+		}
+	}
+
+	//tmpl := fmt.Sprintf(`{{ green "%v" }} {{ bar . "[" (blue "#") (rndcolor ">") (red "-") (white "]") }} {{speed . | yellow }} {{percent .}}`, roomID)
+	//tmpl := `{{ red "With funcs:" }} {{ bar . "<" "-" (cycle . "↖" "↗" "↘" "↙" ) "." ">"}} {{speed . | rndcolor }} {{percent .}}`
+
 	wg := sync.WaitGroup{}
 	failedCount := 0
 	failedList := ""
-	for i := range devices {
+	pool := pb.NewPool(bars...)
+	pool.Start()
+	for i := range toDeploy {
 		wg.Add(1)
 
 		go func(idx int) {
 			defer wg.Done()
-			fmt.Printf("Deploying to %s\n", devices[idx].ID)
-			err := floatship(devices[idx].ID, designation, false)
+
+			fmt.Printf("Deploying to %s\n", toDeploy[idx].ID)
+			err := floatshipWithBar(toDeploy[idx].ID, designation, bars[idx])
 			if err != nil {
-				failedList = fmt.Sprintf("%v %v", failedList, devices[idx])
+				failedList = fmt.Sprintf("%v %v", failedList, toDeploy[idx].ID)
 				failedCount++
+				bars[idx].Finish()
 				return
 			}
 
 		}(i)
 	}
-	fmt.Printf("%v failures: %v", failedCount, failedList)
 
 	wg.Wait()
+	pool.Stop()
+	fmt.Printf("%v failures: %v\n", failedCount, failedList)
+
 	return nil
 }

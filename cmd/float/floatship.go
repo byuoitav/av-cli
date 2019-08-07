@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/byuoitav/av-cli/cmd/wso2"
-	"github.com/cheggaaa/pb/v3"
+	"github.com/byuoitav/pb/v3"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
@@ -43,7 +43,7 @@ var shipCmd = &cobra.Command{
 
 		fmt.Printf("result: %s\n", result)
 
-		err = floatship(args[0], result, true)
+		err = floatship(args[0], result)
 		if err != nil {
 			fmt.Printf("Error floating ship: %v", err)
 			return
@@ -52,13 +52,7 @@ var shipCmd = &cobra.Command{
 	},
 }
 
-func floatship(deviceID, designation string, verbose bool) error {
-	var count int64
-	count = 7
-	tmpl := `{{ green "Deploying:" }} {{ bar . "O" "-" (cycle . "\\" "|" "/" "-" ) "."  ">"}} {{speed . | rndcolor }} {{percent .}} {{string . "my_green_string" | green}} {{string . "my_blue_string" | blue}} }} }}`
-
-	bar := pb.ProgressBarTemplate(tmpl).Start64(count)
-
+func floatship(deviceID, designation string) error {
 	var dbDesignation string
 	switch designation {
 	case "development":
@@ -69,8 +63,41 @@ func floatship(deviceID, designation string, verbose bool) error {
 		dbDesignation = "prd"
 	}
 
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/%v/webhook_device/%v", dbDesignation, deviceID), nil)
+	if err != nil {
+		return fmt.Errorf("Couldn't make request: %v", err)
+	}
+
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", wso2.GetToken()))
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("Couldn't perform request: %v", err)
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode/100 != 2 {
+		return fmt.Errorf("Non-200 status code: %v", resp.StatusCode)
+	}
+
+	fmt.Printf("Deployment successful\n")
+	return nil
+}
+
+func floatshipWithBar(deviceID, designation string, bar *pb.ProgressBar) error {
 	//1
 	bar.Increment()
+
+	var dbDesignation string
+	switch designation {
+	case "development":
+		dbDesignation = "dev"
+	case "stage":
+		dbDesignation = "stg"
+	case "production":
+		dbDesignation = "prd"
+	}
 
 	//2
 	bar.Increment()
@@ -83,33 +110,25 @@ func floatship(deviceID, designation string, verbose bool) error {
 	//3
 	bar.Increment()
 
-	//4
-	bar.Increment()
-
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", wso2.GetToken()))
 
-	//5
+	//4
 	bar.Increment()
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("Couldn't perform request: %v", err)
 	}
-	defer resp.Body.Close()
-
-	//6
+	//5
 	bar.Increment()
+
+	defer resp.Body.Close()
 
 	if resp.StatusCode/100 != 2 {
 		return fmt.Errorf("Non-200 status code: %v", resp.StatusCode)
 	}
-
-	//7
+	//6
 	bar.Increment()
 	bar.Finish()
-
-	if verbose {
-		fmt.Printf("Deployment successful\n")
-	}
 	return nil
 }
