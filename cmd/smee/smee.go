@@ -3,6 +3,7 @@ package smee
 import "github.com/spf13/cobra"
 
 func init() {
+	Cmd.AddCommand(closeIssueCmd)
 }
 
 // Cmd .

@@ -5,6 +5,7 @@ go 1.12
 require (
 	github.com/byuoitav/common v0.0.0-20190806211430-113882103812
 	github.com/cheggaaa/pb/v3 v3.0.1
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fatih/color v1.7.0
 	github.com/labstack/echo v3.3.10+incompatible // indirect
 	github.com/labstack/gommon v0.2.9 // indirect

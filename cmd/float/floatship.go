@@ -74,7 +74,7 @@ func floatship(deviceID, designation string, verbose bool) error {
 	//4
 	bar.Increment()
 
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", wso2.GetToken()))
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", wso2.GetAccessToken()))
 
 	//5
 	bar.Increment()
