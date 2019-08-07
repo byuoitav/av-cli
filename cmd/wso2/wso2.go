@@ -37,11 +37,15 @@ type tokens struct {
 
 // IDInfo .
 type IDInfo struct {
+	PersonID           string `json:"person_id"`
 	Surname            string `json:"surname"`
 	PreferredFirstName string `json:"preferred_first_name"`
 	RestOfName         string `json:"rest_of_name"`
-	SortName           string `json:"sort_name"`
 	NetID              string `json:"net_id"`
+	Suffix             string `json:"suffix"`
+	SortName           string `json:"sort_name"`
+	Prefix             string `json:"prefix"`
+	SurnamePosition    string `json:"surname_position"`
 	BYUID              string `json:"byu_id"`
 
 	// because they don't send back a normal jwt..?
