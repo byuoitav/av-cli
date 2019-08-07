@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/byuoitav/av-cli/cmd/args"
 	"github.com/spf13/cobra"
 )
 
@@ -12,19 +13,7 @@ var fixTimeCmd = &cobra.Command{
 	Use:   "fixtime [device ID]",
 	Short: "fix a pi who's time is off",
 	Long:  "force an NTP sync of a pi to fix time drift",
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return fmt.Errorf("device ID required to fix time")
-		}
-
-		// validate that it is in the correct format
-		split := strings.Split(args[0], "-")
-		if len(split) != 3 {
-			return fmt.Errorf("invalid device ID %s. must be in format BLDG-ROOM-CP1", args[0])
-		}
-
-		return nil
-	},
+	Args:  args.ValidDeviceID,
 	Run: func(cmd *cobra.Command, args []string) {
 		client, err := NewSSHClient("ITB-1101-CP1.byu.edu")
 		if err != nil {

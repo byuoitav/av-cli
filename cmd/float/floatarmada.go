@@ -17,6 +17,7 @@ const (
 	test = "testing"
 )
 
+// TODO just prompt for designation?
 var armadaCmd = &cobra.Command{
 	Use:   "armada [designation ID]",
 	Short: "Deploys to all rooms with the given designation",

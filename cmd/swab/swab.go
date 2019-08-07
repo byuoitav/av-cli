@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
+	"github.com/byuoitav/av-cli/cmd/args"
 	"github.com/byuoitav/common/db"
 	"github.com/spf13/cobra"
 )
@@ -22,19 +22,7 @@ var Cmd = &cobra.Command{
 	Use:   "swab [device ID]",
 	Short: "Refreshes the database/ui of a pi",
 	Long:  "Forces a replication of the couch database, and causes the ui to refresh shortly after",
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return fmt.Errorf("device ID required to swab")
-		}
-
-		// validate that it is in the correct format
-		split := strings.Split(args[0], "-")
-		if len(split) != 3 {
-			return fmt.Errorf("invalid device ID %s. must be in format BLDG-ROOM-CP1", args[0])
-		}
-
-		return nil
-	},
+	Args:  args.ValidDeviceID,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("Swabbing %s\n", args[0])
 
