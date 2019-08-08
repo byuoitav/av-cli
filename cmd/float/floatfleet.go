@@ -66,11 +66,11 @@ var fleetCmd = &cobra.Command{
 func floatfleet(roomID, designation string) error {
 	devices, err := db.GetDB().GetDevicesByRoom(roomID)
 	if err != nil {
-		return fmt.Errorf("unable to get devices from database: %s\n", err)
+		return fmt.Errorf("unable to get devices from database: %s", err)
 	}
 
 	if len(devices) == 0 {
-		return fmt.Errorf("no devices found in %s\n", roomID)
+		return fmt.Errorf("no devices found in %s", roomID)
 	}
 
 	var toDeploy []structs.Device
@@ -78,14 +78,9 @@ func floatfleet(roomID, designation string) error {
 	for _, dev := range devices {
 		if idParts := strings.Split(dev.ID, "-"); strings.Contains(strings.ToUpper(idParts[2]), "CP") {
 			toDeploy = append(toDeploy, dev)
-			//tmpl := fmt.Sprintf(`{{ white "%v" }} {{ bar . (green "[") (green "#") (cycle . "\\" "|" "/" "-") (red "-") (green "]") }} {{ percent . | white}}`, dev.ID)
-			//bars = append(bars, pb.ProgressBarTemplate(tmpl).New(6).SetWidth(50))
-			//bars = append(bars, pb.New(6).SetWidth(50))
+			bars = append(bars, pb.New(6).SetWidth(50))
 		}
 	}
-
-	//tmpl := fmt.Sprintf(`{{ green "%v" }} {{ bar . "[" (blue "#") (rndcolor ">") (red "-") (white "]") }} {{speed . | yellow }} {{percent .}}`, roomID)
-	//tmpl := `{{ red "With funcs:" }} {{ bar . "<" "-" (cycle . "↖" "↗" "↘" "↙" ) "." ">"}} {{speed . | rndcolor }} {{percent .}}`
 
 	wg := sync.WaitGroup{}
 	failedCount := 0
@@ -112,7 +107,7 @@ func floatfleet(roomID, designation string) error {
 
 	wg.Wait()
 	pool.Stop()
-	fmt.Printf("%v failures: %v\n", failedCount, failedList)
+	fmt.Printf("%v failures:\n%v\n", failedCount, failedList)
 
 	return nil
 }
