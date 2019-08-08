@@ -118,7 +118,7 @@ func floatshipWithBar(deviceID, designation string, bar *pb.ProgressBar) error {
 	}
 
 	if resp.StatusCode/100 != 2 {
-		return fmt.Errorf("non-200 status code: %v - %v", resp.StatusCode, body)
+		return fmt.Errorf("non-200 status code: %v - %s", resp.StatusCode, body)
 	}
 	//6
 	bar.Increment()

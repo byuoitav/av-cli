@@ -1,15 +1,5 @@
 package float
 
-import (
-	"fmt"
-	"os"
-	"strings"
-	"sync"
-
-	"github.com/byuoitav/common/db"
-	"github.com/spf13/cobra"
-)
-
 const (
 	dev  = "development"
 	stg  = "stage"
@@ -17,6 +7,7 @@ const (
 	test = "testing"
 )
 
+/*
 // TODO just prompt for designation?
 var armadaCmd = &cobra.Command{
 	Use:   "armada [designation ID]",
@@ -97,3 +88,4 @@ func floatarmada(designation string) error {
 	wg.Wait()
 	return nil
 }
+*/
