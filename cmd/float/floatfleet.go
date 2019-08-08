@@ -9,7 +9,7 @@ import (
 	"github.com/byuoitav/av-cli/cmd/args"
 	"github.com/byuoitav/common/db"
 	"github.com/byuoitav/common/structs"
-	"github.com/byuoitav/pb/v3"
+	"github.com/cheggaaa/pb"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
@@ -78,8 +78,8 @@ func floatfleet(roomID, designation string) error {
 	for _, dev := range devices {
 		if idParts := strings.Split(dev.ID, "-"); strings.Contains(strings.ToUpper(idParts[2]), "CP") {
 			toDeploy = append(toDeploy, dev)
-			tmpl := fmt.Sprintf(`{{ white "%v" }} {{ bar . (green "[") (green "#") (cycle . "\\" "|" "/" "-") (red "-") (green "]") }} {{ percent . | white}}`, dev.ID)
-			bars = append(bars, pb.ProgressBarTemplate(tmpl).New(6).SetWidth(50))
+			//tmpl := fmt.Sprintf(`{{ white "%v" }} {{ bar . (green "[") (green "#") (cycle . "\\" "|" "/" "-") (red "-") (green "]") }} {{ percent . | white}}`, dev.ID)
+			//bars = append(bars, pb.ProgressBarTemplate(tmpl).New(6).SetWidth(50))
 			//bars = append(bars, pb.New(6).SetWidth(50))
 		}
 	}
