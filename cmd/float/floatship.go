@@ -33,7 +33,7 @@ var shipCmd = &cobra.Command{
 
 		err = floatship(args[0], result)
 		if err != nil {
-			fmt.Printf("Error floating ship: %v", err)
+			fmt.Printf("Error floating ship: %v\n", err)
 			return
 		}
 
@@ -53,20 +53,20 @@ func floatship(deviceID, designation string) error {
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/%v/webhook_device/%v", dbDesignation, deviceID), nil)
 	if err != nil {
-		return fmt.Errorf("Couldn't make request: %v", err)
+		return fmt.Errorf("Couldn't make request: %v\n", err)
 	}
 
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", wso2.GetAccessToken()))
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("Couldn't perform request: %v", err)
+		return fmt.Errorf("Couldn't perform request: %v\n", err)
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode/100 != 2 {
-		return fmt.Errorf("Non-200 status code: %v", resp.StatusCode)
+		return fmt.Errorf("Non-200 status code: %v\n", resp.StatusCode)
 	}
 
 	fmt.Printf("Deployment successful\n")
@@ -92,7 +92,7 @@ func floatshipWithBar(deviceID, designation string, bar *pb.ProgressBar) error {
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/%v/webhook_device/%v", dbDesignation, deviceID), nil)
 	if err != nil {
-		return fmt.Errorf("Couldn't make request: %v", err)
+		return fmt.Errorf("Couldn't make request: %v\n", err)
 	}
 
 	//3
@@ -105,7 +105,7 @@ func floatshipWithBar(deviceID, designation string, bar *pb.ProgressBar) error {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("Couldn't perform request: %v", err)
+		return fmt.Errorf("Couldn't perform request: %v\n", err)
 	}
 	//5
 	bar.Increment()
@@ -113,7 +113,7 @@ func floatshipWithBar(deviceID, designation string, bar *pb.ProgressBar) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode/100 != 2 {
-		return fmt.Errorf("Non-200 status code: %v", resp.StatusCode)
+		return fmt.Errorf("Non-200 status code: %v\n", resp.StatusCode)
 	}
 	//6
 	bar.Increment()

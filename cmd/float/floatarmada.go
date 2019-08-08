@@ -23,12 +23,12 @@ var armadaCmd = &cobra.Command{
 	Short: "Deploys to all rooms with the given designation",
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			return fmt.Errorf("designation ID required to deploy")
+			return fmt.Errorf("designation ID required to deploy\n")
 		}
 
 		// validate that it is in the correct format
 		if args[0] != dev && args[0] != stg && args[0] != prd && args[0] != test {
-			return fmt.Errorf("invalid designation")
+			return fmt.Errorf("invalid designation\n")
 		}
 
 		return nil
@@ -60,7 +60,7 @@ var armadaCmd = &cobra.Command{
 		os.Setenv("DB_ADDRESS", prevAddr)
 		os.Setenv("DB_USERNAME", prevName)
 		if err != nil {
-			fmt.Printf("Error floating armada: %v", err)
+			fmt.Printf("Error floating armada: %v\n", err)
 			return
 		}
 
@@ -70,11 +70,11 @@ var armadaCmd = &cobra.Command{
 func floatarmada(designation string) error {
 	rooms, err := db.GetDB().GetRoomsByDesignation(designation)
 	if err != nil {
-		return fmt.Errorf("unable to get rooms from database: %s", err)
+		return fmt.Errorf("unable to get rooms from database: %s\n", err)
 	}
 
 	if len(rooms) == 0 {
-		return fmt.Errorf("no %s rooms found", designation)
+		return fmt.Errorf("no %s rooms found\n", designation)
 	}
 
 	wg := sync.WaitGroup{}

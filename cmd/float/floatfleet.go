@@ -56,7 +56,7 @@ var fleetCmd = &cobra.Command{
 		os.Setenv("DB_ADDRESS", prevAddr)
 		os.Setenv("DB_USERNAME", prevName)
 		if err != nil {
-			fmt.Printf("Error floating fleet: %v", err)
+			fmt.Printf("Error floating fleet: %v\n", err)
 			return
 		}
 
@@ -66,11 +66,11 @@ var fleetCmd = &cobra.Command{
 func floatfleet(roomID, designation string) error {
 	devices, err := db.GetDB().GetDevicesByRoom(roomID)
 	if err != nil {
-		return fmt.Errorf("unable to get devices from database: %s", err)
+		return fmt.Errorf("unable to get devices from database: %s\n", err)
 	}
 
 	if len(devices) == 0 {
-		return fmt.Errorf("no devices found in %s", roomID)
+		return fmt.Errorf("no devices found in %s\n", roomID)
 	}
 
 	var toDeploy []structs.Device
