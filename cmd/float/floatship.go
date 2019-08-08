@@ -2,6 +2,7 @@ package float
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/byuoitav/av-cli/cmd/args"
@@ -53,20 +54,20 @@ func floatship(deviceID, designation string) error {
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/%v/webhook_device/%v", dbDesignation, deviceID), nil)
 	if err != nil {
-		return fmt.Errorf("Couldn't make request: %v\n", err)
+		return fmt.Errorf("couldn't make request: %v", err)
 	}
 
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", wso2.GetAccessToken()))
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("Couldn't perform request: %v\n", err)
+		return fmt.Errorf("couldn't perform request: %v", err)
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode/100 != 2 {
-		return fmt.Errorf("Non-200 status code: %v\n", resp.StatusCode)
+		return fmt.Errorf("non-200 status code: %v", resp.StatusCode)
 	}
 
 	fmt.Printf("Deployment successful\n")
@@ -92,7 +93,7 @@ func floatshipWithBar(deviceID, designation string, bar *pb.ProgressBar) error {
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/%v/webhook_device/%v", dbDesignation, deviceID), nil)
 	if err != nil {
-		return fmt.Errorf("Couldn't make request: %v\n", err)
+		return fmt.Errorf("couldn't make request: %v", err)
 	}
 
 	//3
@@ -105,15 +106,19 @@ func floatshipWithBar(deviceID, designation string, bar *pb.ProgressBar) error {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("Couldn't perform request: %v\n", err)
+		return fmt.Errorf("couldn't perform request: %v", err)
 	}
 	//5
 	bar.Increment()
 
 	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("couldn't read the response body: %v", err)
+	}
 
 	if resp.StatusCode/100 != 2 {
-		return fmt.Errorf("Non-200 status code: %v\n", resp.StatusCode)
+		return fmt.Errorf("non-200 status code: %v - %v", resp.StatusCode, body)
 	}
 	//6
 	bar.Increment()
