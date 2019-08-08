@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
+	"sync"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/fatih/color"
@@ -20,6 +21,7 @@ import (
 
 var (
 	toks tokens
+	once sync.Once
 )
 
 type config struct {
@@ -79,22 +81,21 @@ func GetIDInfo() (*IDInfo, error) {
 }
 
 func getToks() tokens {
-	if len(toks.AccessToken) == 0 || len(toks.IDToken) == 0 {
+	once.Do(func() {
 		var err error
 		toks, err = getTokens()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-	}
-
+	})
 	return toks
 }
 
 func getTokens() (tokens, error) {
 	config := config{
 		clientID:     "nkvyVWVBiqOKs_o7dLkUF2KHv2Ya",
-		clientSecret: "HR_ssS_Kv1q_9xq1j_wJr1F8Fn0a", // i'm allowed to do this :)
+		clientSecret: "HR_ssS_Kv1q_9xq1j_wJr1F8Fn0a", // i'm allowed to do this ;)
 		redirect:     "http://localhost:7444",
 		port:         7444,
 	}
@@ -154,7 +155,7 @@ func getAuthCode(config config) string {
 			code, ok := r.URL.Query()["code"]
 			if !ok {
 				io.WriteString(w, fmt.Sprintf(`
-				<html>
+<html>
 					<script>
 						window.onload = function() {
 							window.location.replace("%s")
@@ -169,7 +170,7 @@ func getAuthCode(config config) string {
 			}
 
 			io.WriteString(w, `
-			<html>
+<html>
 				<script>
 					window.onload = function() {
 						window.close();

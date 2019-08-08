@@ -101,7 +101,7 @@ func floatfleet(roomID, designation string) error {
 			fmt.Printf("Deploying to %s\n", toDeploy[idx].ID)
 			err := floatshipWithBar(toDeploy[idx].ID, designation, bars[idx])
 			if err != nil {
-				failedList = fmt.Sprintf("%v %v", failedList, toDeploy[idx].ID)
+				failedList = fmt.Sprintf("%v%v: %v\n", failedList, toDeploy[idx].ID, err)
 				failedCount++
 				bars[idx].Finish()
 				return
