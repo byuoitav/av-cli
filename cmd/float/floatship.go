@@ -38,17 +38,7 @@ var shipCmd = &cobra.Command{
 }
 
 func floatship(deviceID, designation string) error {
-	var dbDesignation string
-	switch designation {
-	case "development":
-		dbDesignation = "dev"
-	case "stage":
-		dbDesignation = "stg"
-	case "production":
-		dbDesignation = "prd"
-	}
-
-	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/%v/webhook_device/%v", dbDesignation, deviceID), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/%v/webhook_device/%v", designation, deviceID), nil)
 	if err != nil {
 		return fmt.Errorf("couldn't make request: %v", err)
 	}
@@ -74,20 +64,10 @@ func floatshipWithBar(deviceID, designation string, bar *pb.ProgressBar) error {
 	//1
 	bar.Increment()
 
-	var dbDesignation string
-	switch designation {
-	case "development":
-		dbDesignation = "dev"
-	case "stage":
-		dbDesignation = "stg"
-	case "production":
-		dbDesignation = "prd"
-	}
-
 	//2
 	bar.Increment()
 
-	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/%v/webhook_device/%v", dbDesignation, deviceID), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/%v/webhook_device/%v", designation, deviceID), nil)
 	if err != nil {
 		return fmt.Errorf("couldn't make request: %v", err)
 	}
