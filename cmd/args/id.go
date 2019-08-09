@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// ValidBuildingID .
+// ValidBuildingID checks if the argument is a valid building id
 func ValidBuildingID(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 {
 		return fmt.Errorf("building ID required")
@@ -24,7 +24,7 @@ func ValidBuildingID(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// ValidRoomID .
+// ValidRoomID checks if the argument is a valid room id
 func ValidRoomID(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 {
 		return fmt.Errorf("room ID required")
@@ -38,7 +38,7 @@ func ValidRoomID(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// ValidDeviceID .
+// ValidDeviceID checks if the argument is a valid device id
 func ValidDeviceID(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 {
 		return fmt.Errorf("device ID required")
@@ -52,7 +52,12 @@ func ValidDeviceID(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// GetDB .
+// Valid is always valid
+func Valid(cmd *cobra.Command, args []string) error {
+	return nil
+}
+
+// GetDB returns the database of the user's selection
 func GetDB() (db.DB, string, error) {
 
 	if os.Getenv("DB_ADDRESS") == "" {
