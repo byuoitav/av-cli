@@ -79,6 +79,7 @@ func floatfleet(db db.DB, buildingID, designation string) error {
 	}
 	wg.Wait()
 	pool.Stop()
+
 	fmt.Printf("%v failures:\n%v\n", failedCount, failedList)
 
 	return nil
