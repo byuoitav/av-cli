@@ -31,8 +31,10 @@ var shipCmd = &cobra.Command{
 		}
 
 		fmt.Printf("result: %s\n", result)
-
-		err = floatship(args[0], result)
+		bar := pb.New(6).SetWidth(50).Format(fmt.Sprintf("%s [\x00=\x00>\x00-\x00]", args[0]))
+		bar.ShowCounters = false
+		bar.Start()
+		err = floatshipWithBar(args[0], result, bar)
 		if err != nil {
 			fmt.Printf("Error floating ship: %v\n", err)
 			return

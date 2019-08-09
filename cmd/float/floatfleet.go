@@ -8,7 +8,6 @@ import (
 
 	"github.com/byuoitav/av-cli/cmd/args"
 	"github.com/byuoitav/common/db"
-	"github.com/byuoitav/common/structs"
 	"github.com/cheggaaa/pb"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -16,8 +15,8 @@ import (
 
 // fleetCmd .
 var fleetCmd = &cobra.Command{
-	Use:   "fleet [room ID]",
-	Short: "Deploys to the room with the given ID",
+	Use:   "fleet [building ID]",
+	Short: "Deploys to the building with the given ID",
 	Args:  args.ValidRoomID,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("Deploying to %s\n", args[0])
@@ -56,25 +55,26 @@ var fleetCmd = &cobra.Command{
 	},
 }
 
-func floatfleet(db db.DB, roomID, designation string) error {
-	devices, err := db.GetDevicesByRoom(roomID)
+func floatfleet(db db.DB, buildingID, designation string) error {
+	rooms, err := db.GetRoomsByBuilding(buildingID)
 	if err != nil {
-		return fmt.Errorf("unable to get devices from database: %s", err)
+		return fmt.Errorf("unable to get rooms from database: %s", err)
 	}
 
-	if len(devices) == 0 {
-		return fmt.Errorf("no devices found in %s", roomID)
+	if len(rooms) == 0 {
+		return fmt.Errorf("no rooms found in %s", buildingID)
 	}
 
-	var toDeploy []structs.Device
 	var bars []*pb.ProgressBar
-	for _, dev := range devices {
-		if idParts := strings.Split(dev.ID, "-"); strings.Contains(strings.ToUpper(idParts[2]), "CP") {
-			toDeploy = append(toDeploy, dev)
-			bar := pb.New(6).SetWidth(50).Format(fmt.Sprintf("%s [\x00=\x00>\x00-\x00]", dev.ID))
-			bar.ShowCounters = false
-			bars = append(bars, bar)
+	for _, room := range rooms {
+		devs, err := db.GetDevicesByRoom(room.ID)
+		if err != nil {
+			return fmt.Errorf("couldn't get devices for room %v: %v", room.ID, err)
 		}
+		bar := pb.New(len(devs) + 6).SetWidth(50).Format(fmt.Sprintf("%s [\x00=\x00>\x00-\x00]", room.ID))
+		bar.ShowCounters = false
+		bars = append(bars, bar)
+
 	}
 
 	wg := sync.WaitGroup{}
@@ -82,16 +82,15 @@ func floatfleet(db db.DB, roomID, designation string) error {
 	failedList := ""
 	pool := pb.NewPool(bars...)
 	pool.Start()
-	for i := range toDeploy {
+	for i := range rooms {
 		wg.Add(1)
 
 		go func(idx int) {
 			defer wg.Done()
 
-			//fmt.Printf("Deploying to %s\n", toDeploy[idx].ID)
-			err := floatshipWithBar(toDeploy[idx].ID, designation, bars[idx])
+			err := floatsquadronWithBar(db, rooms[idx].ID, designation, bars[idx])
 			if err != nil {
-				failedList = fmt.Sprintf("%v%v: %v\n", failedList, toDeploy[idx].ID, err)
+				failedList = fmt.Sprintf("%v%v: %v\n", failedList, rooms[idx].ID, err)
 				failedCount++
 				bars[idx].Finish()
 				return

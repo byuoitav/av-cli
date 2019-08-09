@@ -6,6 +6,7 @@ import (
 
 func init() {
 	Cmd.AddCommand(shipCmd)
+	Cmd.AddCommand(squadronCmd)
 	Cmd.AddCommand(fleetCmd)
 	// Cmd.AddCommand(armadaCmd)
 }
