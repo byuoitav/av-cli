@@ -42,29 +42,22 @@ var fleetCmd = &cobra.Command{
 			dbDesignation = "prd"
 		}
 
-		prevAddr := os.Getenv("DB_ADDRESS")
-		prevName := os.Getenv("DB_USERNAME")
-		finalAddr := strings.Replace(prevAddr, "dev", dbDesignation, 1)
+		finalAddr := strings.Replace(os.Getenv("DB_ADDRESS"), "dev", dbDesignation, 1)
 		finalAddr = strings.Replace(finalAddr, "stg", dbDesignation, 1)
 		finalAddr = strings.Replace(finalAddr, "prd", dbDesignation, 1)
 
-		os.Setenv("DB_USERNAME", dbDesignation)
-		os.Setenv("DB_ADDRESS", finalAddr)
+		db := db.GetDBWithCustomAuth(finalAddr, dbDesignation, os.Getenv("DB_PASSWORD"))
 
-		err = floatfleet(args[0], result)
-
-		os.Setenv("DB_ADDRESS", prevAddr)
-		os.Setenv("DB_USERNAME", prevName)
+		err = floatfleet(db, args[0], result)
 		if err != nil {
 			fmt.Printf("Error floating fleet: %v\n", err)
 			return
 		}
-
 	},
 }
 
-func floatfleet(roomID, designation string) error {
-	devices, err := db.GetDB().GetDevicesByRoom(roomID)
+func floatfleet(db db.DB, roomID, designation string) error {
+	devices, err := db.GetDevicesByRoom(roomID)
 	if err != nil {
 		return fmt.Errorf("unable to get devices from database: %s", err)
 	}
