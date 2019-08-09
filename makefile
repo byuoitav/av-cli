@@ -12,7 +12,7 @@ linux:
 windows:
 	env GOOS=windows GOARCH=amd64 go build -o $(NAME).exe
 
-mac:
+darwin:
 	env GOOS=darwin GOARCH=amd64 go build -o $(NAME)
 
 clean:

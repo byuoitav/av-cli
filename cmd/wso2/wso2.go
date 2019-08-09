@@ -16,6 +16,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/fatih/color"
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/viper"
 )
 
@@ -89,6 +90,7 @@ func getToks() tokens {
 			os.Exit(1)
 		}
 	})
+
 	return toks
 }
 
@@ -141,12 +143,12 @@ func getTokens() (tokens, error) {
 
 func getAuthCode(config config) string {
 	codeChan := make(chan string)
+	stopSrv := make(chan struct{})
 
 	url := fmt.Sprintf("https://api.byu.edu/authorize?response_type=code&client_id=%s&redirect_uri=%s&scope=openid", config.clientID, config.redirect)
 
 	// run the server
 	go func() {
-		stop := make(chan struct{})
 		srv := http.Server{
 			Addr: fmt.Sprintf(":%v", config.port),
 		}
@@ -182,15 +184,34 @@ func getAuthCode(config config) string {
 			</html>
 			`)
 			codeChan <- code[len(code)-1]
-			stop <- struct{}{}
+			stopSrv <- struct{}{}
 		})
 
 		go srv.ListenAndServe()
-		<-stop
+		<-stopSrv
 		srv.Close()
 	}()
 
-	OpenBrowser(url)
+	err := OpenBrowser(url)
+	if err != nil {
+		stopSrv <- struct{}{}
+
+		go func() {
+			fmt.Printf("Unable to open browser: %s. Copy link below into browser, and paste the auth code from the url.\n%s\n", err, color.New(color.FgBlue, color.Underline, color.Bold).Sprint(url))
+
+			codePrompt := promptui.Prompt{
+				Label: "Auth Code from URL",
+			}
+
+			c, err := codePrompt.Run()
+			if err != nil {
+				fmt.Printf("unable to get auth code: %s\n", err)
+				os.Exit(1)
+			}
+
+			codeChan <- c
+		}()
+	}
 
 	code := <-codeChan
 	return code
@@ -244,7 +265,7 @@ func doTokenRequest(method, auth string, config config) (tokens, error) {
 }
 
 // OpenBrowser .
-func OpenBrowser(url string) {
+func OpenBrowser(url string) error {
 	var err error
 	switch runtime.GOOS {
 	case "linux":
@@ -258,7 +279,8 @@ func OpenBrowser(url string) {
 	}
 
 	if err != nil {
-		fmt.Printf("unable to open browser (%s). copy and paste the below url into a browser:\n", err)
-		fmt.Printf("%s\n", color.New(color.FgBlue, color.Underline, color.Bold).Sprint(url))
+		return err
 	}
+
+	return nil
 }
