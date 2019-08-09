@@ -2,14 +2,11 @@ package float
 
 import (
 	"fmt"
-	"os"
-	"strings"
 	"sync"
 
-	"github.com/byuoitav/av-cli/cmd/args"
+	arg "github.com/byuoitav/av-cli/cmd/args"
 	"github.com/byuoitav/common/db"
 	"github.com/cheggaaa/pb"
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
@@ -17,37 +14,17 @@ import (
 var fleetCmd = &cobra.Command{
 	Use:   "fleet [building ID]",
 	Short: "Deploys to the building with the given ID",
-	Args:  args.ValidRoomID,
+	Args:  arg.ValidRoomID,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("Deploying to %s\n", args[0])
 
-		dbPrompt := promptui.Select{
-			Label: "Database to deploy from",
-			Items: []string{"development", "stage", "production"},
-		}
-
-		_, result, err := dbPrompt.Run()
+		db, designation, err := arg.GetDB()
 		if err != nil {
-			fmt.Printf("prompt failed %v\n", err)
+			fmt.Printf("Error getting db: %v\n", err)
+			return
 		}
 
-		var dbDesignation string
-		switch result {
-		case "development":
-			dbDesignation = "dev"
-		case "stage":
-			dbDesignation = "stg"
-		case "production":
-			dbDesignation = "prd"
-		}
-
-		finalAddr := strings.Replace(os.Getenv("DB_ADDRESS"), "dev", dbDesignation, 1)
-		finalAddr = strings.Replace(finalAddr, "stg", dbDesignation, 1)
-		finalAddr = strings.Replace(finalAddr, "prd", dbDesignation, 1)
-
-		db := db.GetDBWithCustomAuth(finalAddr, dbDesignation, os.Getenv("DB_PASSWORD"))
-
-		err = floatfleet(db, args[0], result)
+		err = floatfleet(db, args[0], designation)
 		if err != nil {
 			fmt.Printf("Error floating fleet: %v\n", err)
 			return
@@ -78,10 +55,12 @@ func floatfleet(db db.DB, buildingID, designation string) error {
 	}
 
 	wg := sync.WaitGroup{}
+
 	failedCount := 0
 	failedList := ""
 	pool := pb.NewPool(bars...)
 	pool.Start()
+
 	for i := range rooms {
 		wg.Add(1)
 

@@ -5,10 +5,9 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/byuoitav/av-cli/cmd/args"
+	arg "github.com/byuoitav/av-cli/cmd/args"
 	"github.com/byuoitav/av-cli/cmd/wso2"
 	"github.com/cheggaaa/pb"
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
@@ -16,16 +15,11 @@ import (
 var shipCmd = &cobra.Command{
 	Use:   "ship [device ID]",
 	Short: "Deploys to the device with the given ID",
-	Args:  args.ValidDeviceID,
+	Args:  arg.ValidDeviceID,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("Deploying to %s\n", args[0])
 
-		dbPrompt := promptui.Select{
-			Label: "Database to deploy from",
-			Items: []string{"development", "stage", "production"},
-		}
-
-		_, result, err := dbPrompt.Run()
+		_, result, err := arg.GetDB()
 		if err != nil {
 			fmt.Printf("prompt failed %v\n", err)
 		}

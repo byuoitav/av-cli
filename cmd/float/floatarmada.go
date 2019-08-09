@@ -1,5 +1,15 @@
 package float
 
+import (
+	"fmt"
+	"sync"
+
+	arg "github.com/byuoitav/av-cli/cmd/args"
+	"github.com/byuoitav/common/db"
+	"github.com/cheggaaa/pb"
+	"github.com/spf13/cobra"
+)
+
 const (
 	dev  = "development"
 	stg  = "stage"
@@ -7,49 +17,22 @@ const (
 	test = "testing"
 )
 
-/*
-// TODO just prompt for designation?
 var armadaCmd = &cobra.Command{
 	Use:   "armada [designation ID]",
 	Short: "Deploys to all rooms with the given designation",
 	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return fmt.Errorf("designation ID required to deploy\n")
-		}
-
-		// validate that it is in the correct format
-		if args[0] != dev && args[0] != stg && args[0] != prd && args[0] != test {
-			return fmt.Errorf("invalid designation\n")
-		}
-
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Deploying to all %s rooms\n", args[0])
-
-		var dbDesignation string
-		switch args[0] {
-		case "development":
-			dbDesignation = "dev"
-		case "stage":
-			dbDesignation = "stg"
-		case "production":
-			dbDesignation = "prd"
+		db, designation, err := arg.GetDB()
+		if err != nil {
+			fmt.Printf("Couldn't get the database: %v", err)
+			return
 		}
 
-		prevAddr := os.Getenv("DB_ADDRESS")
-		prevName := os.Getenv("DB_USERNAME")
-		finalAddr := strings.Replace(prevAddr, "dev", dbDesignation, 1)
-		finalAddr = strings.Replace(finalAddr, "stg", dbDesignation, 1)
-		finalAddr = strings.Replace(finalAddr, "prd", dbDesignation, 1)
+		fmt.Printf("Deploying to all %s rooms\n", designation)
 
-		os.Setenv("DB_USERNAME", dbDesignation)
-		os.Setenv("DB_ADDRESS", finalAddr)
-
-		err := floatarmada(args[0])
-
-		os.Setenv("DB_ADDRESS", prevAddr)
-		os.Setenv("DB_USERNAME", prevName)
+		err = floatarmada(db, designation)
 		if err != nil {
 			fmt.Printf("Error floating armada: %v\n", err)
 			return
@@ -58,17 +41,34 @@ var armadaCmd = &cobra.Command{
 	},
 }
 
-func floatarmada(designation string) error {
-	rooms, err := db.GetDB().GetRoomsByDesignation(designation)
+func floatarmada(db db.DB, designation string) error {
+	rooms, err := db.GetRoomsByDesignation(designation)
 	if err != nil {
-		return fmt.Errorf("unable to get rooms from database: %s\n", err)
+		return fmt.Errorf("unable to get rooms from database: %s", err)
 	}
 
 	if len(rooms) == 0 {
-		return fmt.Errorf("no %s rooms found\n", designation)
+		return fmt.Errorf("no %s rooms found", designation)
+	}
+
+	var bars []*pb.ProgressBar
+	for _, room := range rooms {
+		devs, err := db.GetDevicesByRoom(room.ID)
+		if err != nil {
+			return fmt.Errorf("couldn't get devices for room %v: %v", room.ID, err)
+		}
+		bar := pb.New(len(devs) + 6).SetWidth(50).Format(fmt.Sprintf("%s [\x00=\x00>\x00-\x00]", room.ID))
+		bar.ShowCounters = false
+		bars = append(bars, bar)
+
 	}
 
 	wg := sync.WaitGroup{}
+
+	failedCount := 0
+	failedList := ""
+	pool := pb.NewPool(bars...)
+	pool.Start()
 
 	for i := range rooms {
 		wg.Add(1)
@@ -76,16 +76,19 @@ func floatarmada(designation string) error {
 		go func(idx int) {
 			defer wg.Done()
 			fmt.Printf("Deploying to %s\n", rooms[idx].ID)
-			err := floatfleet(rooms[idx].ID, designation)
+			err := floatsquadronWithBar(db, rooms[idx].ID, designation, bars[idx])
 			if err != nil {
-				fmt.Printf("unable to deploy to %s: %s\n", rooms[idx].ID, err)
+				failedList = fmt.Sprintf("%v%v: %v\n", failedList, rooms[idx].ID, err)
+				failedCount++
+				bars[idx].Finish()
 				return
 			}
-
 		}(i)
 	}
-
 	wg.Wait()
+	pool.Stop()
+
+	fmt.Printf("%v failures:\n%v\n", failedCount, failedList)
+
 	return nil
 }
-*/

@@ -2,15 +2,13 @@ package float
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"sync"
 
-	"github.com/byuoitav/av-cli/cmd/args"
+	arg "github.com/byuoitav/av-cli/cmd/args"
 	"github.com/byuoitav/common/db"
 	"github.com/byuoitav/common/structs"
 	"github.com/cheggaaa/pb"
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
@@ -18,35 +16,15 @@ import (
 var squadronCmd = &cobra.Command{
 	Use:   "squadron [room ID]",
 	Short: "Deploys to the room with the given ID",
-	Args:  args.ValidRoomID,
+	Args:  arg.ValidRoomID,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("Deploying to %s\n", args[0])
 
-		dbPrompt := promptui.Select{
-			Label: "Database to deploy from",
-			Items: []string{"development", "stage", "production"},
-		}
-
-		_, result, err := dbPrompt.Run()
+		db, result, err := arg.GetDB()
 		if err != nil {
-			fmt.Printf("prompt failed %v\n", err)
+			fmt.Printf("couldn't get db: %v\n", err)
+			return
 		}
-
-		var dbDesignation string
-		switch result {
-		case "development":
-			dbDesignation = "dev"
-		case "stage":
-			dbDesignation = "stg"
-		case "production":
-			dbDesignation = "prd"
-		}
-
-		finalAddr := strings.Replace(os.Getenv("DB_ADDRESS"), "dev", dbDesignation, 1)
-		finalAddr = strings.Replace(finalAddr, "stg", dbDesignation, 1)
-		finalAddr = strings.Replace(finalAddr, "prd", dbDesignation, 1)
-
-		db := db.GetDBWithCustomAuth(finalAddr, dbDesignation, os.Getenv("DB_PASSWORD"))
 
 		err = floatsquadron(db, args[0], result)
 		if err != nil {
@@ -88,7 +66,6 @@ func floatsquadron(db db.DB, roomID, designation string) error {
 		go func(idx int) {
 			defer wg.Done()
 
-			//fmt.Printf("Deploying to %s\n", toDeploy[idx].ID)
 			err := floatshipWithBar(toDeploy[idx].ID, designation, bars[idx])
 			if err != nil {
 				failedList = fmt.Sprintf("%v%v: %v\n", failedList, toDeploy[idx].ID, err)
@@ -146,7 +123,6 @@ func floatsquadronWithBar(db db.DB, roomID, designation string, bar *pb.Progress
 		go func(idx int) {
 			defer wg.Done()
 
-			//fmt.Printf("Deploying to %s\n", toDeploy[idx].ID)
 			err := floatship(toDeploy[idx].ID, designation)
 			if err != nil {
 				failedList = fmt.Sprintf("%v%v: %v\n", failedList, toDeploy[idx].ID, err)

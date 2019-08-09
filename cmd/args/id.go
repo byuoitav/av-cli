@@ -2,8 +2,11 @@ package args
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
+	"github.com/byuoitav/common/db"
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
@@ -38,7 +41,7 @@ func ValidRoomID(cmd *cobra.Command, args []string) error {
 // ValidDeviceID .
 func ValidDeviceID(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("device ID required required")
+		return fmt.Errorf("device ID required")
 	}
 
 	split := strings.Split(args[0], "-")
@@ -47,4 +50,42 @@ func ValidDeviceID(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
+}
+
+// GetDB .
+func GetDB() (db.DB, string, error) {
+
+	if os.Getenv("DB_ADDRESS") == "" {
+		return nil, "", fmt.Errorf("DB_ADDRESS not set")
+	}
+	if os.Getenv("DB_PASSWORD") == "" {
+		return nil, "", fmt.Errorf("DB_PASSWORD not set")
+	}
+
+	dbPrompt := promptui.Select{
+		Label: "Database to deploy from",
+		Items: []string{"development", "stage", "production"},
+	}
+
+	_, result, err := dbPrompt.Run()
+	if err != nil {
+		return nil, "", fmt.Errorf("prompt failed %v", err)
+	}
+
+	var dbDesignation string
+	switch result {
+	case "development":
+		dbDesignation = "dev"
+	case "stage":
+		dbDesignation = "stg"
+	case "production":
+		dbDesignation = "prd"
+	}
+
+	finalAddr := strings.Replace(os.Getenv("DB_ADDRESS"), "dev", dbDesignation, 1)
+	finalAddr = strings.Replace(finalAddr, "stg", dbDesignation, 1)
+	finalAddr = strings.Replace(finalAddr, "prd", dbDesignation, 1)
+
+	return db.GetDBWithCustomAuth(finalAddr, dbDesignation, os.Getenv("DB_PASSWORD")), dbDesignation, nil
+
 }
