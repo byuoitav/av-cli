@@ -78,7 +78,7 @@ func floatfleet(roomID, designation string) error {
 	for _, dev := range devices {
 		if idParts := strings.Split(dev.ID, "-"); strings.Contains(strings.ToUpper(idParts[2]), "CP") {
 			toDeploy = append(toDeploy, dev)
-			bars = append(bars, pb.New(6).SetWidth(50))
+			bars = append(bars, pb.New(6).SetWidth(50).Format(fmt.Sprintf("%s [\x00=\x00>\x00\x00-\x00]", dev.ID)))
 		}
 	}
 
@@ -104,7 +104,6 @@ func floatfleet(roomID, designation string) error {
 
 		}(i)
 	}
-
 	wg.Wait()
 	pool.Stop()
 	fmt.Printf("%v failures:\n%v\n", failedCount, failedList)
