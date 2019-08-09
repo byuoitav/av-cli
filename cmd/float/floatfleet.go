@@ -71,7 +71,9 @@ func floatfleet(db db.DB, roomID, designation string) error {
 	for _, dev := range devices {
 		if idParts := strings.Split(dev.ID, "-"); strings.Contains(strings.ToUpper(idParts[2]), "CP") {
 			toDeploy = append(toDeploy, dev)
-			bars = append(bars, pb.New(6).SetWidth(50).Format(fmt.Sprintf("%s [\x00=\x00>\x00\x00-\x00]", dev.ID)))
+			bar := pb.New(6).SetWidth(50).Format(fmt.Sprintf("%s [\x00=\x00>\x00-\x00]", dev.ID))
+			bar.ShowCounters = false
+			bars = append(bars, bar)
 		}
 	}
 
@@ -86,7 +88,7 @@ func floatfleet(db db.DB, roomID, designation string) error {
 		go func(idx int) {
 			defer wg.Done()
 
-			fmt.Printf("Deploying to %s\n", toDeploy[idx].ID)
+			//fmt.Printf("Deploying to %s\n", toDeploy[idx].ID)
 			err := floatshipWithBar(toDeploy[idx].ID, designation, bars[idx])
 			if err != nil {
 				failedList = fmt.Sprintf("%v%v: %v\n", failedList, toDeploy[idx].ID, err)
