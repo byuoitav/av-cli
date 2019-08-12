@@ -7,7 +7,7 @@ import (
 
 	arg "github.com/byuoitav/av-cli/cmd/args"
 	"github.com/byuoitav/av-cli/cmd/wso2"
-	"github.com/cheggaaa/pb"
+	"github.com/byuoitav/pb"
 	"github.com/spf13/cobra"
 )
 

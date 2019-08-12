@@ -8,7 +8,7 @@ import (
 	arg "github.com/byuoitav/av-cli/cmd/args"
 	"github.com/byuoitav/common/db"
 	"github.com/byuoitav/common/structs"
-	"github.com/cheggaaa/pb"
+	"github.com/byuoitav/pb"
 	"github.com/spf13/cobra"
 )
 
