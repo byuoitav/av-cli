@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/byuoitav/av-cli/cmd/args"
+	"github.com/byuoitav/common/db"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 )
@@ -15,7 +16,14 @@ var sinkCmd = &cobra.Command{
 	Long:  "ssh into a pi and reboot it",
 	Args:  args.ValidDeviceID,
 	Run: func(cmd *cobra.Command, args []string) {
-		client, err := NewSSHClient("ITB-1101-CP1.byu.edu")
+
+		dev, err := db.GetDB().GetDevice(args[0])
+		if err != nil {
+			fmt.Printf("unable to get device from db: %v", err)
+			os.Exit(1)
+		}
+
+		client, err := NewSSHClient(dev.Address)
 		if err != nil {
 			fmt.Printf("unable to ssh into %s: %s", args[0], err)
 			os.Exit(1)
