@@ -117,7 +117,7 @@ func findEnvvars(files []string) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("1st regex did not compile %v", err)
 	}
-	commentre, err := regexp.Compile(`.*(//).*os\.Getenv\(\"([a-z,A-Z,_,0-9]+?)\"\)`)
+	//	commentre, err := regexp.Compile(`.*(//).*os\.Getenv\(\"([a-z,A-Z,_,0-9]+?)\"\)`)
 	if err != nil {
 		return nil, fmt.Errorf("2nd regex did not compile %v", err)
 	}
@@ -152,11 +152,11 @@ func findEnvvars(files []string) ([]string, error) {
 			res := v.FindAll(byteText, -1)
 			for _, r := range res {
 				if !strings.Contains(string(r[2]), "+deploy not_required") {
-					res = commentre.FindAll(r[3], -1)
-					if len(res) != 0 {
-						//TODO add verbose option to print that I'm skipping
-						continue
-					}
+					//					res = commentre.FindAll(r[3], -1)
+					//					if len(res) != 0 {
+					//TODO add verbose option to print that I'm skipping
+					continue
+					//					}
 					//TODO add potential output flag
 					//TODO add golang set to hold enviroment variables
 				}
