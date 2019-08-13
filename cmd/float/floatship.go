@@ -24,7 +24,6 @@ var shipCmd = &cobra.Command{
 			fmt.Printf("prompt failed %v\n", err)
 		}
 
-		fmt.Printf("result: %s\n", result)
 		bar := pb.New(6).SetWidth(50).Format(fmt.Sprintf("%s [\x00=\x00>\x00-\x00]", args[0]))
 		bar.ShowCounters = false
 		bar.Start()
