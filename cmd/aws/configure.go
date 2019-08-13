@@ -59,7 +59,7 @@ func configure() error {
 	if Verbose {
 		for _, k := range envVars {
 			printy := strings.Split(useCases[k], "byuoitav/")[1]
-			fmt.Printf("In %v %v: %v\n", printy, k, os.Getenv(k))
+			fmt.Printf("In %v \"%v\": \"%v\"\n", printy, k, os.Getenv(k))
 		}
 		fmt.Printf("\n")
 	}
@@ -167,9 +167,6 @@ func findEnvvars(files []string) ([]string, map[string]string, error) {
 		}
 
 		for _, f := range here {
-			if Verbose {
-				fmt.Printf("%v\n", f)
-			}
 			if !strings.Contains(f, ".go") {
 				continue
 			}
@@ -193,9 +190,6 @@ func findEnvvars(files []string) ([]string, map[string]string, error) {
 					resp := commentre.FindAllSubmatch(r[0], -1)
 
 					if len(resp) != 0 {
-						if Verbose {
-							fmt.Printf("Comment: skipping %s\n", r[5])
-						}
 						continue
 					}
 					//TODO add potential output flag
