@@ -18,7 +18,7 @@ import (
 type jsonConfig struct {
 	Name    string   `json:"name"`
 	Port    string   `json:"port"`
-	EnvVars []string `json:"env-vars"`
+	EnvVars []string `json:"env-vars,omitempty"`
 }
 
 var configureCmd = &cobra.Command{
