@@ -152,6 +152,14 @@ func findEnvvars(files []string) ([]string, map[string]string, error) {
 	envVars := make(map[string]bool)
 	useCases := make(map[string]string)
 
+	//Get the current working directory
+	cwd, err := os.Getwd()
+	if err != nil {
+		return nil, nil, fmt.Errorf("error getting working directory: %v", err)
+	}
+
+	files = append(files, strings.Split(cwd, "/src/")[1])
+
 	for _, i := range files {
 		here, err := filepath.Glob(fmt.Sprintf("%v/%v/*", base, i))
 		if err != nil {
@@ -159,6 +167,9 @@ func findEnvvars(files []string) ([]string, map[string]string, error) {
 		}
 
 		for _, f := range here {
+			if Verbose {
+				fmt.Printf("%v\n", f)
+			}
 			if !strings.Contains(f, ".go") {
 				continue
 			}
@@ -182,11 +193,12 @@ func findEnvvars(files []string) ([]string, map[string]string, error) {
 					resp := commentre.FindAllSubmatch(r[0], -1)
 
 					if len(resp) != 0 {
-						//TODO add verbose option to print that I'm skipping
+						if Verbose {
+							fmt.Printf("Comment: skipping %s\n", r[5])
+						}
 						continue
 					}
 					//TODO add potential output flag
-					//TODO add golang set to hold enviroment variables
 					envVars[string(r[5])] = true
 					useCases[string(r[5])] = f
 
