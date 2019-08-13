@@ -68,7 +68,7 @@ func GetDB() (db.DB, string, error) {
 	}
 
 	dbPrompt := promptui.Select{
-		Label: "Database to deploy from",
+		Label: "Database",
 		Items: []string{"development", "stage", "production"},
 	}
 
