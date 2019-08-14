@@ -10,7 +10,7 @@ all:
 install:
 	go build -o $(NAME) . && mv $(NAME) ${GOPATH}/bin
 
-dist: dist/$(NAME)-amd64-linux dist/$(NAME)-amd64-darwin dist/$(NAME)-amd64-windows
+dist: # dist/$(NAME)-amd64-linux dist/$(NAME)-amd64-darwin dist/$(NAME)-amd64-windows
 	@echo Binaries for version $(VERSION) are located in ./dist/
 
 dist/$(NAME)-amd64-linux:

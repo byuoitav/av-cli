@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/byuoitav/av-cli/cmd/api"
+	"github.com/byuoitav/av-cli/cmd/aws"
 	"github.com/byuoitav/av-cli/cmd/float"
 	"github.com/byuoitav/av-cli/cmd/pi"
+	"github.com/byuoitav/av-cli/cmd/smee"
 	"github.com/byuoitav/av-cli/cmd/swab"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -29,6 +32,9 @@ func init() {
 	rootCmd.AddCommand(float.Cmd)
 	rootCmd.AddCommand(swab.Cmd)
 	rootCmd.AddCommand(pi.Cmd)
+	rootCmd.AddCommand(smee.Cmd)
+	rootCmd.AddCommand(aws.Cmd)
+	rootCmd.AddCommand(api.Cmd)
 }
 
 func initConfig() {

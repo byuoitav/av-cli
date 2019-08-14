@@ -10,45 +10,36 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	dev  = "development"
-	stg  = "stage"
-	prd  = "production"
-	test = "testing"
-)
-
-var armadaCmd = &cobra.Command{
-	Use:   "armada [designation ID]",
-	Short: "Deploys to all rooms with the given designation",
-	Args: func(cmd *cobra.Command, args []string) error {
-		return nil
-	},
+// fleetCmd .
+var fleetCmd = &cobra.Command{
+	Use:   "fleet [building ID]",
+	Short: "Deploys to the building with the given ID",
+	Args:  arg.ValidRoomID,
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("Deploying to %s\n", args[0])
+
 		db, designation, err := arg.GetDB()
 		if err != nil {
-			fmt.Printf("Couldn't get the database: %v", err)
+			fmt.Printf("Error getting db: %v\n", err)
 			return
 		}
 
-		fmt.Printf("Deploying to all %s rooms\n", designation)
-
-		err = floatarmada(db, designation)
+		err = floatfleet(db, args[0], designation)
 		if err != nil {
-			fmt.Printf("Error floating armada: %v\n", err)
+			fmt.Printf("Error floating fleet: %v\n", err)
 			return
 		}
-
 	},
 }
 
-func floatarmada(db db.DB, designation string) error {
-	rooms, err := db.GetRoomsByDesignation(designation)
+func floatfleet(db db.DB, buildingID, designation string) error {
+	rooms, err := db.GetRoomsByBuilding(buildingID)
 	if err != nil {
 		return fmt.Errorf("unable to get rooms from database: %s", err)
 	}
 
 	if len(rooms) == 0 {
-		return fmt.Errorf("no %s rooms found", designation)
+		return fmt.Errorf("no rooms found in %s", buildingID)
 	}
 
 	var bars []*pb.ProgressBar
@@ -75,7 +66,7 @@ func floatarmada(db db.DB, designation string) error {
 
 		go func(idx int) {
 			defer wg.Done()
-			fmt.Printf("Deploying to %s\n", rooms[idx].ID)
+
 			err := floatsquadronWithBar(db, rooms[idx].ID, designation, bars[idx])
 			if err != nil {
 				failedList = fmt.Sprintf("%v%v: %v\n", failedList, rooms[idx].ID, err)
@@ -83,6 +74,7 @@ func floatarmada(db db.DB, designation string) error {
 				bars[idx].Finish()
 				return
 			}
+
 		}(i)
 	}
 	wg.Wait()

@@ -5,6 +5,7 @@ import "github.com/spf13/cobra"
 func init() {
 	Cmd.AddCommand(fixTimeCmd)
 	Cmd.AddCommand(screenshotCmd)
+	Cmd.AddCommand(sinkCmd)
 }
 
 // Cmd .

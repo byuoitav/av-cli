@@ -14,13 +14,15 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/fatih/color"
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/viper"
 )
 
 var (
-	accessToken string
-	once        sync.Once
+	toks tokens
+	once sync.Once
 )
 
 type config struct {
@@ -30,47 +32,88 @@ type config struct {
 	port         int
 }
 
-type authCodeResponse struct {
+type tokens struct {
 	RefreshToken string `json:"refresh_token"`
 	AccessToken  string `json:"access_token"`
 	IDToken      string `json:"id_token"`
 }
 
-// GetToken .
-func GetToken() string {
+// IDInfo .
+type IDInfo struct {
+	PersonID           string `json:"person_id"`
+	Surname            string `json:"surname"`
+	PreferredFirstName string `json:"preferred_first_name"`
+	RestOfName         string `json:"rest_of_name"`
+	NetID              string `json:"net_id"`
+	Suffix             string `json:"suffix"`
+	SortName           string `json:"sort_name"`
+	Prefix             string `json:"prefix"`
+	SurnamePosition    string `json:"surname_position"`
+	BYUID              string `json:"byu_id"`
+
+	// because they don't send back a normal jwt..?
+	Audience []string `json:"aud,omitempty"`
+	jwt.StandardClaims
+}
+
+// GetAccessToken .
+func GetAccessToken() string {
+	return getToks().AccessToken
+}
+
+// GetIDInfo .
+func GetIDInfo() (*IDInfo, error) {
+	id := getToks().IDToken
+
+	parser := &jwt.Parser{
+		SkipClaimsValidation: false,
+	}
+
+	token, _, err := parser.ParseUnverified(id, &IDInfo{})
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse jwt: %s", err)
+	}
+
+	if claims, ok := token.Claims.(*IDInfo); ok {
+		return claims, nil
+	}
+
+	return nil, fmt.Errorf("claims not found in jwt. claims: %+v", token.Claims)
+}
+
+func getToks() tokens {
 	once.Do(func() {
 		var err error
-		accessToken, err = getToken()
+		toks, err = getTokens()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 	})
 
-	return accessToken
+	return toks
 }
 
-func getToken() (string, error) {
+func getTokens() (tokens, error) {
 	config := config{
 		clientID:     "nkvyVWVBiqOKs_o7dLkUF2KHv2Ya",
-		clientSecret: "HR_ssS_Kv1q_9xq1j_wJr1F8Fn0a", // i'm allowed to do this :)
+		clientSecret: "HR_ssS_Kv1q_9xq1j_wJr1F8Fn0a", // i'm allowed to do this ;)
 		redirect:     "http://localhost:7444",
 		port:         7444,
 	}
 
-	var toks authCodeResponse
 	var err error
 
 	if len(viper.GetString("wso2.refresh-token")) > 0 {
 		// get a new token
-		toks, err = getTokens("refresh", viper.GetString("wso2.refresh-token"), config)
+		toks, err = doTokenRequest("refresh", viper.GetString("wso2.refresh-token"), config)
 		if err != nil {
 			if strings.Contains(err.Error(), "Provided Authorization Grant is invalid.") {
 				// invalidate the current refresh token, it's probably invalid
 				viper.Set("wso2.refresh-token", "")
 				viper.WriteConfig()
 			} else {
-				return "", fmt.Errorf("unable to get tokens: %s", err)
+				return tokens{}, fmt.Errorf("unable to get tokens: %s", err)
 			}
 		}
 	}
@@ -80,9 +123,9 @@ func getToken() (string, error) {
 		code := getAuthCode(config)
 
 		// get the refresh token
-		toks, err = getTokens("authcode", code, config)
+		toks, err = doTokenRequest("authcode", code, config)
 		if err != nil {
-			return "", fmt.Errorf("unable to get tokens: %s", err)
+			return tokens{}, fmt.Errorf("unable to get tokens: %s", err)
 		}
 	}
 
@@ -95,17 +138,17 @@ func getToken() (string, error) {
 		fmt.Printf("unable to save refresh token: %s\n", err)
 	}
 
-	return toks.AccessToken, nil
+	return toks, nil
 }
 
 func getAuthCode(config config) string {
 	codeChan := make(chan string)
+	stopSrv := make(chan struct{})
 
 	url := fmt.Sprintf("https://api.byu.edu/authorize?response_type=code&client_id=%s&redirect_uri=%s&scope=openid", config.clientID, config.redirect)
 
 	// run the server
 	go func() {
-		stop := make(chan struct{})
 		srv := http.Server{
 			Addr: fmt.Sprintf(":%v", config.port),
 		}
@@ -114,7 +157,7 @@ func getAuthCode(config config) string {
 			code, ok := r.URL.Query()["code"]
 			if !ok {
 				io.WriteString(w, fmt.Sprintf(`
-				<html>
+<html>
 					<script>
 						window.onload = function() {
 							window.location.replace("%s")
@@ -129,7 +172,7 @@ func getAuthCode(config config) string {
 			}
 
 			io.WriteString(w, `
-			<html>
+<html>
 				<script>
 					window.onload = function() {
 						window.close();
@@ -141,22 +184,41 @@ func getAuthCode(config config) string {
 			</html>
 			`)
 			codeChan <- code[len(code)-1]
-			stop <- struct{}{}
+			stopSrv <- struct{}{}
 		})
 
 		go srv.ListenAndServe()
-		<-stop
+		<-stopSrv
 		srv.Close()
 	}()
 
-	OpenBrowser(url)
+	err := OpenBrowser(url)
+	if err != nil {
+		stopSrv <- struct{}{}
+
+		go func() {
+			fmt.Printf("Unable to open browser: %s. Copy link below into browser, and paste the auth code from the url.\n%s\n", err, color.New(color.FgBlue, color.Underline, color.Bold).Sprint(url))
+
+			codePrompt := promptui.Prompt{
+				Label: "Auth Code from URL",
+			}
+
+			c, err := codePrompt.Run()
+			if err != nil {
+				fmt.Printf("unable to get auth code: %s\n", err)
+				os.Exit(1)
+			}
+
+			codeChan <- c
+		}()
+	}
 
 	code := <-codeChan
 	return code
 }
 
-func getTokens(method, auth string, config config) (authCodeResponse, error) {
-	ret := authCodeResponse{}
+func doTokenRequest(method, auth string, config config) (tokens, error) {
+	ret := tokens{}
 	data := url.Values{}
 
 	switch method {
@@ -203,7 +265,7 @@ func getTokens(method, auth string, config config) (authCodeResponse, error) {
 }
 
 // OpenBrowser .
-func OpenBrowser(url string) {
+func OpenBrowser(url string) error {
 	var err error
 	switch runtime.GOOS {
 	case "linux":
@@ -217,7 +279,8 @@ func OpenBrowser(url string) {
 	}
 
 	if err != nil {
-		fmt.Printf("unable to open browser (%s). copy and paste the below url into a browser:\n", err)
-		fmt.Printf("%s\n", color.New(color.FgBlue, color.Underline, color.Bold).Sprint(url))
+		return err
 	}
+
+	return nil
 }

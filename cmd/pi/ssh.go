@@ -50,7 +50,6 @@ func getSigners() ([]ssh.Signer, error) {
 
 	return signers, nil
 }
-
 func getPasswordFunc(label string, maxTries int) func() (string, error) {
 	tries := 0
 
