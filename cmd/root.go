@@ -18,7 +18,7 @@ import (
 var cfgFile string
 
 func init() {
-	cobra.OnInitialize(initConfig)
+	cobra.OnInitialize(initConfig, initUpdate)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.av.yaml)")
 	rootCmd.PersistentFlags().StringP("refresh-token", "t", "", "a wso2 refresh token to use")
 
@@ -29,6 +29,7 @@ func init() {
 	viper.AutomaticEnv()
 
 	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(updateCmd)
 	rootCmd.AddCommand(float.Cmd)
 	rootCmd.AddCommand(swab.Cmd)
 	rootCmd.AddCommand(pi.Cmd)

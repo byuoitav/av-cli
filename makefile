@@ -1,6 +1,13 @@
 NAME=av
 IMPORT_PATH=github.com/byuoitav/av-cli
 VERSION=v0.9.1
+BUILD_TIME := $(shell date)
+GIT_COMMIT := $(shell git log -1 --pretty="%h")
+
+DIST_BUILD=go build -ldflags "-s -w \
+		   -X \"$(IMPORT_PATH)/cmd.version=$(VERSION)\" \
+		   -X \"$(IMPORT_PATH)/cmd.buildTime=$(BUILD_TIME)\" \
+		   -X \"$(IMPORT_PATH)/cmd.gitCommit=$(GIT_COMMIT)\""
 
 .PHONY: all dist install clean
 
@@ -10,22 +17,19 @@ all:
 install:
 	go build -o $(NAME) . && mv $(NAME) ${GOPATH}/bin
 
-dist: # dist/$(NAME)-amd64-linux dist/$(NAME)-amd64-darwin dist/$(NAME)-amd64-windows
+dist: dist/$(NAME)-linux-amd64 dist/$(NAME)-darwin-amd64 dist/$(NAME)-windows-amd64
 	@echo Binaries for version $(VERSION) are located in ./dist/
 
-dist/$(NAME)-amd64-linux:
-	env GOOS=linux GOARCH=amd64 go build -ldflags "-X $(IMPORT_PATH)/cmd.version=$(VERSION)" -o dist/$(NAME)-amd64-linux
+dist/$(NAME)-linux-amd64:
+	env GOOS=linux GOARCH=amd64 $(DIST_BUILD) -o dist/$(NAME)-linux-amd64
 
-dist/$(NAME)-amd64-darwin:
-	env GOOS=darwin GOARCH=amd64 go build -ldflags "-X $(IMPORT_PATH)/cmd.version=$(VERSION)" -o dist/$(NAME)-amd64-darwin
+dist/$(NAME)-darwin-amd64:
+	env GOOS=darwin GOARCH=amd64 $(DIST_BUILD) -o dist/$(NAME)-darwin-amd64
 
-dist/$(NAME)-amd64-windows:
-	env GOOS=windows GOARCH=amd64 go build -ldflags "-X $(IMPORT_PATH)/cmd.version=$(VERSION)" -o dist/$(NAME)-amd64-windows
+dist/$(NAME)-windows-amd64:
+	env GOOS=windows GOARCH=amd64 $(DIST_BUILD) -o dist/$(NAME)-windows-amd64
 
 clean:
 	go clean
 	rm -rf dist
-	rm -f $(NAME)-amd64-linux
-	rm -f $(NAME)-amd64-darwin
-	rm -f $(NAME)-amd64-windows
 	rm -f ${GOPATH}/bin/$(NAME)

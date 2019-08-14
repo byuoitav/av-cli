@@ -7,12 +7,12 @@ require (
 	github.com/byuoitav/common v0.0.0-20190806211430-113882103812
 	github.com/byuoitav/pb v2.0.7+incompatible
 	github.com/cheggaaa/pb v1.0.28
+	github.com/cheggaaa/pb/v3 v3.0.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fatih/color v1.7.0
 	github.com/labstack/echo v3.3.10+incompatible // indirect
 	github.com/labstack/gommon v0.2.9 // indirect
 	github.com/manifoldco/promptui v0.3.2
-	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/spf13/cobra v0.0.5
