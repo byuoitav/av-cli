@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/byuoitav/av-cli/cmd/args"
+	"github.com/byuoitav/av-cli/cmd/pi"
 	"github.com/byuoitav/common/db"
 	"github.com/spf13/cobra"
 )
@@ -75,5 +76,31 @@ func swab(ctx context.Context, address string) error {
 	}
 
 	fmt.Printf("%s\tUI refreshed\n", address)
+
+	client, err := pi.NewSSHClient(address)
+	if err != nil {
+		fmt.Printf("unable to ssh into %s: %s", address, err)
+		os.Exit(1)
+	}
+	defer client.Close()
+
+	session, err := client.NewSession()
+	if err != nil {
+		fmt.Printf("unable to start new session: %s", err)
+		client.Close()
+		os.Exit(1)
+	}
+
+	fmt.Printf("Restarting DMM...\n")
+
+	bytes, err := session.CombinedOutput("sudo reboot")
+	if err != nil {
+		fmt.Printf("unable to reboot: %s\noutput on pi:\n%s\n", err, bytes)
+		client.Close()
+		os.Exit(1)
+	}
+	client.Close()
+	fmt.Printf("Success\n")
+
 	return nil
 }
