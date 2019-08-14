@@ -25,6 +25,7 @@ func init() {
 	viper.SetEnvPrefix("avcli")
 	viper.AutomaticEnv()
 
+	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(float.Cmd)
 	rootCmd.AddCommand(swab.Cmd)
 	rootCmd.AddCommand(pi.Cmd)
