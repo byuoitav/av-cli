@@ -17,24 +17,28 @@ var swabBuildingCmd = &cobra.Command{
 	Short: "Refreshes the database/ui of all the pi's in a building",
 	Long:  "Forces a replication of the couch database, and causes the ui to refresh shortly after",
 	Args:  args.ValidBuildingID,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Swabbing %s\n", args[0])
+	Run: func(cmd *cobra.Command, arg []string) {
+		fmt.Printf("Swabbing %s\n", arg[0])
 
-		// TODO add a select for the database?
+		db, _, err := args.GetDB()
+		if err != nil {
+			fmt.Printf("unable to get database: %v", err)
+			os.Exit(1)
+		}
 
-		err := swabBuilding(context.TODO(), args[0])
+		err = swabBuilding(context.TODO(), db, arg[0])
 		if err != nil {
 			fmt.Printf("Couldn't swab building: %v", err)
 			os.Exit(1)
 		}
 		// look it up in the database
 
-		fmt.Printf("Successfully swabbed the %s\n", args[0])
+		fmt.Printf("Successfully swabbed the %s\n", arg[0])
 	},
 }
 
-func swabBuilding(ctx context.Context, buildingID string) error {
-	rooms, err := db.GetDB().GetRoomsByBuilding(buildingID)
+func swabBuilding(ctx context.Context, db db.DB, buildingID string) error {
+	rooms, err := db.GetRoomsByBuilding(buildingID)
 	if err != nil {
 		return fmt.Errorf("unable to get rooms from database: %s", err)
 	}
@@ -51,7 +55,7 @@ func swabBuilding(ctx context.Context, buildingID string) error {
 		go func(idx int) {
 			defer wg.Done()
 			fmt.Printf("Swabbing %s\n", rooms[idx].ID)
-			err := swabRoom(context.TODO(), rooms[idx].ID)
+			err := swabRoom(ctx, db, rooms[idx].ID)
 			if err != nil {
 				fmt.Printf("unable to swab %s: %s\n", rooms[idx].ID, err)
 				return

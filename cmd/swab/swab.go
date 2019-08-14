@@ -9,7 +9,6 @@ import (
 
 	"github.com/byuoitav/av-cli/cmd/args"
 	"github.com/byuoitav/av-cli/cmd/pi"
-	"github.com/byuoitav/common/db"
 	"github.com/spf13/cobra"
 )
 
@@ -24,13 +23,17 @@ var Cmd = &cobra.Command{
 	Short: "Refreshes the database/ui of a pi",
 	Long:  "Forces a replication of the couch database, and causes the ui to refresh shortly after",
 	Args:  args.ValidDeviceID,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Swabbing %s\n", args[0])
+	Run: func(cmd *cobra.Command, arg []string) {
+		fmt.Printf("Swabbing %s\n", arg[0])
 
-		// TODO add a select for the database?
+		db, _, err := args.GetDB()
+		if err != nil {
+			fmt.Printf("unable to get database: %v", err)
+			os.Exit(1)
+		}
 
 		// look it up in the database
-		device, err := db.GetDB().GetDevice(args[0])
+		device, err := db.GetDevice(arg[0])
 		if err != nil {
 			fmt.Printf("unable to get device from database: %s\n", err)
 			os.Exit(1)
