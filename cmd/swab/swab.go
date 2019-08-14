@@ -93,7 +93,7 @@ func swab(ctx context.Context, address string) error {
 
 	fmt.Printf("Restarting DMM...\n")
 
-	bytes, err := session.CombinedOutput("sudo reboot")
+	bytes, err := session.CombinedOutput("sudo systemctl restart device-monitoring.service")
 	if err != nil {
 		fmt.Printf("unable to reboot: %s\noutput on pi:\n%s\n", err, bytes)
 		client.Close()
