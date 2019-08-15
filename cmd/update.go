@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"runtime"
 	"strings"
 	"time"
@@ -19,11 +20,27 @@ import (
 )
 
 func initUpdate() {
+	switch runtime.GOOS {
+	case "windows":
+		// delete a .old file if there is one
+		if bin, _ := os.Executable(); len(bin) > 0 {
+			if _, err := os.Stat(bin + ".old"); err == nil {
+				if err = os.Remove(bin + ".old"); err != nil {
+					fmt.Printf("unable to remove old version of %s: %s\n", color.GreenString("av"), err)
+				} else {
+					fmt.Printf("Removed an old version of %s found on your computer.\n", color.GreenString("av"))
+				}
+			}
+		}
+	}
+
 	if shouldTryUpdate() {
 		err := update()
 		if err != nil {
 			fmt.Printf("unable to update: %s\n\n", err)
 		}
+
+		os.Exit(0) // so that the initial command doesn't run
 	}
 }
 
@@ -194,15 +211,15 @@ func updateSelf(asset asset) error {
 		Timeout: 30 * time.Second,
 	}
 
-	fileName := fmt.Sprintf("av-%v", asset.ID)
-	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0777)
+	// get a temp file
+	newBin, err := ioutil.TempFile("", "av")
 	if err != nil {
-		return fmt.Errorf("unable to open file to open: %s", err)
+		return fmt.Errorf("unable to create file for new version: %s", err)
 	}
-	defer file.Close()
+	defer newBin.Close()
 
 	bar := pb.Full.Start64(asset.Size)
-	barWriter := bar.NewProxyWriter(file)
+	barWriter := bar.NewProxyWriter(newBin)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -220,14 +237,32 @@ func updateSelf(asset asset) error {
 
 	bar.Finish()
 
-	binName, err := os.Executable()
+	bin, err := os.Executable()
 	if err != nil {
 		return fmt.Errorf("unable to get current executable name: %s", err)
 	}
 
-	err = os.Rename(fileName, binName)
-	if err != nil {
-		return fmt.Errorf("unable to get move new version to correct path: %s", err)
+	switch opsys := runtime.GOOS; opsys {
+	case "linux", "darwin":
+		err = os.Rename(newBin.Name(), bin)
+		if err != nil {
+			return fmt.Errorf("unable to replace old version with new version: %s", err)
+		}
+	case "windows":
+		// screw you windows
+		err = os.Rename(bin, bin+".old")
+		if err != nil {
+			return fmt.Errorf("unable to move old version: %s", err)
+		}
+
+		cmd := []string{"cmd.exe", "/C", "start", "/b", "cmd.exe", "/C", "timeout", "/t", "1", "/nobreak", "&&", "start", "/b", "cmd.exe", "/C", "move", newBin.Name(), bin}
+
+		err = exec.Command(cmd[0], cmd[1:]...).Run()
+		if err != nil {
+			return fmt.Errorf("unable to replace old version with new version: %s", err)
+		}
+	default:
+		return fmt.Errorf("not sure how to update binary for %s. please replace %s with %s to finish the update", opsys, bin, newBin.Name())
 	}
 
 	return nil
