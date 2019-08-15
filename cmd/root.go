@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"runtime"
 
 	"github.com/byuoitav/av-cli/cmd/api"
 	"github.com/byuoitav/av-cli/cmd/aws"
@@ -10,6 +11,7 @@ import (
 	"github.com/byuoitav/av-cli/cmd/pi"
 	"github.com/byuoitav/av-cli/cmd/smee"
 	"github.com/byuoitav/av-cli/cmd/swab"
+	"github.com/fatih/color"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -18,6 +20,12 @@ import (
 var cfgFile string
 
 func init() {
+	// disable color if windows
+	switch runtime.GOOS {
+	case "windows":
+		color.NoColor = true
+	}
+
 	cobra.OnInitialize(initConfig, initUpdate)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.av.yaml)")
 	rootCmd.PersistentFlags().StringP("refresh-token", "t", "", "a wso2 refresh token to use")

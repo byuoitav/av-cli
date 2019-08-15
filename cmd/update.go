@@ -20,15 +20,21 @@ import (
 )
 
 func initUpdate() {
+	var delExt string
 	switch runtime.GOOS {
+	case "linux", "darwin":
+		delExt = ".tmp"
 	case "windows":
-		// delete a .old file if there is one
+		delExt = ".old"
+	}
+
+	if len(delExt) > 0 {
 		if bin, _ := os.Executable(); len(bin) > 0 {
-			if _, err := os.Stat(bin + ".old"); err == nil {
-				if err = os.Remove(bin + ".old"); err != nil {
-					fmt.Printf("unable to remove old version of %s: %s\n", color.GreenString("av"), err)
+			if _, err := os.Stat(bin + delExt); err == nil {
+				if err = os.Remove(bin + delExt); err != nil {
+					fmt.Printf("unable to remove extra version of %s: %s\n", color.GreenString("av"), err)
 				} else {
-					fmt.Printf("Removed an old version of %s found on your computer.\n", color.GreenString("av"))
+					fmt.Printf("Removed an extra version of %s found on your computer.\n", color.GreenString("av"))
 				}
 			}
 		}
@@ -207,11 +213,6 @@ func updateSelf(asset asset) error {
 
 	req.Header.Add("Accept", "application/octet-stream")
 
-	client := http.Client{
-		Timeout: 30 * time.Second,
-	}
-
-	// get a temp file
 	newBin, err := ioutil.TempFile("", "av")
 	if err != nil {
 		return fmt.Errorf("unable to create file for new version: %s", err)
@@ -220,6 +221,8 @@ func updateSelf(asset asset) error {
 
 	bar := pb.Full.Start64(asset.Size)
 	barWriter := bar.NewProxyWriter(newBin)
+
+	client := http.Client{}
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -242,11 +245,16 @@ func updateSelf(asset asset) error {
 		return fmt.Errorf("unable to get current executable name: %s", err)
 	}
 
-	switch opsys := runtime.GOOS; opsys {
+	switch runtime.GOOS {
 	case "linux", "darwin":
-		err = os.Rename(newBin.Name(), bin)
+		err = move(newBin.Name(), bin)
 		if err != nil {
 			return fmt.Errorf("unable to replace old version with new version: %s", err)
+		}
+
+		err = os.Chmod(bin, 0755)
+		if err != nil {
+			return fmt.Errorf("unable to make new version executable. please run `chmod +x %s`", bin)
 		}
 	case "windows":
 		// screw you windows
@@ -262,7 +270,38 @@ func updateSelf(asset asset) error {
 			return fmt.Errorf("unable to replace old version with new version: %s", err)
 		}
 	default:
-		return fmt.Errorf("not sure how to update binary for %s. please replace %s with %s to finish the update", opsys, bin, newBin.Name())
+		return fmt.Errorf("not sure how to update binary for %s. please replace %s with %s to finish the update", runtime.GOOS, bin, newBin.Name())
+	}
+
+	return nil
+}
+
+// makes sure that files can be moved across partitions (rename doesn't work in that case)
+func move(src, dst string) error {
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return fmt.Errorf("unable to open src file: %s", err)
+	}
+
+	dstFile, err := os.Create(dst + ".tmp")
+	if err != nil {
+		return fmt.Errorf("unable to open dst file: %s", err)
+	}
+	defer dstFile.Close()
+
+	_, err = io.Copy(dstFile, srcFile)
+	if err != nil {
+		return fmt.Errorf("unable to copy src->dst: %s", err)
+	}
+
+	err = os.Remove(src)
+	if err != nil {
+		return fmt.Errorf("unable to remove src file: %s", err)
+	}
+
+	err = os.Rename(dst+".tmp", dst)
+	if err != nil {
+		return fmt.Errorf("unable to rename copied file: %s", err)
 	}
 
 	return nil
