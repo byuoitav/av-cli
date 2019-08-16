@@ -1,6 +1,6 @@
 NAME=av
 IMPORT_PATH=github.com/byuoitav/av-cli
-VERSION=v1.0.2
+VERSION=v1.0.3
 BUILD_TIME := $(shell date)
 GIT_COMMIT := $(shell git log -1 --pretty="%h")
 
