@@ -122,7 +122,6 @@ func floatsquadronWithBar(db db.DB, roomID, designation string, bar *pb.Progress
 		go func(idx int) {
 			defer wg.Done()
 
-			bar.Increment()
 			err := floatship(toDeploy[idx].ID, designation)
 			if err != nil {
 				failedList = fmt.Sprintf("%v%v: %v\n", failedList, toDeploy[idx].ID, err)
