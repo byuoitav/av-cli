@@ -14,7 +14,7 @@ import (
 var fleetCmd = &cobra.Command{
 	Use:   "fleet [building ID]",
 	Short: "Deploys to the building with the given ID",
-	Args:  arg.ValidRoomID,
+	Args:  arg.ValidBuildingID,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("Deploying to %s\n", args[0])
 
