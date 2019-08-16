@@ -44,11 +44,7 @@ func floatfleet(db db.DB, buildingID, designation string) error {
 
 	var bars []*pb.ProgressBar
 	for _, room := range rooms {
-		devs, err := db.GetDevicesByRoom(room.ID)
-		if err != nil {
-			return fmt.Errorf("couldn't get devices for room %v: %v", room.ID, err)
-		}
-		bar := pb.New(len(devs) + 6).SetWidth(50).Format(fmt.Sprintf("%s [\x00=\x00>\x00-\x00]", room.ID))
+		bar := pb.New(6).SetWidth(50).Format(fmt.Sprintf("%s [\x00=\x00>\x00-\x00]", room.ID))
 		bar.ShowCounters = false
 		bars = append(bars, bar)
 

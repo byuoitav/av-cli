@@ -2,7 +2,6 @@ package float
 
 import (
 	"fmt"
-	"strings"
 	"sync"
 
 	arg "github.com/byuoitav/av-cli/cmd/args"
@@ -102,7 +101,7 @@ func floatsquadronWithBar(db db.DB, roomID, designation string, bar *pb.Progress
 
 	var toDeploy []structs.Device
 	for _, dev := range devices {
-		if idParts := strings.Split(dev.ID, "-"); strings.Contains(strings.ToUpper(idParts[2]), "CP") {
+		if dev.Type.ID == "Pi3" || dev.Type.ID == "DividerSensors" || dev.Type.ID == "LabAttendance" || dev.Type.ID == "Pi-STB" || dev.Type.ID == "SchedulingPanel" || dev.Type.ID == "TimeClock" {
 			toDeploy = append(toDeploy, dev)
 		}
 	}
@@ -123,6 +122,7 @@ func floatsquadronWithBar(db db.DB, roomID, designation string, bar *pb.Progress
 		go func(idx int) {
 			defer wg.Done()
 
+			bar.Increment()
 			err := floatship(toDeploy[idx].ID, designation)
 			if err != nil {
 				failedList = fmt.Sprintf("%v%v: %v\n", failedList, toDeploy[idx].ID, err)
@@ -142,5 +142,6 @@ func floatsquadronWithBar(db db.DB, roomID, designation string, bar *pb.Progress
 
 	//6
 	bar.Increment()
+	bar.Finish()
 	return nil
 }

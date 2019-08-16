@@ -50,9 +50,13 @@ func floatship(deviceID, designation string) error {
 	}
 
 	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("couldn't read the response body: %v", err)
+	}
 
 	if resp.StatusCode/100 != 2 {
-		return fmt.Errorf("non-200 status code: %v", resp.StatusCode)
+		return fmt.Errorf("non-200 status code: %v - %s", resp.StatusCode, body)
 	}
 
 	fmt.Printf("Deployment successful\n")
