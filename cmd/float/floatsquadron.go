@@ -47,7 +47,7 @@ func floatsquadron(db db.DB, roomID, designation string) error {
 	var toDeploy []structs.Device
 	var bars []*pb.ProgressBar
 	for _, dev := range devices {
-		if idParts := strings.Split(dev.ID, "-"); strings.Contains(strings.ToUpper(idParts[2]), "CP") {
+		if dev.Type.ID == "Pi3" || dev.Type.ID == "DividerSensors" || dev.Type.ID == "LabAttendance" || dev.Type.ID == "Pi-STB" || dev.Type.ID == "SchedulingPanel" || dev.Type.ID == "TimeClock" {
 			toDeploy = append(toDeploy, dev)
 			bar := pb.New(6).SetWidth(50).Format(fmt.Sprintf("%s [\x00=\x00>\x00-\x00]", dev.ID))
 			bar.ShowCounters = false
