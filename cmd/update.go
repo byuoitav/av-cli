@@ -45,8 +45,6 @@ func initUpdate() {
 		if err != nil {
 			fmt.Printf("unable to update: %s\n\n", err)
 		}
-
-		os.Exit(0) // so that the initial command doesn't run
 	}
 }
 
@@ -154,6 +152,7 @@ func update() error {
 	}
 
 	fmt.Printf("Successfully updated.\n")
+	os.Exit(0)
 	return nil
 }
 
