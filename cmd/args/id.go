@@ -59,7 +59,6 @@ func Valid(cmd *cobra.Command, args []string) error {
 
 // GetDB returns the database of the user's selection
 func GetDB() (db.DB, string, error) {
-
 	if os.Getenv("DB_ADDRESS") == "" {
 		return nil, "", fmt.Errorf("DB_ADDRESS not set")
 	}

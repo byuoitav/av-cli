@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 
 	arg "github.com/byuoitav/av-cli/cmd/args"
 	"github.com/byuoitav/av-cli/cmd/wso2"
@@ -22,6 +23,7 @@ var shipCmd = &cobra.Command{
 		_, result, err := arg.GetDB()
 		if err != nil {
 			fmt.Printf("prompt failed %v\n", err)
+			os.Exit(1)
 		}
 
 		bar := pb.New(6).SetWidth(50).Format(fmt.Sprintf("%s [\x00=\x00>\x00-\x00]", args[0]))
