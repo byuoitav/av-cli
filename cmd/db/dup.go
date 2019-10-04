@@ -43,6 +43,7 @@ var dupCmd = &cobra.Command{
 		src := args[1]
 
 		// TODO make sure destination building is valid
+		// TODO make sure dest room doesn't exist already
 
 		// get docs from current room
 		room, err := db.GetRoom(src)
