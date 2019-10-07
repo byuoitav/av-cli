@@ -194,6 +194,8 @@ var dupCmd = &cobra.Command{
 
 				newPreset.Commands.InputDifferent = append(newPreset.Commands.InputDifferent, newCmd)
 			}
+
+			newUIConfig.Presets = append(newUIConfig.Presets, newPreset)
 		}
 
 		// write docs as tmp file
