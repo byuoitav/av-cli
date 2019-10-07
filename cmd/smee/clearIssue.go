@@ -56,7 +56,7 @@ var closeIssueCmd = &cobra.Command{
 
 		req.Header.Add("content-type", "application/json")
 		req.Header.Add("x-av-access-key", key)
-		req.Header.Add("x-av-user", id.BYUID)
+		req.Header.Add("x-av-user", id.NetID)
 
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
