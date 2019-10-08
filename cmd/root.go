@@ -31,7 +31,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.av.yaml)")
 	rootCmd.PersistentFlags().StringP("refresh-token", "t", "", "a wso2 refresh token to use")
 
-	viper.BindPFlag("wso2.refresh-token", rootCmd.PersistentFlags().Lookup("refresh-token"))
+	_ = viper.BindPFlag("wso2.refresh-token", rootCmd.PersistentFlags().Lookup("refresh-token"))
 
 	viper.SetConfigType("yaml")
 	viper.SetEnvPrefix("avcli")

@@ -207,34 +207,34 @@ var dupCmd = &cobra.Command{
 		}
 
 		// write all of the docs to stdin
-		f.Write([]byte(fmt.Sprintf("******Room doc******\n")))
+		_, _ = f.Write([]byte(fmt.Sprintf("******Room doc******\n")))
 		buf, err := json.MarshalIndent(newRoom, "", "  ")
 		if err != nil {
-			f.Write([]byte(fmt.Sprintf("unable to marshal room doc: %s\n", err)))
+			_, _ = f.Write([]byte(fmt.Sprintf("unable to marshal room doc: %s\n", err)))
 		} else {
-			f.Write(buf)
+			_, _ = f.Write(buf)
 		}
 
-		f.Write([]byte(fmt.Sprintf("\n\n******Device docs******\n")))
+		_, _ = f.Write([]byte(fmt.Sprintf("\n\n******Device docs******\n")))
 		for _, device := range newDevices {
 			buf, err = json.MarshalIndent(device, "", "  ")
 			if err != nil {
-				f.Write([]byte(fmt.Sprintf("unable to marshal device doc for %q: %s\n\n", device.ID, err)))
+				_, _ = f.Write([]byte(fmt.Sprintf("unable to marshal device doc for %q: %s\n\n", device.ID, err)))
 			} else {
-				f.Write(buf)
-				f.Write([]byte("\n\n"))
+				_, _ = f.Write(buf)
+				_, _ = f.Write([]byte("\n\n"))
 			}
 		}
 
-		f.Write([]byte(fmt.Sprintf("\n\n******UIConfig doc******\n")))
+		_, _ = f.Write([]byte(fmt.Sprintf("\n\n******UIConfig doc******\n")))
 		buf, err = json.MarshalIndent(newUIConfig, "", "  ")
 		if err != nil {
-			f.Write([]byte(fmt.Sprintf("unable to marshal ui config doc: %s\n", err)))
+			_, _ = f.Write([]byte(fmt.Sprintf("unable to marshal ui config doc: %s\n", err)))
 		} else {
-			f.Write(buf)
+			_, _ = f.Write(buf)
 		}
 
-		f.Write([]byte("\n"))
+		_, _ = f.Write([]byte("\n"))
 		f.Close()
 
 		// validate the docs

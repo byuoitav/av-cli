@@ -55,7 +55,7 @@ func floatfleet(db db.DB, buildingID, designation string) error {
 	failedCount := 0
 	failedList := ""
 	pool := pb.NewPool(bars...)
-	pool.Start()
+	_ = pool.Start()
 
 	for i := range rooms {
 		wg.Add(1)
@@ -74,7 +74,7 @@ func floatfleet(db db.DB, buildingID, designation string) error {
 		}(i)
 	}
 	wg.Wait()
-	pool.Stop()
+	_ = pool.Stop()
 
 	fmt.Printf("%v failures:\n%v\n", failedCount, failedList)
 

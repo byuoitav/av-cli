@@ -16,7 +16,7 @@ import (
 
 func init() {
 	closeIssueCmd.Flags().StringP("access-key", "k", "", "the access key to use to authenticate against smee")
-	viper.BindPFlag("smee.access-key", closeIssueCmd.Flags().Lookup("access-key"))
+	_ = viper.BindPFlag("smee.access-key", closeIssueCmd.Flags().Lookup("access-key"))
 }
 
 var closeIssueCmd = &cobra.Command{
