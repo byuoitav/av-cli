@@ -111,7 +111,7 @@ func getTokens() (tokens, error) {
 			if strings.Contains(err.Error(), "Provided Authorization Grant is invalid.") {
 				// invalidate the current refresh token, it's probably invalid
 				viper.Set("wso2.refresh-token", "")
-				viper.WriteConfig()
+				_ = viper.WriteConfig()
 			} else {
 				return tokens{}, fmt.Errorf("unable to get tokens: %s", err)
 			}
@@ -156,7 +156,7 @@ func getAuthCode(config config) string {
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 			code, ok := r.URL.Query()["code"]
 			if !ok {
-				io.WriteString(w, fmt.Sprintf(`
+				_, _ = io.WriteString(w, fmt.Sprintf(`
 <html>
 					<script>
 						window.onload = function() {
@@ -171,7 +171,7 @@ func getAuthCode(config config) string {
 				return
 			}
 
-			io.WriteString(w, `
+			_, _ = io.WriteString(w, `
 <html>
 				<script>
 					window.onload = function() {
@@ -187,7 +187,10 @@ func getAuthCode(config config) string {
 			stopSrv <- struct{}{}
 		})
 
-		go srv.ListenAndServe()
+		go func() {
+			_ = srv.ListenAndServe()
+		}()
+
 		<-stopSrv
 		srv.Close()
 	}()

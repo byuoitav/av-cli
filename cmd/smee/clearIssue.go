@@ -16,7 +16,7 @@ import (
 
 func init() {
 	closeIssueCmd.Flags().StringP("access-key", "k", "", "the access key to use to authenticate against smee")
-	viper.BindPFlag("smee.access-key", closeIssueCmd.Flags().Lookup("access-key"))
+	_ = viper.BindPFlag("smee.access-key", closeIssueCmd.Flags().Lookup("access-key"))
 }
 
 var closeIssueCmd = &cobra.Command{
@@ -56,7 +56,7 @@ var closeIssueCmd = &cobra.Command{
 
 		req.Header.Add("content-type", "application/json")
 		req.Header.Add("x-av-access-key", key)
-		req.Header.Add("x-av-user", id.BYUID)
+		req.Header.Add("x-av-user", id.NetID)
 
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {

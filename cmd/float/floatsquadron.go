@@ -58,7 +58,7 @@ func floatsquadron(db db.DB, roomID, designation string) error {
 	failedCount := 0
 	failedList := ""
 	pool := pb.NewPool(bars...)
-	pool.Start()
+	_ = pool.Start()
 	for i := range toDeploy {
 		wg.Add(1)
 
@@ -76,7 +76,7 @@ func floatsquadron(db db.DB, roomID, designation string) error {
 		}(i)
 	}
 	wg.Wait()
-	pool.Stop()
+	_ = pool.Stop()
 	fmt.Printf("%v failures:\n%v\n", failedCount, failedList)
 
 	return nil

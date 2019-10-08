@@ -1,15 +1,6 @@
 package float
 
-import (
-	"fmt"
-	"sync"
-
-	arg "github.com/byuoitav/av-cli/cmd/args"
-	"github.com/byuoitav/common/db"
-	"github.com/cheggaaa/pb"
-	"github.com/spf13/cobra"
-)
-
+/*
 const (
 	dev  = "development"
 	stg  = "stage"
@@ -92,3 +83,4 @@ func floatarmada(db db.DB, designation string) error {
 
 	return nil
 }
+*/

@@ -52,7 +52,11 @@ var updateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Updates av-cli to the newest version",
 	Run: func(cmd *cobra.Command, args []string) {
-		update()
+		err := update()
+		if err != nil {
+			fmt.Printf("unable to update: %s\n", err)
+			os.Exit(1)
+		}
 	},
 }
 
@@ -91,7 +95,7 @@ func shouldTryUpdate() bool {
 		return false
 	}
 
-	if time.Now().Sub(viper.GetTime("last-update-check")).Hours() > 24 {
+	if time.Since(viper.GetTime("last-update-check")).Hours() > 24 {
 		return true
 	}
 
@@ -108,7 +112,7 @@ func update() error {
 
 	defer func() {
 		viper.Set("last-update-check", time.Now())
-		viper.WriteConfig()
+		_ = viper.WriteConfig()
 	}()
 
 	if release.Tag == version {
