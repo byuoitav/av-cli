@@ -265,7 +265,7 @@ var dupCmd = &cobra.Command{
 
 		_, err = db.CreateRoom(newRoom)
 		if err != nil {
-			fmt.Printf("failed to create %s (room): %s\n", room.ID, err)
+			fmt.Printf("failed to create %s (room): %s\n", newRoom.ID, err)
 			os.Exit(1)
 		}
 		fmt.Printf("Created %s (room)\n", newRoom.ID)
