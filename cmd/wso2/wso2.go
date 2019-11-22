@@ -159,7 +159,7 @@ func getAuthCode(config config) string {
 		fmt.Println(id)
 	}
 	id = url.QueryEscape(id)
-	url := fmt.Sprintf("https://api.byu.edu/authorize?response_type=code&client_id=%s&redirect_uri=%s&scope=openid,%s", config.clientID, config.redirect, fmt.Sprintf("device_%s", id))
+	url := fmt.Sprintf("https://api.byu.edu/authorize?response_type=code&client_id=%s&redirect_uri=%s&scope=openid %s", config.clientID, config.redirect, fmt.Sprintf("device_%s", id))
 
 	// run the server
 	go func() {
