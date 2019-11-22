@@ -68,7 +68,7 @@ func GetDB() (db.DB, string, error) {
 
 	dbPrompt := promptui.Select{
 		Label: "Database",
-		Items: []string{"development", "stage", "production"},
+		Items: []string{"production", "stage", "development"},
 	}
 
 	_, result, err := dbPrompt.Run()
