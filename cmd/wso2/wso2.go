@@ -1,11 +1,13 @@
 package wso2
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -145,7 +147,18 @@ func getAuthCode(config config) string {
 	codeChan := make(chan string)
 	stopSrv := make(chan struct{})
 
-	url := fmt.Sprintf("https://api.byu.edu/authorize?response_type=code&client_id=%s&redirect_uri=%s&scope=openid", config.clientID, config.redirect)
+	id, err := os.Hostname()
+	if err != nil {
+		b := make([]byte, 16)
+		_, err := rand.Read(b)
+		if err != nil {
+			log.Fatal(err)
+		}
+		id = fmt.Sprintf("%x-%x-%x-%x-%x",
+			b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
+		fmt.Println(id)
+	}
+	url := fmt.Sprintf("https://api.byu.edu/authorize?response_type=code&client_id=%s&redirect_uri=%s&scope=openid,%s", config.clientID, config.redirect, fmt.Sprintf("device_%s", id))
 
 	// run the server
 	go func() {
@@ -195,7 +208,7 @@ func getAuthCode(config config) string {
 		srv.Close()
 	}()
 
-	err := OpenBrowser(url)
+	err = OpenBrowser(url)
 	if err != nil {
 		stopSrv <- struct{}{}
 
