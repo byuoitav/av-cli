@@ -1,6 +1,7 @@
 package wso2
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/json"
 	"errors"
@@ -15,6 +16,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/fatih/color"
@@ -197,6 +199,7 @@ func getAuthCode(config config) string {
 				</body>
 			</html>
 			`)
+
 			codeChan <- code[len(code)-1]
 			stopSrv <- struct{}{}
 		})
@@ -214,7 +217,7 @@ func getAuthCode(config config) string {
 		stopSrv <- struct{}{}
 
 		go func() {
-			fmt.Printf("Unable to open browser: %s. Copy link below into browser, and paste the auth code from the url.\n%s\n", err, color.New(color.FgBlue, color.Underline, color.Bold).Sprint(url))
+			fmt.Printf("\n\nunable to open browser: %s\nCopy link below into browser, and paste the auth code from the url.\n%s\n", err, color.New(color.FgBlue, color.Underline, color.Bold).Sprint(url))
 
 			codePrompt := promptui.Prompt{
 				Label: "Auth Code from URL",
@@ -283,21 +286,30 @@ func doTokenRequest(method, auth string, config config) (tokens, error) {
 
 // OpenBrowser .
 func OpenBrowser(url string) error {
-	var err error
 	switch runtime.GOOS {
 	case "linux":
-		err = exec.Command("xdg-open", url).Start()
-	case "windows":
-		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
-	case "darwin":
-		err = exec.Command("open", url).Start()
-	default:
-		err = fmt.Errorf("don't know how to open browser on %s", runtime.GOOS)
-	}
+		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
+		defer cancel()
 
-	if err != nil {
+		var exiterr *exec.ExitError
+		cmd := exec.CommandContext(ctx, "xdg-open", url)
+
+		err := cmd.Run()
+		if errors.As(err, &exiterr) {
+			switch exiterr.ExitCode() {
+			case 3:
+				return errors.New("no tool found to open url's")
+			default:
+				return fmt.Errorf("xdg-open failed with status code %d", exiterr.ExitCode())
+			}
+		}
+
 		return err
+	case "windows":
+		return exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
+	case "darwin":
+		return exec.Command("open", url).Start()
+	default:
+		return fmt.Errorf("don't know how to open browser on %s", runtime.GOOS)
 	}
-
-	return nil
 }
