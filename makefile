@@ -3,14 +3,14 @@ OWNER := byuoitav
 PKG := github.com/${OWNER}/${NAME}
 PKG_LIST := $(shell go list ${PKG}/...)
 # figure out how to get version from somewhere else
-VERSION := v1.0.4
+VERSION := v1.0.6
 BUILD_TIME := $(shell date)
 GIT_COMMIT := $(shell git log -1 --pretty="%h")
 
 DIST_BUILD=go build -ldflags "-s -w \
-		   -X \"$(IMPORT_PATH)/cmd.version=$(VERSION)\" \
-		   -X \"$(IMPORT_PATH)/cmd.buildTime=$(BUILD_TIME)\" \
-		   -X \"$(IMPORT_PATH)/cmd.gitCommit=$(GIT_COMMIT)\""
+		   -X \"$(PKG)/cmd.version=$(VERSION)\" \
+		   -X \"$(PKG)/cmd.buildTime=$(BUILD_TIME)\" \
+		   -X \"$(PKG)/cmd.gitCommit=$(GIT_COMMIT)\""
 
 .PHONY: all lint deps test test-cov install dist clean
 
