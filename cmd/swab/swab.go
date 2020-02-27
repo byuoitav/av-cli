@@ -66,7 +66,7 @@ func swab(ctx context.Context, address string) error {
 	fmt.Printf("%s\tReplication started\n", address)
 	time.Sleep(3 * time.Second) // TODO make sure this doesn't overrun ctx
 
-	req, err = http.NewRequest("PUT", fmt.Sprintf("http://%s:8888/refresh", address), nil)
+	req, err = http.NewRequest("PUT", fmt.Sprintf("http://%s:80/refresh", address), nil)
 	if err != nil {
 		return fmt.Errorf("unable to build refresh request: %s", err)
 	}
