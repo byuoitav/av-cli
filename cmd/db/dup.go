@@ -33,7 +33,15 @@ var dupCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("Select source database:\n")
 		db, _, err := arg.GetDB()
+		if err != nil {
+			fmt.Printf("prompt failed: %s\n", err)
+			os.Exit(1)
+		}
+
+		fmt.Printf("\nSelect dest database:\n")
+		dbDst, _, err := arg.GetDB()
 		if err != nil {
 			fmt.Printf("prompt failed: %s\n", err)
 			os.Exit(1)
@@ -263,14 +271,14 @@ var dupCmd = &cobra.Command{
 		// post all of the docs!
 		fmt.Printf("Creating room...\n")
 
-		_, err = db.CreateRoom(newRoom)
+		_, err = dbDst.CreateRoom(newRoom)
 		if err != nil {
 			fmt.Printf("failed to create %s (room): %s\n", newRoom.ID, err)
 			os.Exit(1)
 		}
 		fmt.Printf("Created %s (room)\n", newRoom.ID)
 
-		_, err = db.CreateUIConfig(newRoom.ID, newUIConfig)
+		_, err = dbDst.CreateUIConfig(newRoom.ID, newUIConfig)
 		if err != nil {
 			fmt.Printf("failed to create %s (uiconfig): %s\n", newUIConfig.ID, err)
 			os.Exit(1)
@@ -278,7 +286,7 @@ var dupCmd = &cobra.Command{
 		fmt.Printf("Created %s (uiconfig)\n", newUIConfig.ID)
 
 		for _, device := range newDevices {
-			_, err = db.CreateDevice(device)
+			_, err = dbDst.CreateDevice(device)
 			if err != nil {
 				fmt.Printf("failed to create %s (device): %s\n", device.ID, err)
 				os.Exit(1)
