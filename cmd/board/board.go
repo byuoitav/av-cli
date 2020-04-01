@@ -17,7 +17,6 @@ var Cmd = &cobra.Command{
 	Long:  "open an ssh connection to a pi with the ability to enter commands",
 	Args:  args.ValidDeviceID,
 	Run: func(cmd *cobra.Command, args []string) {
-		//err := setupSession(args[0])
 		sshArgs := []string{"ssh", fmt.Sprintf("pi@%s.byu.edu", args[0])}
 		sshPath, err := exec.LookPath("ssh")
 		if err != nil {
