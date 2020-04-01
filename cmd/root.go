@@ -7,6 +7,7 @@ import (
 
 	"github.com/byuoitav/av-cli/cmd/api"
 	"github.com/byuoitav/av-cli/cmd/aws"
+	"github.com/byuoitav/av-cli/cmd/board"
 	"github.com/byuoitav/av-cli/cmd/db"
 	"github.com/byuoitav/av-cli/cmd/float"
 	"github.com/byuoitav/av-cli/cmd/pi"
@@ -46,6 +47,7 @@ func init() {
 	rootCmd.AddCommand(aws.Cmd)
 	rootCmd.AddCommand(api.Cmd)
 	rootCmd.AddCommand(db.Cmd)
+	rootCmd.AddCommand(board.Cmd)
 }
 
 func initConfig() {
