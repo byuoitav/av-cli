@@ -146,8 +146,15 @@ var dupCmd = &cobra.Command{
 
 		// presets
 		for _, preset := range uiconfig.Presets {
+			newName := preset.Name
+			split := strings.Split(src, "-")
+			if strings.HasPrefix(preset.Name, split[0]) {
+				newSplit := strings.Split(dst, "-")
+				newName = strings.Replace(newName, split[0], newSplit[0], 1)
+				newName = strings.Replace(newName, split[1], newSplit[1], 1)
+			}
 			newPreset := structs.Preset{
-				Name:                    preset.Name,
+				Name:                    newName,
 				Icon:                    preset.Icon,
 				Displays:                preset.Displays,
 				AudioDevices:            preset.AudioDevices,
