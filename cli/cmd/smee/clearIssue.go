@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/byuoitav/av-cli/cmd/args"
-	"github.com/byuoitav/av-cli/cmd/wso2"
+	"github.com/byuoitav/av-cli/cli/cmd/args"
+	"github.com/byuoitav/av-cli/cli/cmd/wso2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

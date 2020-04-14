@@ -7,7 +7,7 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/byuoitav/av-cli/cmd/args"
+	"github.com/byuoitav/av-cli/cli/cmd/args"
 	"github.com/byuoitav/common/db"
 	"github.com/spf13/cobra"
 )

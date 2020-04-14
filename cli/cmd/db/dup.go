@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"strings"
 
-	arg "github.com/byuoitav/av-cli/cmd/args"
+	arg "github.com/byuoitav/av-cli/cli/cmd/args"
 	"github.com/byuoitav/common/structs"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"

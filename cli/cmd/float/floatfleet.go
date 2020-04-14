@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	arg "github.com/byuoitav/av-cli/cmd/args"
+	arg "github.com/byuoitav/av-cli/cli/cmd/args"
 	"github.com/byuoitav/common/db"
 	"github.com/cheggaaa/pb"
 	"github.com/spf13/cobra"
