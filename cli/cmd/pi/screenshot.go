@@ -2,6 +2,7 @@ package pi
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -14,6 +15,7 @@ import (
 	"github.com/byuoitav/av-cli/cli/cmd/wso2"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -32,8 +34,7 @@ var screenshotCmd = &cobra.Command{
 		ctx, cancel := context.WithTimeout(cmd.Context(), 15*time.Second)
 		defer cancel()
 
-		// TODO this url should be a constant
-		conn, err := grpc.DialContext(ctx, "localhost:9999", grpc.WithInsecure())
+		conn, err := grpc.DialContext(ctx, viper.GetString("api"), grpc.WithInsecure())
 		if err != nil {
 			fail("unable to connect to api: %s\n", err)
 		}
@@ -110,7 +111,7 @@ var screenshotCmd = &cobra.Command{
 		}
 
 		<-ctx.Done()
-		if err := ctx.Err(); err != nil {
+		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
 			fmt.Printf("Timed out waiting for you to view the screenshot.\n")
 		}
 	},

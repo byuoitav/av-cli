@@ -23,9 +23,11 @@ func init() {
 
 	cobra.OnInitialize(initConfig, initUpdate)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.av.yaml)")
+	rootCmd.PersistentFlags().StringP("api", "a", "", "url of the av-cli API")
 	rootCmd.PersistentFlags().StringP("refresh-token", "t", "", "a wso2 refresh token to use")
 
 	_ = viper.BindPFlag("wso2.refresh-token", rootCmd.PersistentFlags().Lookup("refresh-token"))
+	_ = viper.BindPFlag("api", rootCmd.PersistentFlags().Lookup("api"))
 
 	viper.SetConfigType("yaml")
 	viper.SetEnvPrefix("avcli")
@@ -48,7 +50,7 @@ func initConfig() {
 	} else {
 		home, err := homedir.Dir()
 		if err != nil {
-			fmt.Printf("unable to initalize config: %s", err)
+			fmt.Printf("unable to initialize config: %s", err)
 			os.Exit(1)
 		}
 
@@ -81,6 +83,13 @@ func initConfig() {
 			os.Exit(1)
 		}
 	}
+
+	// set default values
+	if len(viper.GetString("api")) > 0 {
+		viper.WriteConfig()
+	}
+
+	viper.SetDefault("api", "cli.av.byu.edu:443")
 }
 
 var rootCmd = &cobra.Command{
