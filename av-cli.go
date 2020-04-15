@@ -14,6 +14,7 @@ import (
 //go:generate protoc -I ./ --go_out=plugins=grpc:./ ./av-cli.proto
 
 type Server struct {
+	Logger Logger
 }
 
 func (s *Server) Swab(*ID, AvCli_SwabServer) error {
