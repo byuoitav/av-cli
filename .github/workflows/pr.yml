@@ -31,6 +31,6 @@ jobs:
                   curl -fLO "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/${PROTOC_ZIP}"
                   unzip ${PROTOC_ZIP}
                   mv bin/protoc $(go env GOPATH)/bin/
-                  mv include/* ./av-cli/
+                  mv include/* ./
 
                   make

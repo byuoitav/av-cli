@@ -33,7 +33,7 @@ jobs:
                   curl -fLO "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/${PROTOC_ZIP}"
                   unzip ${PROTOC_ZIP}
                   mv bin/protoc $(go env GOPATH)/bin/
-                  mv include/* ./av-cli/
+                  mv include/* ./
 
                   export DOCKER_USERNAME=$GITHUB_ACTOR
                   export DOCKER_PASSWORD=${{secrets.GITHUB_TOKEN}}
