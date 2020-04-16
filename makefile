@@ -89,13 +89,13 @@ ifneq (${COMMIT_HASH},${VERSION})
 	@docker build -f dockerfile --build-arg NAME=${NAME}-api-linux-amd64 -t ${DOCKER_URL}/${OWNER}/${NAME}/api:${VERSION} dist
 
 	@echo Building container ${DOCKER_URL}/${OWNER}/${NAME}/slack:${VERSION}
-	@docker build -f dockerfile --build-arg NAME=${NAME}-slack-linux-arm -t ${DOCKER_URL}/${OWNER}/${NAME}/slack:${VERSION} dist
+	@docker build -f dockerfile --build-arg NAME=${NAME}-slack-linux-amd64 -t ${DOCKER_URL}/${OWNER}/${NAME}/slack:${VERSION} dist
 else
 	@echo Building container ${DOCKER_URL}/${OWNER}/${NAME}/api-dev:${COMMIT_HASH}
 	@docker build -f dockerfile --build-arg NAME=${NAME}-api-linux-amd64 -t ${DOCKER_URL}/${OWNER}/${NAME}/api-dev:${COMMIT_HASH} dist
 
 	@echo Building container ${DOCKER_URL}/${OWNER}/${NAME}/slack-dev:${COMMIT_HASH}
-	@docker build -f dockerfile --build-arg NAME=${NAME}-slack-linux-arm -t ${DOCKER_URL}/${OWNER}/${NAME}/slack-dev:${COMMIT_HASH} dist
+	@docker build -f dockerfile --build-arg NAME=${NAME}-slack-linux-amd64 -t ${DOCKER_URL}/${OWNER}/${NAME}/slack-dev:${COMMIT_HASH} dist
 endif
 
 deploy: docker
