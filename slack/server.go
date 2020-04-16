@@ -2,34 +2,31 @@ package main
 
 import (
 	"context"
-	"crypto/x509"
 	"fmt"
 	"net"
-	"net/http"
 	"os"
 	"time"
 
-	avcli "github.com/byuoitav/av-cli"
+	"github.com/byuoitav/av-cli/slack/internal/slackcli"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/spf13/pflag"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"google.golang.org/grpc"
 )
 
 func main() {
 	var (
 		port          int
 		logLevel      int8
-		avcliApiUrl   string
-		avcliApiToken string
+		avcliAPIAddr  string
+		avcliAPIToken string
 	)
 
 	pflag.IntVarP(&port, "port", "P", 8080, "port to run lazarette on")
 	pflag.Int8VarP(&logLevel, "log-level", "L", 0, "level to log at. refer to https://godoc.org/go.uber.org/zap/zapcore#Level for options")
-	pflag.StringVarP(&avcliApiUrl, "avcli-api", "a", "cli.av.byu.edu:443", "host/port of the avcli API")
-	pflag.StringVarP(&avcliApiToken, "avcli-token", "t", "", "token to use for request to the avcli API")
+	pflag.StringVarP(&avcliAPIAddr, "avcli-api", "a", "cli.av.byu.edu:443", "address of the avcli API")
+	pflag.StringVarP(&avcliAPIToken, "avcli-token", "t", "", "token to use for request to the avcli API")
 	pflag.Parse()
 
 	// build the logger
@@ -68,37 +65,22 @@ func main() {
 	log := lPlain.Sugar()
 
 	// build the api client
-	pool, err := x509.SystemCertPool()
-	if err != nil {
-		log.Fatalf("unable to get system cert pool: %s", err)
-	}
-
-	opts := []grpc.DialOption{
-		getTransportSecurityDialOption(pool),
-	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	conn, err := grpc.DialContext(ctx, avcliApiUrl, opts...)
+	slackCli, err := slackcli.NewClient(ctx, avcliAPIAddr, avcliAPIToken)
 	if err != nil {
-		log.Fatalf("unable to connect to avcli API: %s", err)
+		log.Fatalf("failed to build slack-cli client: %s", err)
 	}
 
-	slack := &slack{
-		cli:   avcli.NewAvCliClient(conn),
-		token: avcliApiToken,
-	}
+	slackCli.Logger = log
 
 	// build the server
 	e := echo.New()
 	e.Pre(middleware.RemoveTrailingSlash())
 
-	e.GET("/healthz", func(c echo.Context) error {
-		return c.String(http.StatusOK, "healthy")
-	})
-
-	e.POST("/", slack.handleRequest)
+	e.GET("/healthz", healthHandler)
+	e.POST("/", handleSlackRequests(slackCli))
 
 	// start the server
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))

@@ -1,4 +1,4 @@
-package main
+package slackcli
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 
 type auth struct {
 	token string
-	netID string
+	user  string
 }
 
 func (auth) RequireTransportSecurity() bool {
@@ -20,7 +20,7 @@ func (auth) RequireTransportSecurity() bool {
 func (a auth) GetRequestMetadata(ctx context.Context, in ...string) (map[string]string, error) {
 	return map[string]string{
 		"authorization": "Bearer " + a.token,
-		"username":      a.netID,
+		"x-user":        a.user,
 	}, nil
 }
 

@@ -1,9 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net"
+	"net/http"
 	"os"
 	"strings"
 
@@ -19,17 +23,25 @@ import (
 
 var (
 	errMissingMetadata = status.Errorf(codes.InvalidArgument, "missing metadata")
-	errInvalidToken    = status.Errorf(codes.Unauthenticated, "invalid token")
+	errMissingToken    = status.Errorf(codes.Unauthenticated, "missing token")
+	errMissingUser     = status.Errorf(codes.Unauthenticated, "missing user")
+	errNotAuthorized   = status.Errorf(codes.Unauthenticated, "you are not authorized to do that")
 )
 
 func main() {
 	var (
-		port     int
-		logLevel int8
+		port        int
+		logLevel    int8
+		authAddr    string
+		authToken   string
+		disableAuth bool
 	)
 
 	pflag.IntVarP(&port, "port", "P", 8080, "port to run lazarette on")
 	pflag.Int8VarP(&logLevel, "log-level", "L", 0, "level to log at. refer to https://godoc.org/go.uber.org/zap/zapcore#Level for options")
+	pflag.StringVar(&authAddr, "auth-addr", "", "address of the auth server")
+	pflag.StringVar(&authToken, "auth-token", "", "authorization token to use when calling the auth server")
+	pflag.BoolVar(&disableAuth, "disable-auth", false, "disables auth checks")
 	pflag.Parse()
 
 	// build the logger
@@ -67,13 +79,23 @@ func main() {
 
 	log := lPlain.Sugar()
 
+	// build opa client
+	authClient := &authClient{
+		Address:  authAddr,
+		Token:    authToken,
+		Disabled: disableAuth,
+	}
+
+	if !authClient.Disabled && len(authClient.Address) == 0 {
+		log.Fatalf("auth is enabled, but opa URL is not set")
+	}
+
 	// build the grpc server
 	cli := &avcli.Server{
 		Logger: log,
 	}
 
-	// TODO add stream interceptor if we add a streaming request
-	server := grpc.NewServer(grpc.UnaryInterceptor(unaryCheckToken))
+	server := grpc.NewServer(grpc.UnaryInterceptor(authClient.unaryServerInterceptor()))
 	avcli.RegisterAvCliServer(server, cli)
 
 	// bind to a port
@@ -89,42 +111,93 @@ func main() {
 	}
 }
 
-func validToken(auth []string) bool {
-	if len(auth) == 0 {
-		return false
-	}
-
-	token := strings.TrimPrefix(auth[0], "Bearer ")
-
-	// TODO check opa
-	return token == "secret"
+type authClient struct {
+	Address  string
+	Token    string
+	Disabled bool
 }
 
-func validUser(username []string) bool {
-	if len(username) == 0 {
-		return false
-	}
-
-	fmt.Printf("username: %s\n", username[0])
-
-	// TODO check opa
-	return true
+type authRequest struct {
+	Token  string `json:"token"`
+	User   string `json:"user"`
+	Method string `json:"methhead"` // i've been watching too much breaking bad
 }
 
-func unaryCheckToken(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		return nil, errMissingMetadata
-	}
+type authResponse struct {
+	DecisionID string `json:"decision_id"`
+	Result     struct {
+		Allow bool `json:"allow"`
+	} `json:"result"`
+}
 
-	// TODO these funcs should return an error
-	if !validToken(md["authorization"]) {
-		return nil, errInvalidToken
-	}
+func (client *authClient) unaryServerInterceptor() grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		if client.Disabled {
+			return handler(ctx, req)
+		}
 
-	if !validUser(md["username"]) {
-		return nil, fmt.Errorf("user %q is not authorized to call %s", md["username"][0], info.FullMethod)
-	}
+		md, ok := metadata.FromIncomingContext(ctx)
+		if !ok {
+			return nil, errMissingMetadata
+		}
 
-	return handler(ctx, req)
+		auth := md["authorization"]
+		user := md["x-user"]
+
+		if len(auth) == 0 {
+			return nil, errMissingToken
+		}
+
+		if len(user) == 0 {
+			return nil, errMissingUser
+		}
+
+		// build opa request
+		authReq := authRequest{
+			Token:  strings.TrimPrefix(auth[0], "Bearer "),
+			User:   user[0],
+			Method: info.FullMethod,
+		}
+
+		reqBody, err := json.Marshal(authReq)
+		if err != nil {
+			return nil, fmt.Errorf("unable to marshal request body: %w", err)
+		}
+
+		fmt.Printf("sending this request: %s\n", reqBody)
+		url := fmt.Sprintf("https://%s/v1/data/avcli", client.Address)
+
+		httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(reqBody))
+		if err != nil {
+			return nil, fmt.Errorf("unable to build request: %w", err)
+		}
+
+		httpReq.Header.Add("authorization", client.Token)
+
+		resp, err := http.DefaultClient.Do(httpReq)
+		if err != nil {
+			return nil, fmt.Errorf("unable to do request: %w", err)
+		}
+		defer resp.Body.Close()
+
+		respBody, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("unable to read response: %w", err)
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("got a %v from OPA. response:\n%s", resp.StatusCode, respBody)
+		}
+
+		var authResp authResponse
+		if err := json.Unmarshal(respBody, &authResp); err != nil {
+			return nil, fmt.Errorf("unable to unmarshal response: %w", err)
+		}
+
+		if !authResp.Result.Allow {
+			return nil, errNotAuthorized
+		}
+
+		return handler(ctx, req)
+	}
 }
