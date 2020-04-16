@@ -1,17 +1,7 @@
 package float
 
-import (
-	"fmt"
-	"sync"
-
-	arg "github.com/byuoitav/av-cli/cli/cmd/args"
-	"github.com/byuoitav/common/db"
-	"github.com/byuoitav/common/structs"
-	"github.com/cheggaaa/pb"
-	"github.com/spf13/cobra"
-)
-
 // squadronCmd .
+/*
 var squadronCmd = &cobra.Command{
 	Use:   "squadron [room ID]",
 	Short: "Deploys to the room with the given ID",
@@ -144,3 +134,4 @@ func floatsquadronWithBar(db db.DB, roomID, designation string, bar *pb.Progress
 	bar.Finish()
 	return nil
 }
+*/

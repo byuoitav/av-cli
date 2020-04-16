@@ -1,18 +1,7 @@
 package float
 
-import (
-	"fmt"
-	"io/ioutil"
-	"net/http"
-	"os"
-
-	arg "github.com/byuoitav/av-cli/cli/cmd/args"
-	"github.com/byuoitav/av-cli/cli/cmd/wso2"
-	"github.com/cheggaaa/pb"
-	"github.com/spf13/cobra"
-)
-
 // shipCmd .
+/*
 var shipCmd = &cobra.Command{
 	Use:   "ship [device ID]",
 	Short: "Deploys to the device with the given ID",
@@ -106,3 +95,4 @@ func floatshipWithBar(deviceID, designation string, bar *pb.ProgressBar) error {
 	bar.Finish()
 	return nil
 }
+*/

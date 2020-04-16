@@ -1,16 +1,7 @@
 package float
 
-import (
-	"fmt"
-	"sync"
-
-	arg "github.com/byuoitav/av-cli/cli/cmd/args"
-	"github.com/byuoitav/common/db"
-	"github.com/cheggaaa/pb"
-	"github.com/spf13/cobra"
-)
-
 // fleetCmd .
+/*
 var fleetCmd = &cobra.Command{
 	Use:   "fleet [building ID]",
 	Short: "Deploys to the building with the given ID",
@@ -80,3 +71,4 @@ func floatfleet(db db.DB, buildingID, designation string) error {
 
 	return nil
 }
+*/

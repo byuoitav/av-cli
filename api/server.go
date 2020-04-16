@@ -75,7 +75,9 @@ func main() {
 		fmt.Printf("failed to build zap logger: %s\n", err)
 		os.Exit(1)
 	}
-	defer lPlain.Sync()
+	defer func() {
+		_ = lPlain.Sync()
+	}()
 
 	log := lPlain.Sugar()
 
