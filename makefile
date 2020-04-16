@@ -78,7 +78,7 @@ build: deps
 	# build the slackbot
 	@echo
 	@echo Building slackbot for linux-amd64
-	@cd api && env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o ../dist/${NAME}-slack-linux-amd64 ${SLACK_PKG}
+	@cd slack && env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o ../dist/${NAME}-slack-linux-amd64 ${SLACK_PKG}
 
 	@echo
 	@echo Build output is located in ./dist/.
