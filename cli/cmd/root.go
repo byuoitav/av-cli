@@ -86,7 +86,10 @@ func initConfig() {
 
 	// set default values
 	if len(viper.GetString("api")) > 0 {
-		viper.WriteConfig()
+		if err := viper.WriteConfig(); err != nil {
+			fmt.Printf("unable to save values to config: %s\n", err)
+			os.Exit(1)
+		}
 	}
 
 	viper.SetDefault("api", "cli.av.byu.edu:443")
