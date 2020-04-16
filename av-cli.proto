@@ -1,0 +1,34 @@
+syntax = "proto3";
+package avcli;
+
+import "google/protobuf/empty.proto";
+
+service AvCli {
+	rpc Swab(ID) returns (stream SwabResult) {}
+	rpc Float(ID) returns (stream FloatResult) {}
+	rpc Screenshot(ID) returns (ScreenshotResult) {}
+	rpc DuplicateRoom(DuplicateRoomRequest) returns (google.protobuf.Empty) {}
+}
+
+message ID {
+	string id = 1;
+}
+
+message SwabResult {
+	string id = 1;
+	string error = 2;
+}
+
+message FloatResult {
+	string id = 1;
+	string error = 2;
+}
+
+message ScreenshotResult {
+	bytes photo = 1;
+}
+
+message DuplicateRoomRequest {
+	string fromID = 1;
+	string toID = 2;
+}
