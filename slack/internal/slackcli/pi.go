@@ -29,9 +29,9 @@ func (c *Client) Screenshot(ctx context.Context, req Request, id string) error {
 			default:
 				return s.Err()
 			}
-
-			return err
 		}
+
+		return err
 	case result == nil:
 		return errors.New("this is weird")
 	}
