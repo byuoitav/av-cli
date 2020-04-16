@@ -16,12 +16,12 @@ API_PKG_LIST := $(shell cd api && go list ${API_PKG}/...)
 CLI_PKG_LIST := $(shell cd cli && go list ${CLI_PKG}/...)
 SLACK_PKG_LIST := $(shell cd slack && go list ${SLACK_PKG}/...)
 
-DIST_BUILD=go build -ldflags "-s -w \
+BUILD_CLI=go build -ldflags "-s -w \
 		   -X \"$(PKG)/cmd.version=$(VERSION)\" \
 		   -X \"$(PKG)/cmd.buildTime=$(BUILD_TIME)\" \
 		   -X \"$(PKG)/cmd.gitCommit=$(COMMIT_HASH)\""
 
-.PHONY: all deps build test test-cov clean lint
+.PHONY: all deps build test test-cov clean lint install
 
 all: clean build
 
@@ -41,7 +41,12 @@ test:
 #	@cd cli && go test -coverprofile=coverage.txt -covermode=atomic ${CLI_PKG_LIST}
 #	@cd slack && go test -coverprofile=coverage.txt -covermode=atomic ${SLACK_PKG_LIST}
 
+# must have protoc installed
 deps:
+	@echo Generating protobuf files...
+	@go get -u github.com/golang/protobuf/protoc-gen-go
+	@go generate ./...
+
 	@cd api && go mod download
 	@cd cli && go mod download
 	@cd slack && go mod download
@@ -60,15 +65,15 @@ build: deps
 	# build the cli
 	@echo
 	@echo Building CLI for linux-amd64
-	@cd cli && env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o ../dist/${NAME}-cli-linux-amd64 ${CLI_PKG}
+	@cd cli && env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(BUILD_CLI) -o ../dist/${NAME}-cli-linux-amd64 ${CLI_PKG}
 
 	@echo
 	@echo Building CLI for darwin-amd64
-	@cd cli && env CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -v -o ../dist/${NAME}-cli-darwin-amd64 ${CLI_PKG}
+	@cd cli && env CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(BUILD_CLI) -o ../dist/${NAME}-cli-darwin-amd64 ${CLI_PKG}
 
 	@echo
 	@echo Building CLI for windows-amd64
-	@cd cli && env CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -v -o ../dist/${NAME}-cli-windows-amd64 ${CLI_PKG}
+	@cd cli && env CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(BUILD_CLI) -o ../dist/${NAME}-cli-windows-amd64 ${CLI_PKG}
 
 	# build the slackbot
 	@echo
@@ -83,17 +88,37 @@ ifneq (${COMMIT_HASH},${VERSION})
 	@echo Building container ${DOCKER_URL}/${OWNER}/${NAME}/api:${VERSION}
 	@docker build -f dockerfile --build-arg NAME=${NAME}-api-linux-amd64 -t ${DOCKER_URL}/${OWNER}/${NAME}/api:${VERSION} dist
 
-	@echo Building container ${DOCKER_URL}/${OWNER}/${NAME}/slackbot:${VERSION}
-	@docker build -f dockerfile --build-arg NAME=${NAME}-slack-linux-arm -t ${DOCKER_URL}/${OWNER}/${NAME}/slackbot:${VERSION} dist
+	@echo Building container ${DOCKER_URL}/${OWNER}/${NAME}/slack:${VERSION}
+	@docker build -f dockerfile --build-arg NAME=${NAME}-slack-linux-arm -t ${DOCKER_URL}/${OWNER}/${NAME}/slack:${VERSION} dist
 else
-	@echo Building container ${DOCKER_URL}/${OWNER}/${NAME}/${NAME}-dev:${COMMIT_HASH}
-	@docker build -f dockerfile --build-arg NAME=${NAME}-linux-amd64 -t ${DOCKER_URL}/${OWNER}/${NAME}/${NAME}-dev:${COMMIT_HASH} dist
+	@echo Building container ${DOCKER_URL}/${OWNER}/${NAME}/api-dev:${COMMIT_HASH}
+	@docker build -f dockerfile --build-arg NAME=${NAME}-api-linux-amd64 -t ${DOCKER_URL}/${OWNER}/${NAME}/api-dev:${COMMIT_HASH} dist
 
-	@echo Building container ${DOCKER_URL}/${OWNER}/${NAME}/${NAME}-arm-dev:${COMMIT_HASH}
-	@docker build -f dockerfile --build-arg NAME=${NAME}-linux-arm -t ${DOCKER_URL}/${OWNER}/${NAME}/${NAME}-arm-dev:${COMMIT_HASH} dist
+	@echo Building container ${DOCKER_URL}/${OWNER}/${NAME}/slack-dev:${COMMIT_HASH}
+	@docker build -f dockerfile --build-arg NAME=${NAME}-slack-linux-arm -t ${DOCKER_URL}/${OWNER}/${NAME}/slack-dev:${COMMIT_HASH} dist
+endif
+
+deploy: docker
+	@echo Logging into ${DOCKER_URL}
+	@docker login ${DOCKER_URL} -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+
+ifneq (${COMMIT_HASH},${VERSION})
+	@echo Pushing container ${DOCKER_URL}/${OWNER}/${NAME}/api:${VERSION}
+	@docker push ${DOCKER_URL}/${OWNER}/${NAME}/api:${VERSION}
+
+	@echo Pushing container ${DOCKER_URL}/${OWNER}/${NAME}/slack:${VERSION}
+	@docker push ${DOCKER_URL}/${OWNER}/${NAME}/slack:${VERSION}
+else
+	@echo Pushing container ${DOCKER_URL}/${OWNER}/${NAME}/api-dev:${COMMIT_HASH}
+	@docker push ${DOCKER_URL}/${OWNER}/${NAME}/api-dev:${COMMIT_HASH}
+
+	@echo Pushing container ${DOCKER_URL}/${OWNER}/${NAME}/slack-dev:${COMMIT_HASH}
+	@docker push ${DOCKER_URL}/${OWNER}/${NAME}/slack-dev:${COMMIT_HASH}
 endif
 
 clean:
-	go clean
-	rm -rf dist
+	@cd api && go clean
+	@cd cli && go clean
+	@cd slack && go clean
 	rm -f ${GOPATH}/bin/$(NAME)
+	rm -rf dist

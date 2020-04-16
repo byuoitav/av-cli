@@ -1,0 +1,36 @@
+name: Build
+on:
+    pull_request:
+        branches:
+            - master
+
+jobs:
+    build:
+        name: Build
+        runs-on: ubuntu-latest
+        steps:
+            - name: Set up go
+              uses: actions/setup-go@v1
+              with:
+                  go-version: 1.14.x
+
+            - name: Set up node
+              uses: actions/setup-node@v1
+
+            - name: Check out code
+              uses: actions/checkout@v1
+
+            - name: Build
+              run: |
+                  mkdir --parents $(go env GOPATH)/bin/
+                  export PATH=$PATH:$(go env GOPATH)/bin # temp fix, https://github.com/actions/setup-go/issues/14
+
+                  # install protoc
+                  export PROTOC_VERSION=3.9.2
+                  export PROTOC_ZIP=protoc-${PROTOC_VERSION}-linux-x86_64.zip
+                  curl -fLO "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/${PROTOC_ZIP}"
+                  unzip ${PROTOC_ZIP}
+                  mv bin/protoc $(go env GOPATH)/bin/
+                  mv include/* ./av-cli/
+
+                  make
