@@ -12,7 +12,7 @@ ifneq ($(shell git describe --exact-match --tags HEAD 2> /dev/null),)
 	VERSION = $(shell git describe --exact-match --tags HEAD)
 endif
 
-API_PKG_LIST := $(shell cd api && go list ${API_PKG}/...)
+API_PKG_LIST := $(shell go list ${API_PKG}/...)
 CLI_PKG_LIST := $(shell cd cli && go list ${CLI_PKG}/...)
 SLACK_PKG_LIST := $(shell cd slack && go list ${SLACK_PKG}/...)
 
@@ -26,14 +26,23 @@ BUILD_CLI=go build -ldflags "-s -w \
 all: clean build
 
 lint:
+	@echo Linting api
 	@golangci-lint run --tests=false
-	@cd api && golangci-lint run --tests=false
+
+	@echo Linting cli
 	@cd cli && golangci-lint run --tests=false
+
+	@echo Linting slack
 	@cd slack && golangci-lint run --tests=false
 
 test:
-	@cd api && go test -v ${API_PKG_LIST}
+	@echo Testing api
+	@go test -v ${API_PKG_LIST}
+
+	@echo Testing cli
 	@cd cli && go test -v ${CLI_PKG_LIST}
+
+	@echo Testing slack
 	@cd slack && go test -v ${SLACK_PKG_LIST}
 
 #test-cov:
@@ -47,7 +56,7 @@ deps:
 	@go get -u github.com/golang/protobuf/protoc-gen-go
 	@go generate ./...
 
-	@cd api && go mod download
+	@go mod download
 	@cd cli && go mod download
 	@cd slack && go mod download
 
@@ -57,12 +66,10 @@ deps:
 build: deps
 	@mkdir -p dist
 
-	# build the api
 	@echo
 	@echo Building API for linux-amd64
-	@cd api && env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o ../dist/${NAME}-api-linux-amd64 ${API_PKG}
+	@env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o ./dist/${NAME}-api-linux-amd64 ${API_PKG}/api
 
-	# build the cli
 	@echo
 	@echo Building CLI for linux-amd64
 	@cd cli && env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(BUILD_CLI) -o ../dist/${NAME}-cli-linux-amd64 ${CLI_PKG}
@@ -75,7 +82,6 @@ build: deps
 	@echo Building CLI for windows-amd64
 	@cd cli && env CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(BUILD_CLI) -o ../dist/${NAME}-cli-windows-amd64 ${CLI_PKG}
 
-	# build the slackbot
 	@echo
 	@echo Building slackbot for linux-amd64
 	@cd slack && env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o ../dist/${NAME}-slack-linux-amd64 ${SLACK_PKG}

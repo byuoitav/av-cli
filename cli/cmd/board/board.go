@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"syscall"
 
-	"github.com/byuoitav/av-cli/cmd/args"
+	"github.com/byuoitav/av-cli/cli/cmd/args"
 	"github.com/spf13/cobra"
 )
 
