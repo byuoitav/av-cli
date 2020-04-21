@@ -29,27 +29,33 @@ func (s *Server) Screenshot(ctx context.Context, id *ID) (*ScreenshotResult, err
 	// TODO validate id
 	// TODO lookup id in database, use that address
 
+	handle := func(err error) error {
+		s.warnf(err.Error())
+		return err
+	}
+
+	s.infof("Taking a screenshot of %q", id.GetId())
 	url := fmt.Sprintf("http://%s:10000/device/screenshot", id.GetId())
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return nil, err
+		return nil, handle(err)
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, handle(err)
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, handle(err)
 	}
 
 	switch resp.StatusCode {
 	case http.StatusInternalServerError:
-		return nil, fmt.Errorf("failed to get screenshot: %s", body)
+		return nil, handle(fmt.Errorf("failed to get screenshot: %s", body))
 	}
 
 	return &ScreenshotResult{

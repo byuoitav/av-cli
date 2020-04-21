@@ -86,6 +86,7 @@ func main() {
 		Address:  authAddr,
 		Token:    authToken,
 		Disabled: disableAuth,
+		Logger:   log,
 	}
 
 	if !authClient.Disabled && len(authClient.Address) == 0 {
@@ -117,6 +118,7 @@ type authClient struct {
 	Address  string
 	Token    string
 	Disabled bool
+	Logger   *zap.SugaredLogger
 }
 
 type authRequest struct {
@@ -132,6 +134,7 @@ type authResponse struct {
 	} `json:"result"`
 }
 
+// TODO logging
 func (client *authClient) unaryServerInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		if client.Disabled {

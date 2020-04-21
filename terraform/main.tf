@@ -27,13 +27,14 @@ module "api" {
   // required
   name           = "cli-api"
   image          = "docker.pkg.github.com/byuoitav/av-cli/api-dev"
-  image_version  = "31a961b"
+  image_version  = "f34f108"
   container_port = 8080
   repo_url       = "https://github.com/byuoitav/av-cli"
 
   // optional
   image_pull_secret = "github-docker-registry"
   public_urls       = ["cli.av.byu.edu"]
+  health_check      = false
   container_env     = {}
   container_args = [
     "--port", "8080",
@@ -56,7 +57,7 @@ module "slack_cli" {
   // required
   name           = "slack-cli"
   image          = "docker.pkg.github.com/byuoitav/av-cli/slack-dev"
-  image_version  = "31a961b"
+  image_version  = "f34f108"
   container_port = 8080
   repo_url       = "https://github.com/byuoitav/av-cli"
 

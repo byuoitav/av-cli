@@ -1,6 +1,7 @@
 NAME := av-cli
 OWNER := byuoitav
-API_PKG := github.com/${OWNER}/${NAME}
+PKG := github.com/${OWNER}/${NAME}
+API_PKG := github.com/${OWNER}/${NAME}/api
 CLI_PKG := github.com/${OWNER}/${NAME}/cli
 SLACK_PKG := github.com/${OWNER}/${NAME}/slack
 DOCKER_URL := docker.pkg.github.com
@@ -12,7 +13,8 @@ ifneq ($(shell git describe --exact-match --tags HEAD 2> /dev/null),)
 	VERSION = $(shell git describe --exact-match --tags HEAD)
 endif
 
-API_PKG_LIST := $(shell go list ${API_PKG}/...)
+PKG_LIST := $(shell go list ${PKG}/...)
+API_PKG_LIST := $(shell cd api && go list ${API_PKG}/...)
 CLI_PKG_LIST := $(shell cd cli && go list ${CLI_PKG}/...)
 SLACK_PKG_LIST := $(shell cd slack && go list ${SLACK_PKG}/...)
 
@@ -26,8 +28,11 @@ BUILD_CLI=go build -ldflags "-s -w \
 all: clean build
 
 lint:
-	@echo Linting api
+	@echo Linting
 	@golangci-lint run --tests=false
+
+	@echo Linting api
+	@cd api && golangci-lint run --tests=false
 
 	@echo Linting cli
 	@cd cli && golangci-lint run --tests=false
@@ -36,8 +41,11 @@ lint:
 	@cd slack && golangci-lint run --tests=false
 
 test:
+	@echo Testing
+	@go test -v ${PKG_LIST}
+
 	@echo Testing api
-	@go test -v ${API_PKG_LIST}
+	@cd api && go test -v ${API_PKG_LIST}
 
 	@echo Testing cli
 	@cd cli && go test -v ${CLI_PKG_LIST}
@@ -57,6 +65,7 @@ deps:
 	@go generate ./...
 
 	@go mod download
+	@cd api && go mod download
 	@cd cli && go mod download
 	@cd slack && go mod download
 
@@ -68,7 +77,7 @@ build: deps
 
 	@echo
 	@echo Building API for linux-amd64
-	@env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o ./dist/${NAME}-api-linux-amd64 ${API_PKG}/api
+	@cd api && env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o ../dist/${NAME}-api-linux-amd64 ${API_PKG}
 
 	@echo
 	@echo Building CLI for linux-amd64
@@ -123,8 +132,9 @@ else
 endif
 
 clean:
+	@go clean
 	@cd api && go clean
 	@cd cli && go clean
 	@cd slack && go clean
-	rm -f ${GOPATH}/bin/$(NAME)
+	rm -f ${GOPATH}/bin/${NAME}
 	rm -rf dist

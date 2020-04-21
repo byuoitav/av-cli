@@ -14,7 +14,7 @@ type auth struct {
 }
 
 func (auth) RequireTransportSecurity() bool {
-	return false
+	return true
 }
 
 func (a auth) GetRequestMetadata(ctx context.Context, in ...string) (map[string]string, error) {

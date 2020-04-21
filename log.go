@@ -12,19 +12,19 @@ type Logger interface {
 //		s.Logger.Debugf(format, a...)
 //	}
 //}
-//
-//func (s *Server) infof(format string, a ...interface{}) {
-//	if s.Logger != nil {
-//		s.Logger.Infof(format, a...)
-//	}
-//}
-//
-//func (s *Server) warnf(format string, a ...interface{}) {
-//	if s.Logger != nil {
-//		s.Logger.Warnf(format, a...)
-//	}
-//}
-//
+
+func (s *Server) infof(format string, a ...interface{}) {
+	if s.Logger != nil {
+		s.Logger.Infof(format, a...)
+	}
+}
+
+func (s *Server) warnf(format string, a ...interface{}) {
+	if s.Logger != nil {
+		s.Logger.Warnf(format, a...)
+	}
+}
+
 //func (s *Server) errorf(format string, a ...interface{}) {
 //	if s.Logger != nil {
 //		s.Logger.Errorf(format, a...)
