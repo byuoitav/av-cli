@@ -27,6 +27,8 @@ func handleSlackRequests(slackCli *slackcli.Client) echo.HandlerFunc {
 			return c.String(http.StatusBadRequest, err.Error())
 		}
 
+		slackCli.Logger.Infof("Got request: %+v\n", req)
+
 		// TODO validate token
 		//if !req.ValidateToken() {
 		//	return c.String(http.StatusForbidden, "you're not slack!")

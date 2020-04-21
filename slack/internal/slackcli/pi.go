@@ -12,7 +12,7 @@ import (
 )
 
 func (c *Client) Screenshot(ctx context.Context, req slack.SlashCommand, user string, id string) error {
-	c.infof("Getting a screenshot of %q for %s", id, user)
+	c.infof("Getting a screenshot of %s for %s", id, user)
 
 	auth := auth{
 		token: c.cliToken,
