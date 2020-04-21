@@ -35,7 +35,7 @@ func (s *Server) Screenshot(ctx context.Context, id *ID) (*ScreenshotResult, err
 	}
 
 	s.infof("Taking a screenshot of %q", id.GetId())
-	url := fmt.Sprintf("http://%s:10000/device/screenshot", id.GetId())
+	url := fmt.Sprintf("http://%s.byu.edu:10000/device/screenshot", id.GetId())
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {

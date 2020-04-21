@@ -11,13 +11,15 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (c *Client) Screenshot(ctx context.Context, req Request, id string) error {
+func (c *Client) Screenshot(ctx context.Context, req slack.SlashCommand, user string, id string) error {
+	c.infof("Getting a screenshot of %q for %s", id, user)
+
 	auth := auth{
 		token: c.cliToken,
-		user:  req.UserID, // TODO should be their netID
+		user:  user, // TODO should be their netID
 	}
 
-	result, err := c.cli.Screenshot(ctx, &avcli.ID{Id: req.Text}, grpc.PerRPCCredentials(auth))
+	result, err := c.cli.Screenshot(ctx, &avcli.ID{Id: id}, grpc.PerRPCCredentials(auth))
 	switch {
 	case err != nil:
 		if s, ok := status.FromError(err); ok {

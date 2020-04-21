@@ -9,6 +9,7 @@ import (
 
 	"github.com/byuoitav/av-cli/slack/internal/slackcli"
 	"github.com/labstack/echo"
+	"github.com/slack-go/slack"
 )
 
 func healthHandler(c echo.Context) error {
@@ -21,10 +22,15 @@ func handleSlackRequests(slackCli *slackcli.Client) echo.HandlerFunc {
 		// TODO write handler logic here
 		// TODO actual error handling for slack API
 
-		var req slackcli.Request
-		if err := c.Bind(&req); err != nil {
+		req, err := slack.SlashCommandParse(c.Request())
+		if err != nil {
 			return c.String(http.StatusBadRequest, err.Error())
 		}
+
+		// TODO validate token
+		//if !req.ValidateToken() {
+		//	return c.String(http.StatusForbidden, "you're not slack!")
+		//}
 
 		// TODO validate request came from slack
 
@@ -47,7 +53,7 @@ func handleSlackRequests(slackCli *slackcli.Client) echo.HandlerFunc {
 				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 				defer cancel()
 
-				err := slackCli.Screenshot(ctx, req, id)
+				err := slackCli.Screenshot(ctx, req, req.UserID, id)
 				if err != nil {
 					slackCli.Logger.Warnf("failed to take screenshot: %s", err)
 				}

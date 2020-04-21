@@ -10,22 +10,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-type Request struct {
-	Token          string `form:"token"`
-	Command        string `form:"command"`
-	Text           string `form:"text"`
-	ResponseURL    string `form:"response_url"`
-	TriggerID      string `form:"trigger_id"`
-	UserID         string `form:"user_id"`
-	UserName       string `form:"user_name"`
-	TeamID         string `form:"team_id"`
-	TeamName       string `form:"team_name"`
-	EnterpriseID   string `form:"enterprise_id"`
-	EnterpriseName string `form:"enterprise_name"`
-	ChannelID      string `form:"channel_id"`
-	ChannelName    string `form:"channel_name"`
-}
-
 type Client struct {
 	cli      avcli.AvCliClient
 	cliToken string
@@ -48,4 +32,28 @@ func NewClient(ctx context.Context, cliAddr string, cliToken string) (*Client, e
 		cli:      avcli.NewAvCliClient(conn),
 		cliToken: cliToken,
 	}, nil
+}
+
+func (c *Client) debugf(format string, a ...interface{}) {
+	if c.Logger != nil {
+		c.Logger.Debugf(format, a...)
+	}
+}
+
+func (c *Client) infof(format string, a ...interface{}) {
+	if c.Logger != nil {
+		c.Logger.Infof(format, a...)
+	}
+}
+
+func (c *Client) warnf(format string, a ...interface{}) {
+	if c.Logger != nil {
+		c.Logger.Warnf(format, a...)
+	}
+}
+
+func (c *Client) errorf(format string, a ...interface{}) {
+	if c.Logger != nil {
+		c.Logger.Errorf(format, a...)
+	}
 }
