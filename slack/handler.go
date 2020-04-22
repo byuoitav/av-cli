@@ -75,6 +75,11 @@ func handleSlackRequests(slackCli *slackcli.Client) echo.HandlerFunc {
 func verifySlackRequest(signingSecret string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
+			// skip verification if no secret was given
+			if len(signingSecret) == 0 {
+				return next(c)
+			}
+
 			verifier, err := slack.NewSecretsVerifier(c.Request().Header, signingSecret)
 			if err != nil {
 				return c.String(http.StatusInternalServerError, err.Error())
