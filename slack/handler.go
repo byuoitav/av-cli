@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -21,49 +24,79 @@ func handleSlackRequests(slackCli *slackcli.Client) echo.HandlerFunc {
 		// TODO get the user, send in metadata
 		// TODO write handler logic here
 		// TODO actual error handling for slack API
-
 		req, err := slack.SlashCommandParse(c.Request())
 		if err != nil {
-			return c.String(http.StatusBadRequest, err.Error())
+			return c.String(http.StatusInternalServerError, err.Error())
 		}
 
 		slackCli.Logger.Infof("Got request: %+v\n", req)
 
-		// TODO validate token
-		//if !req.ValidateToken() {
-		//	return c.String(http.StatusForbidden, "you're not slack!")
-		//}
-
-		// TODO validate request came from slack
-
-		req.Command = strings.TrimSpace(req.Command)
+		cmd := strings.TrimSpace(req.Text)
+		trim := func(s, prefix string) string {
+			return strings.TrimSpace(strings.TrimPrefix(s, prefix))
+		}
 
 		switch {
-		case strings.HasPrefix(req.Command, "pi screenshot"):
-			// spawn a routine to post a screenshot
-			cmd := strings.TrimPrefix(req.Command, "pi screenshot")
-			cmd = strings.TrimSpace(cmd)
+		case strings.HasPrefix(cmd, "pi"):
+			cmd = trim(cmd, "pi")
 
-			cmdSplit := strings.Split(cmd, " ")
-			if len(cmdSplit) != 1 {
-				return c.String(http.StatusOK, "Invalid paramater to screenshot. Usage: /av pi screenshot [BLDG-ROOM-CP1]")
-			}
+			switch {
+			case strings.HasPrefix(cmd, "screenshot"):
+				cmd = trim(cmd, "screenshot")
 
-			id := cmdSplit[0]
-
-			go func() {
-				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-				defer cancel()
-
-				err := slackCli.Screenshot(ctx, req, req.UserID, id)
-				if err != nil {
-					slackCli.Logger.Warnf("failed to take screenshot: %s", err)
+				// spawn a routine to post a screenshot
+				cmdSplit := strings.Split(cmd, " ")
+				if len(cmdSplit) != 1 {
+					return c.String(http.StatusOK, "Invalid paramater to screenshot. Usage: /av pi screenshot [BLDG-ROOM-CP1]")
 				}
-			}()
 
-			return c.String(http.StatusOK, fmt.Sprintf("Taking a screenshot of %s...", id))
+				id := cmdSplit[0]
+
+				go func() {
+					ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+					defer cancel()
+
+					err := slackCli.Screenshot(ctx, req, req.UserID, id)
+					if err != nil {
+						slackCli.Logger.Warnf("failed to take screenshot: %s", err)
+					}
+				}()
+
+				return c.String(http.StatusOK, fmt.Sprintf("Taking a screenshot of %s...", id))
+			default:
+				return c.String(http.StatusOK, "`pi` doesn't have that command.\n\nAvailable commands:\n\tscreenshot")
+			}
 		default:
 			return c.String(http.StatusOK, "I don't know how to handle that command.")
+		}
+	}
+}
+
+func verifySlackRequest(signingSecret string) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			verifier, err := slack.NewSecretsVerifier(c.Request().Header, signingSecret)
+			if err != nil {
+				return c.String(http.StatusInternalServerError, err.Error())
+			}
+
+			reader := io.TeeReader(c.Request().Body, &verifier)
+
+			// read the body
+			body, err := ioutil.ReadAll(reader)
+			if err != nil {
+				return c.String(http.StatusInternalServerError, err.Error())
+			}
+			defer c.Request().Body.Close()
+
+			if err := verifier.Ensure(); err != nil {
+				return c.String(http.StatusUnauthorized, "you're not slack!")
+			}
+
+			// let the next handler read the body again
+			c.Request().Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
+			return next(c)
 		}
 	}
 }

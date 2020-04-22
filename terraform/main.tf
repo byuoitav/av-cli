@@ -27,7 +27,7 @@ module "api" {
   // required
   name           = "cli-api"
   image          = "docker.pkg.github.com/byuoitav/av-cli/api-dev"
-  image_version  = "bd9cd32"
+  image_version  = "daaa171"
   container_port = 8080
   repo_url       = "https://github.com/byuoitav/av-cli"
 
@@ -51,13 +51,17 @@ module "api" {
   }
 }
 
+data "aws_ssm_parameter" "slack_signing_secret" {
+  name = "/env/slack/av-signing-secret"
+}
+
 module "slack_cli" {
   source = "github.com/byuoitav/terraform//modules/kubernetes-deployment"
 
   // required
   name           = "slack-cli"
   image          = "docker.pkg.github.com/byuoitav/av-cli/slack-dev"
-  image_version  = "bd9cd32"
+  image_version  = "daaa171"
   container_port = 8080
   repo_url       = "https://github.com/byuoitav/av-cli"
 
@@ -69,7 +73,8 @@ module "slack_cli" {
     "--port", "8080",
     "--log-level", "0",
     "--avcli-api", "cli.av.byu.edu:443",
-    "--avcli-token", "put-token-here"
+    "--avcli-token", "put-token-here",
+    "--signing-secret", data.aws_ssm_parameter.slack_signing_secret,
   ]
   ingress_annotations = {}
 }
