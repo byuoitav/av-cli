@@ -12,6 +12,7 @@ service AvCli {
 
 message ID {
 	string id = 1;
+	string designation = 2;
 }
 
 message SwabResult {
