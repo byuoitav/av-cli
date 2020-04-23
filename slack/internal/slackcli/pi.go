@@ -23,9 +23,11 @@ func (c *Client) Screenshot(ctx context.Context, req slack.SlashCommand, user st
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		_, _, err = c.slack.PostMessageContext(ctx, req.ChannelID, slack.MsgOptionReplaceOriginal(req.ResponseURL), slack.MsgOptionPostEphemeral(req.UserID), slack.MsgOptionText(fmt.Sprintf("I was unable to get a screenshot of %s :sad:. Error:\n```\n%s\n```", id, err), false))
+		msg := fmt.Sprintf("I was unable to get a screenshot of %s. :cry:. Error:\n```\n%s\n```", id, err)
+
+		_, _, err = c.slack.PostMessageContext(ctx, req.ChannelID, slack.MsgOptionReplaceOriginal(req.ResponseURL), slack.MsgOptionText(msg, false))
 		if err != nil {
-			c.warnf("failed to post error to slack: %w", err)
+			c.warnf("failed to post error to slack: %s", err)
 		}
 	}
 
