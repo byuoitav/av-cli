@@ -56,10 +56,7 @@ func handleSlackRequests(slackCli *slackcli.Client) echo.HandlerFunc {
 					ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 					defer cancel()
 
-					err := slackCli.Screenshot(ctx, req, req.UserID, id)
-					if err != nil {
-						slackCli.Logger.Warnf("failed to take screenshot: %s", err)
-					}
+					slackCli.Screenshot(ctx, req, req.UserID, id)
 				}()
 
 				return c.String(http.StatusOK, fmt.Sprintf("Taking a screenshot of %s...", id))

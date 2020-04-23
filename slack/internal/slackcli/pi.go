@@ -14,8 +14,20 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (c *Client) Screenshot(ctx context.Context, req slack.SlashCommand, user string, id string) error {
+func (c *Client) Screenshot(ctx context.Context, req slack.SlashCommand, user string, id string) {
 	c.infof("Getting a screenshot of %s for %s", id, user)
+
+	handle := func(err error) {
+		c.warnf("unable to take screenshot: %s", err)
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		_, _, err = c.slack.PostMessageContext(ctx, req.ChannelID, slack.MsgOptionReplaceOriginal(req.ResponseURL), slack.MsgOptionPostEphemeral(req.UserID), slack.MsgOptionText(fmt.Sprintf("I was unable to get a screenshot of %s :sad:. Error:\n```\n%s\n```", id, err), false))
+		if err != nil {
+			c.warnf("failed to post error to slack: %w", err)
+		}
+	}
 
 	auth := auth{
 		token: c.cliToken,
@@ -28,17 +40,21 @@ func (c *Client) Screenshot(ctx context.Context, req slack.SlashCommand, user st
 		if s, ok := status.FromError(err); ok {
 			switch s.Code() {
 			case codes.Unavailable:
-				return s.Err()
+				handle(s.Err())
+				return
 			case codes.Unauthenticated:
-				return s.Err()
+				handle(s.Err())
+				return
 			default:
-				return s.Err()
+				handle(s.Err())
+				return
 			}
 		}
 
-		return err
+		handle(err)
+		return
 	case result == nil:
-		return errors.New("this is weird")
+		handle(errors.New("result from api was nil"))
 	}
 
 	now := time.Now()
@@ -53,8 +69,6 @@ func (c *Client) Screenshot(ctx context.Context, req slack.SlashCommand, user st
 		Channels:       []string{req.ChannelID},
 	})
 	if err != nil {
-		return fmt.Errorf("unable to upload screenshot: %w", err)
+		handle(fmt.Errorf("unable to upload screenshot to slack: %w", err))
 	}
-
-	return nil
 }
