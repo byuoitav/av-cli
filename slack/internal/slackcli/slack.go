@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	avcli "github.com/byuoitav/av-cli"
+	"github.com/slack-go/slack"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
@@ -14,10 +15,12 @@ type Client struct {
 	cli      avcli.AvCliClient
 	cliToken string
 
+	slack *slack.Client
+
 	Logger *zap.SugaredLogger
 }
 
-func NewClient(ctx context.Context, cliAddr string, cliToken string) (*Client, error) {
+func New(ctx context.Context, cliAddr string, cliToken string, slackToken string) (*Client, error) {
 	pool, err := x509.SystemCertPool()
 	if err != nil {
 		return nil, fmt.Errorf("unable to get system cert pool: %s", err)
@@ -31,6 +34,7 @@ func NewClient(ctx context.Context, cliAddr string, cliToken string) (*Client, e
 	return &Client{
 		cli:      avcli.NewAvCliClient(conn),
 		cliToken: cliToken,
+		slack:    slack.New(slackToken),
 	}, nil
 }
 

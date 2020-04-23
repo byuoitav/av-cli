@@ -1,8 +1,11 @@
 package slackcli
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"fmt"
+	"time"
 
 	avcli "github.com/byuoitav/av-cli"
 	"github.com/slack-go/slack"
@@ -38,7 +41,16 @@ func (c *Client) Screenshot(ctx context.Context, req slack.SlashCommand, user st
 		return errors.New("this is weird")
 	}
 
-	return slack.PostWebhookContext(ctx, req.ResponseURL, &slack.WebhookMessage{
-		Text: "I have your photo!",
+	now := time.Now()
+
+	_, err = c.slack.UploadFileContext(ctx, slack.FileUploadParameters{
+		Filetype:       "jpg",
+		Filename:       fmt.Sprintf("%s_%s.jpg", id, now.Format(time.RFC3339)),
+		Title:          fmt.Sprintf("%s Screenshot @ %s", id, now.Format(time.RFC3339)),
+		InitialComment: fmt.Sprintf("<@%s> - here is your screenshot of %s!", req.UserID, id),
+		Reader:         bytes.NewBuffer(result.GetPhoto()),
+		Channels:       []string{req.ChannelID},
 	})
+
+	return err
 }

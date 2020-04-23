@@ -22,6 +22,7 @@ func main() {
 		avcliAPIAddr       string
 		avcliAPIToken      string
 		slackSigningSecret string
+		slackToken         string
 	)
 
 	pflag.IntVarP(&port, "port", "P", 8080, "port to run lazarette on")
@@ -29,6 +30,7 @@ func main() {
 	pflag.StringVarP(&avcliAPIAddr, "avcli-api", "a", "cli.av.byu.edu:443", "address of the avcli API")
 	pflag.StringVarP(&avcliAPIToken, "avcli-token", "t", "", "token to use for request to the avcli API")
 	pflag.StringVar(&slackSigningSecret, "signing-secret", "", "slack signing secret. see https://api.slack.com/authentication/verifying-requests-from-slack for more details.")
+	pflag.StringVar(&slackToken, "slack-token", "", "slack token")
 	pflag.Parse()
 
 	// build the logger
@@ -72,7 +74,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	slackCli, err := slackcli.NewClient(ctx, avcliAPIAddr, avcliAPIToken)
+	slackCli, err := slackcli.New(ctx, avcliAPIAddr, avcliAPIToken, slackToken)
 	if err != nil {
 		log.Fatalf("failed to build slack-cli client: %s", err)
 	}

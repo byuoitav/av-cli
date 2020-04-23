@@ -27,7 +27,7 @@ module "api" {
   // required
   name           = "cli-api"
   image          = "docker.pkg.github.com/byuoitav/av-cli/api-dev"
-  image_version  = "daaa171"
+  image_version  = "c923dbf"
   container_port = 8080
   repo_url       = "https://github.com/byuoitav/av-cli"
 
@@ -61,7 +61,7 @@ module "slack_cli" {
   // required
   name           = "slack-cli"
   image          = "docker.pkg.github.com/byuoitav/av-cli/slack-dev"
-  image_version  = "daaa171"
+  image_version  = "c923dbf"
   container_port = 8080
   repo_url       = "https://github.com/byuoitav/av-cli"
 
@@ -74,7 +74,7 @@ module "slack_cli" {
     "--log-level", "0",
     "--avcli-api", "cli.av.byu.edu:443",
     "--avcli-token", "put-token-here",
-    "--signing-secret", data.aws_ssm_parameter.slack_signing_secret,
+    "--signing-secret", data.aws_ssm_parameter.slack_signing_secret.value,
   ]
   ingress_annotations = {}
 }
