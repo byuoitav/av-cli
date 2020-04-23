@@ -51,6 +51,15 @@ func (c *Client) Screenshot(ctx context.Context, req slack.SlashCommand, user st
 		Reader:         bytes.NewBuffer(result.GetPhoto()),
 		Channels:       []string{req.ChannelID},
 	})
+	if err != nil {
+		return fmt.Errorf("unable to upload screenshot: %w", err)
+	}
 
-	return err
+	// delete the temp message we sent initially
+	_, _, err = c.slack.PostMessageContext(ctx, req.ChannelID, slack.MsgOptionDeleteOriginal(req.ResponseURL))
+	if err != nil {
+		return fmt.Errorf("unable to delete original message: %s", err)
+	}
+
+	return nil
 }

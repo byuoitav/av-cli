@@ -27,7 +27,7 @@ module "api" {
   // required
   name           = "cli-api"
   image          = "docker.pkg.github.com/byuoitav/av-cli/api-dev"
-  image_version  = "c923dbf"
+  image_version  = "5ebf771"
   container_port = 8080
   repo_url       = "https://github.com/byuoitav/av-cli"
 
@@ -51,8 +51,16 @@ module "api" {
   }
 }
 
+data "aws_ssm_parameter" "avcli_token" {
+  name = "/env/slack/avcli-token"
+}
+
 data "aws_ssm_parameter" "slack_signing_secret" {
-  name = "/env/slack/av-signing-secret"
+  name = "/env/slack/slack-signing-secret"
+}
+
+data "aws_ssm_parameter" "slack_token" {
+  name = "/env/slack/slack-token"
 }
 
 module "slack_cli" {
@@ -61,7 +69,7 @@ module "slack_cli" {
   // required
   name           = "slack-cli"
   image          = "docker.pkg.github.com/byuoitav/av-cli/slack-dev"
-  image_version  = "c923dbf"
+  image_version  = "5ebf771"
   container_port = 8080
   repo_url       = "https://github.com/byuoitav/av-cli"
 
@@ -73,8 +81,9 @@ module "slack_cli" {
     "--port", "8080",
     "--log-level", "0",
     "--avcli-api", "cli.av.byu.edu:443",
-    "--avcli-token", "put-token-here",
+    "--avcli-token", data.aws_ssm_parameter.avcli_token.value,
     "--signing-secret", data.aws_ssm_parameter.slack_signing_secret.value,
+    "--slack-token", data.aws_ssm_parameter.slack_token.value,
   ]
   ingress_annotations = {}
 }
