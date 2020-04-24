@@ -19,14 +19,14 @@ import (
 )
 
 func init() {
-	Cmd.AddCommand(swabRoomCmd)
-	Cmd.AddCommand(swabBuildingCmd)
+	// Cmd.AddCommand(swabRoomCmd)
+	// Cmd.AddCommand(swabBuildingCmd)
 }
 
 // Cmd .
 var Cmd = &cobra.Command{
-	Use:   "swab [device ID]",
-	Short: "Refreshes the database/ui of a pi",
+	Use:   "swab [ID]",
+	Short: "Refreshes the database/ui of a pi/room/building",
 	Long:  "Forces a replication of the couch database, and causes the ui to refresh shortly after",
 	Args:  args.ValidDeviceID,
 	Run: func(cmd *cobra.Command, arg []string) {
@@ -38,7 +38,7 @@ var Cmd = &cobra.Command{
 
 		conn, err := grpc.Dial(viper.GetString("api"), grpc.WithInsecure())
 		if err != nil {
-			fmt.Printf("oh no\n")
+			fmt.Prtinf("error making grpc connection: %v", err)
 			os.Exit(1)
 		}
 
