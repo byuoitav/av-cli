@@ -17,13 +17,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func init() {
-	// Cmd.AddCommand(shipCmd)
-	//Cmd.AddCommand(squadronCmd)
-	//Cmd.AddCommand(fleetCmd)
-	// Cmd.AddCommand(armadaCmd)
-}
-
 // Cmd .
 var Cmd = &cobra.Command{
 	Use:   "float [ID]",
@@ -38,7 +31,7 @@ var Cmd = &cobra.Command{
 
 		conn, err := grpc.Dial(viper.GetString("api"), grpc.WithInsecure())
 		if err != nil {
-			fmt.Prtinf("oh no\n")
+			fmt.Prtinf("error making grpc connection: %v", err)
 			os.Exit(1)
 		}
 
