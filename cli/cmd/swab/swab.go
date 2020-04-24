@@ -4,9 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
-	"time"
 
 	avcli "github.com/byuoitav/av-cli"
 	"github.com/byuoitav/av-cli/cli/cmd/args"
@@ -67,67 +65,35 @@ var Cmd = &cobra.Command{
 			if in.Error != "" {
 				fmt.Printf("there was an error swabbing %s: %s\n", in.Id, in.Error)
 			} else {
+				address := in.Id + ".byu.edu"
+				client, err := pi.NewSSHClient(address)
+				if err != nil {
+					err = fmt.Errorf("unable to ssh into %s: %s", address, err)
+					fmt.Printf(err.Error())
+					continue
+				}
+				defer client.Close()
+
+				session, err := client.NewSession()
+				if err != nil {
+					client.Close()
+					err = fmt.Errorf("unable to start new session: %s", err)
+					fmt.Printf(err.Error())
+					continue
+				}
+
+				fmt.Printf("Restarting DMM... \n")
+
+				bytes, err := session.CombinedOutput("sudo systemctl restart device-monitoring.service")
+				if err != nil {
+					client.Close()
+					err = fmt.Errorf("unable to reboot: %s\noutput on pi: \n%s\n", err, bytes)
+					fmt.Printf(err.Error())
+					continue
+				}
+				client.Close()
 				fmt.Printf("Successfully swabbed %s\n", in.Id)
 			}
 		}
 	},
-}
-
-func swab(ctx context.Context, address string) error {
-	req, err := http.NewRequest("GET", fmt.Sprintf("http://%s:7012/replication/start", address), nil)
-	if err != nil {
-		return fmt.Errorf("unable to build replication request: %s", err)
-	}
-
-	req = req.WithContext(ctx)
-
-	// TODO actually validate that it worked
-	_, err = http.DefaultClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("unable to start replication: %s", err)
-	}
-
-	fmt.Printf("%s\tReplication started\n", address)
-	time.Sleep(3 * time.Second) // TODO make sure this doesn't overrun ctx
-
-	req, err = http.NewRequest("PUT", fmt.Sprintf("http://%s:80/refresh", address), nil)
-	if err != nil {
-		return fmt.Errorf("unable to build refresh request: %s", err)
-	}
-
-	req = req.WithContext(ctx)
-
-	_, err = http.DefaultClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("unable to start replication: %s", err)
-	}
-
-	fmt.Printf("%s\tUI refreshed\n", address)
-
-	client, err := pi.NewSSHClient(address)
-	if err != nil {
-		fmt.Printf("unable to ssh into %s: %s", address, err)
-		os.Exit(1)
-	}
-	defer client.Close()
-
-	session, err := client.NewSession()
-	if err != nil {
-		fmt.Printf("unable to start new session: %s", err)
-		client.Close()
-		os.Exit(1)
-	}
-
-	fmt.Printf("Restarting DMM...\n")
-
-	bytes, err := session.CombinedOutput("sudo systemctl restart device-monitoring.service")
-	if err != nil {
-		fmt.Printf("unable to reboot: %s\noutput on pi:\n%s\n", err, bytes)
-		client.Close()
-		os.Exit(1)
-	}
-	client.Close()
-	fmt.Printf("Success\n")
-
-	return nil
 }
