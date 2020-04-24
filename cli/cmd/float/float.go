@@ -2,6 +2,7 @@ package float
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -21,7 +22,7 @@ import (
 var Cmd = &cobra.Command{
 	Use:   "float [ID]",
 	Short: "Deploys to the device/room/building with the given ID",
-	Args:  args.ValidDeviceID,
+	Args:  args.ValidID,
 	Run: func(cmd *cobra.Command, arg []string) {
 		fmt.Printf("Deploying to %s\n", arg[0])
 		fail := func(format string, a ...interface{}) {
@@ -31,13 +32,13 @@ var Cmd = &cobra.Command{
 
 		conn, err := grpc.Dial(viper.GetString("api"), grpc.WithInsecure())
 		if err != nil {
-			fmt.Prtinf("error making grpc connection: %v", err)
+			fmt.Printf("error making grpc connection: %v", err)
 			os.Exit(1)
 		}
 
 		cli := avcli.NewAvCliClient(conn)
 
-		_, designation, err := args.getDB()
+		_, designation, err := args.GetDB()
 		if err != nil {
 			fmt.Printf("error getting designation: %v", err)
 			os.Exit(1)
@@ -60,7 +61,6 @@ var Cmd = &cobra.Command{
 		for {
 			in, err := stream.Recv()
 			if err == io.EOF {
-				fmt.Printf("finished floating\n")
 				return
 			}
 			if in.Error != "" {

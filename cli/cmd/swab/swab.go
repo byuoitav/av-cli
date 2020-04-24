@@ -18,17 +18,12 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func init() {
-	// Cmd.AddCommand(swabRoomCmd)
-	// Cmd.AddCommand(swabBuildingCmd)
-}
-
 // Cmd .
 var Cmd = &cobra.Command{
 	Use:   "swab [ID]",
 	Short: "Refreshes the database/ui of a pi/room/building",
 	Long:  "Forces a replication of the couch database, and causes the ui to refresh shortly after",
-	Args:  args.ValidDeviceID,
+	Args:  args.ValidID,
 	Run: func(cmd *cobra.Command, arg []string) {
 		fmt.Printf("Swabbing %s\n", arg[0])
 		fail := func(format string, a ...interface{}) {
@@ -38,13 +33,13 @@ var Cmd = &cobra.Command{
 
 		conn, err := grpc.Dial(viper.GetString("api"), grpc.WithInsecure())
 		if err != nil {
-			fmt.Prtinf("error making grpc connection: %v", err)
+			fmt.Printf("error making grpc connection: %v", err)
 			os.Exit(1)
 		}
 
 		cli := avcli.NewAvCliClient(conn)
 
-		_, designation, err := args.getDB()
+		_, designation, err := args.GetDB()
 		if err != nil {
 			fmt.Printf("error getting designation: %v", err)
 			os.Exit(1)
@@ -67,7 +62,6 @@ var Cmd = &cobra.Command{
 		for {
 			in, err := stream.Recv()
 			if err == io.EOF {
-				fmt.Printf("finished swabbing\n")
 				return
 			}
 			if in.Error != "" {

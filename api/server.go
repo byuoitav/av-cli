@@ -95,7 +95,10 @@ func main() {
 
 	// build the grpc server
 	cli := &avcli.Server{
-		Logger: log,
+		Logger:     log,
+		dbUsername: os.Getenv("DB_USERNAME"),
+		dbPassword: os.Getenv("DB_PASSWORD"),
+		dbAddress:  os.Getenv("DB_ADDRESS"),
 	}
 
 	server := grpc.NewServer(grpc.UnaryInterceptor(authClient.unaryServerInterceptor()))
