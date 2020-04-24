@@ -1,29 +1,77 @@
 package float
 
+import (
+	"context"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"os"
+
+	avcli "github.com/byuoitav/av-cli"
+	"github.com/byuoitav/av-cli/cli/cmd/args"
+	"github.com/byuoitav/av-cli/cli/cmd/wso2"
+	"github.com/cheggaaa/pb"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
 // shipCmd .
-/*
+
 var shipCmd = &cobra.Command{
 	Use:   "ship [device ID]",
 	Short: "Deploys to the device with the given ID",
-	Args:  arg.ValidDeviceID,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Deploying to %s\n", args[0])
-
-		_, result, err := arg.GetDB()
-		if err != nil {
-			fmt.Printf("prompt failed %v\n", err)
+	Args:  args.ValidDeviceID,
+	Run: func(cmd *cobra.Command, arg []string) {
+		fmt.Printf("Deploying to %s\n", arg[0])
+		fail := func(format string, a ...interface{}) {
+			fmt.Printf(format, a...)
 			os.Exit(1)
 		}
 
-		bar := pb.New(6).SetWidth(50).Format(fmt.Sprintf("%s [\x00=\x00>\x00-\x00]", args[0]))
-		bar.ShowCounters = false
-		bar.Start()
-		err = floatshipWithBar(args[0], result, bar)
+		conn, err := grpc.Dial(viper.GetString("api"), grpc.WithInsecure())
 		if err != nil {
-			fmt.Printf("Error floating ship: %v\n", err)
-			return
+			fmt.Prtinf("oh no\n")
+			os.Exit(1)
 		}
 
+		cli := avcli.NewAvCliClient(conn)
+
+		_, designation, err := args.getDB()
+		if err != nil {
+			fmt.Printf("error getting designation: %v", err)
+			os.Exit(1)
+		}
+
+		stream, err := cli.Float(context.TODO(), &avcli.ID{Id: arg[0], Designation: designation})
+		if err != nil {
+			if s, ok := status.FromError(err); ok {
+				switch s.Code() {
+				case codes.Unavailable:
+					fail("api is unavailable\n")
+				default:
+					fail("%s\n", s.Err())
+				}
+			}
+
+			fail("unable to swab: %s\n", err)
+		}
+
+		for {
+			in, err := stream.Recv()
+			if err == io.EOF {
+				fmt.Printf("finished floating\n")
+				return
+			}
+			if in.Error != "" {
+				fmt.Printf("there was an error floating to %s: %s\n", in.Id, in.Error)
+			} else {
+				fmt.Printf("Successfully swabbed %s\n", in.Id)
+			}
+		}
 	},
 }
 
@@ -95,4 +143,3 @@ func floatshipWithBar(deviceID, designation string, bar *pb.ProgressBar) error {
 	bar.Finish()
 	return nil
 }
-*/
