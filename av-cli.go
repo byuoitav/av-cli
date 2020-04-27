@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/byuoitav/auth/wso2"
 	"github.com/byuoitav/common/db"
 	empty "github.com/golang/protobuf/ptypes/empty"
 	codes "google.golang.org/grpc/codes"
@@ -21,6 +22,9 @@ type Server struct {
 	DBUsername string
 	DBPassword string
 	DBAddress  string
+	GatewayURL string
+	Key        string
+	Secret     string
 }
 
 func (s *Server) Swab(id *ID, stream AvCli_SwabServer) error {
@@ -264,6 +268,25 @@ func swabDevice(ctx context.Context, address string) error {
 }
 
 func (s *Server) Float(id *ID, stream AvCli_FloatServer) error {
+	if s.GatewayURL == "" {
+		return stream.Send(&FloatResult{
+			Id:    id.Id,
+			Error: "Gateway URL not set",
+		})
+	}
+	if s.Key == "" {
+		return stream.Send(&FloatResult{
+			Id:    id.Id,
+			Error: "Key not set",
+		})
+	}
+	if s.Secret == "" {
+		return stream.Send(&FloatResult{
+			Id:    id.Id,
+			Error: "Secret not set",
+		})
+	}
+
 	dbAddr := strings.Replace(s.DBAddress, "dev", id.Designation, 1)
 	dbAddr = strings.Replace(s.DBAddress, "stg", id.Designation, 1)
 	dbAddr = strings.Replace(s.DBAddress, "prd", id.Designation, 1)
@@ -321,7 +344,7 @@ func (s *Server) Float(id *ID, stream AvCli_FloatServer) error {
 					tmpDevice := devices[x]
 					if tmpDevice.Type.ID == "Pi3" || tmpDevice.Type.ID == "DividerSensors" || tmpDevice.Type.ID == "LabAttendance" || tmpDevice.Type.ID == "Pi-STB" || tmpDevice.Type.ID == "SchedulingPanel" || tmpDevice.Type.ID == "TimeClock" {
 						go func() {
-							err := floatShip(tmpDevice.ID, id.Designation)
+							err := s.floatShip(tmpDevice.ID, id.Designation)
 							if err != nil {
 								c <- FloatResult{
 									Id:    tmpDevice.ID,
@@ -379,7 +402,7 @@ func (s *Server) Float(id *ID, stream AvCli_FloatServer) error {
 			tmpDevice := devices[i]
 			if tmpDevice.Type.ID == "Pi3" || tmpDevice.Type.ID == "DividerSensors" || tmpDevice.Type.ID == "LabAttendance" || tmpDevice.Type.ID == "Pi-STB" || tmpDevice.Type.ID == "SchedulingPanel" || tmpDevice.Type.ID == "TimeClock" {
 				go func() {
-					err := floatShip(tmpDevice.ID, id.Designation)
+					err := s.floatShip(tmpDevice.ID, id.Designation)
 					if err != nil {
 						c <- FloatResult{
 							Id:    tmpDevice.ID,
@@ -409,7 +432,7 @@ func (s *Server) Float(id *ID, stream AvCli_FloatServer) error {
 
 	case 3:
 		//device
-		err := floatShip(id.Id, id.Designation)
+		err := s.floatShip(id.Id, id.Designation)
 		if err != nil {
 			err = fmt.Errorf("error floating ship: %v", err)
 			return stream.Send(&FloatResult{
@@ -429,15 +452,19 @@ func (s *Server) Float(id *ID, stream AvCli_FloatServer) error {
 	})
 }
 
-func floatShip(deviceID, designation string) error {
+func (s *Server) floatShip(deviceID, designation string) error {
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/%v/webhook_device/%v", designation, deviceID), nil)
 	if err != nil {
 		return fmt.Errorf("couldn't make request: %v", err)
 	}
 
-	// req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", wso2.GetAccessToken()))
+	client := wso2.Client{
+		GatewayURL:   s.GatewayURL,
+		ClientID:     s.Key,
+		ClientSecret: s.Secret,
+	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("couldn't perform request: %v", err)
 	}

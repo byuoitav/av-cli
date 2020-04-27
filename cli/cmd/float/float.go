@@ -8,6 +8,7 @@ import (
 
 	avcli "github.com/byuoitav/av-cli"
 	"github.com/byuoitav/av-cli/cli/cmd/args"
+	"github.com/byuoitav/av-cli/cli/cmd/wso2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
@@ -41,6 +42,12 @@ var Cmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		// this is just to check authorization
+		authChecker := wso2.GetAccessToken()
+		if authChecker == "" {
+			fail("unauthorized\n")
+		}
+
 		stream, err := cli.Float(context.TODO(), &avcli.ID{Id: arg[0], Designation: designation})
 		if err != nil {
 			if s, ok := status.FromError(err); ok {
@@ -52,9 +59,8 @@ var Cmd = &cobra.Command{
 				}
 			}
 
-			fail("unable to swab: %s\n", err)
+			fail("unable to float: %s\n", err)
 		}
-
 		for {
 			in, err := stream.Recv()
 			if err == io.EOF {
@@ -63,7 +69,7 @@ var Cmd = &cobra.Command{
 			if in.Error != "" {
 				fmt.Printf("there was an error floating to %s: %s\n", in.Id, in.Error)
 			} else {
-				fmt.Printf("Successfully swabbed %s\n", in.Id)
+				fmt.Printf("Successfully floated to %s\n", in.Id)
 			}
 		}
 	},

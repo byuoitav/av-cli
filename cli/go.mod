@@ -5,6 +5,7 @@ go 1.14
 replace github.com/byuoitav/av-cli => ../
 
 require (
+	github.com/byuoitav/auth v0.1.2 // indirect
 	github.com/byuoitav/av-cli v0.0.0-00010101000000-000000000000
 	github.com/byuoitav/common v0.0.0-20191210190714-e9b411b3cc0d
 	github.com/cheggaaa/pb v2.0.7+incompatible
