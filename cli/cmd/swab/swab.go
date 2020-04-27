@@ -8,7 +8,6 @@ import (
 
 	avcli "github.com/byuoitav/av-cli"
 	"github.com/byuoitav/av-cli/cli/cmd/args"
-	"github.com/byuoitav/av-cli/cli/cmd/pi"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
@@ -65,33 +64,6 @@ var Cmd = &cobra.Command{
 			if in.Error != "" {
 				fmt.Printf("there was an error swabbing %s: %s\n", in.Id, in.Error)
 			} else {
-				address := in.Id + ".byu.edu"
-				client, err := pi.NewSSHClient(address)
-				if err != nil {
-					err = fmt.Errorf("unable to ssh into %s: %s", address, err)
-					fmt.Printf(err.Error())
-					continue
-				}
-				defer client.Close()
-
-				session, err := client.NewSession()
-				if err != nil {
-					client.Close()
-					err = fmt.Errorf("unable to start new session: %s", err)
-					fmt.Printf(err.Error())
-					continue
-				}
-
-				fmt.Printf("Restarting DMM... \n")
-
-				bytes, err := session.CombinedOutput("sudo systemctl restart device-monitoring.service")
-				if err != nil {
-					client.Close()
-					err = fmt.Errorf("unable to reboot: %s\noutput on pi: \n%s\n", err, bytes)
-					fmt.Printf(err.Error())
-					continue
-				}
-				client.Close()
 				fmt.Printf("Successfully swabbed %s\n", in.Id)
 			}
 		}

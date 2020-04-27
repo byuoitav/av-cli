@@ -102,10 +102,10 @@ func (s *Server) Swab(id *ID, stream AvCli_SwabServer) error {
 		}
 
 		actualCount := 0
+
 		for {
 			select {
-			case <-c:
-				res := <-c
+			case res := <-c:
 				stream.Send(&res)
 				actualCount++
 				if actualCount == expectedCount {
@@ -159,10 +159,10 @@ func (s *Server) Swab(id *ID, stream AvCli_SwabServer) error {
 		}
 
 		actualCount := 0
+
 		for {
 			select {
-			case <-c:
-				res := <-c
+			case res := <-c:
 				stream.Send(&res)
 				actualCount++
 				if actualCount == expectedCount {
@@ -236,6 +236,29 @@ func swabDevice(ctx context.Context, address string) error {
 	}
 
 	fmt.Printf("%s\tUI refreshed\n", address)
+
+	client, err := NewSSHClient(address)
+	if err != nil {
+		err = fmt.Errorf("unable to ssh into %s: %s", address, err)
+		return err
+	}
+
+	session, err := client.NewSession()
+	if err != nil {
+		err = fmt.Errorf("unable to start new session: %s", err)
+		client.Close()
+		return err
+	}
+
+	fmt.Printf("%s\tRestarting DMM... \n", address)
+
+	bytes, err := session.CombinedOutput("sudo systemctl restart device-monitoring.service")
+	if err != nil {
+		err = fmt.Errorf("unable to reboot: %s\noutput on pi: \n%s\n", err, bytes)
+		client.Close()
+		return err
+	}
+	client.Close()
 
 	return nil
 }
@@ -321,8 +344,7 @@ func (s *Server) Float(id *ID, stream AvCli_FloatServer) error {
 		actualCount := 0
 		for {
 			select {
-			case <-c:
-				res := <-c
+			case res := <-c:
 				stream.Send(&res)
 				actualCount++
 				if actualCount == expectedCount {
@@ -376,8 +398,7 @@ func (s *Server) Float(id *ID, stream AvCli_FloatServer) error {
 		actualCount := 0
 		for {
 			select {
-			case <-c:
-				res := <-c
+			case res := <-c:
 				stream.Send(&res)
 				actualCount++
 				if actualCount == expectedCount {

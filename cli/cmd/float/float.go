@@ -4,13 +4,10 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"net/http"
 	"os"
 
 	avcli "github.com/byuoitav/av-cli"
 	"github.com/byuoitav/av-cli/cli/cmd/args"
-	"github.com/byuoitav/av-cli/cli/cmd/wso2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
@@ -70,31 +67,4 @@ var Cmd = &cobra.Command{
 			}
 		}
 	},
-}
-
-func floatship(deviceID, designation string) error {
-	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/%v/webhook_device/%v", designation, deviceID), nil)
-	if err != nil {
-		return fmt.Errorf("couldn't make request: %v", err)
-	}
-
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", wso2.GetAccessToken()))
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("couldn't perform request: %v", err)
-	}
-
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("couldn't read the response body: %v", err)
-	}
-
-	if resp.StatusCode/100 != 2 {
-		return fmt.Errorf("non-200 status code: %v - %s", resp.StatusCode, body)
-	}
-
-	fmt.Printf("Deployment successful\n")
-	return nil
 }

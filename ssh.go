@@ -3,10 +3,9 @@ package avcli
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"time"
 
-	"github.com/manifoldco/promptui"
-	"github.com/spf13/viper"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -51,30 +50,13 @@ func getSigners() ([]ssh.Signer, error) {
 	return signers, nil
 }
 func getPasswordFunc(label string, maxTries int) func() (string, error) {
-	tries := 0
 
 	return func() (string, error) {
-		if tries > 0 {
-			fmt.Printf("Permission denied, please try again.\n")
+		password := os.Getenv("PI_PASSWORD")
+		if len(password) == 0 {
+			return "", fmt.Errorf("PI_PASSWORD not set")
 		}
 
-		if tries == 0 && viper.IsSet("pi_password") {
-			fmt.Printf("Using configured password.\n")
-			return viper.GetString("pi_password"), nil
-		}
-
-		tries++
-
-		passPrompt := promptui.Prompt{
-			Label: label,
-			Mask:  '*',
-		}
-
-		pass, err := passPrompt.Run()
-		if err != nil {
-			return "", err
-		}
-
-		return pass, nil
+		return password, nil
 	}
 }
