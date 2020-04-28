@@ -156,6 +156,7 @@ type authResponse struct {
 func (client *authClient) unaryServerInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		if client.Disabled {
+			fmt.Printf("Skipping auth!\n")
 			return handler(ctx, req)
 		}
 
