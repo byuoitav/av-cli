@@ -164,7 +164,7 @@ func (client *authClient) unaryServerInterceptor() grpc.UnaryServerInterceptor {
 			return nil, errMissingMetadata
 		}
 
-		fmt.Printf("md: %s\n" md)
+		fmt.Printf("md: %s\n", md)
 
 		auth := md["authorization"]
 		user := md["x-user"]
@@ -179,9 +179,9 @@ func (client *authClient) unaryServerInterceptor() grpc.UnaryServerInterceptor {
 
 		// build opa request
 		var authReq authRequest
-		authReq.Token = strings.TrimPrefix(auth[0], "Bearer ")
-		authReq.User = user[0]
-		authReq.Method = info.FullMethod
+		authReq.Input.Token = strings.TrimPrefix(auth[0], "Bearer ")
+		authReq.Input.User = user[0]
+		authReq.Input.Method = info.FullMethod
 
 		reqBody, err := json.Marshal(authReq)
 		if err != nil {

@@ -45,13 +45,21 @@ data "aws_ssm_parameter" "pi_password" {
   name = "/env/pi-password"
 }
 
+data "aws_ssm_parameter" "auth_token" {
+  name = "/env/avcli/opa-token"
+}
+
+data "aws_ssm_parameter" "auth_addr" {
+  name = "/env/auth-addr"
+}
+
 module "api" {
   source = "github.com/byuoitav/terraform//modules/kubernetes-deployment"
 
   // required
   name           = "cli-api"
   image          = "docker.pkg.github.com/byuoitav/av-cli/api-dev"
-  image_version  = "ec85ced"
+  image_version  = "9dc1de2"
   container_port = 8080
   repo_url       = "https://github.com/byuoitav/av-cli"
 
@@ -69,8 +77,8 @@ module "api" {
   container_args = [
     "--port", "8080",
     "--log-level", "0",
-    "--auth-addr", "idk",
-    "--auth-token", "idk",
+    "--auth-addr", data.aws_ssm_parameter.auth_addr,
+    "--auth-token", "Bearer " + data.aws_ssm_parameter.auth_token,
     "--gateway-addr", "api.byu.edu",
     "--client-id", data.aws_ssm_parameter.cli_client_id.value,
     "--client-secret", data.aws_ssm_parameter.cli_client_secret.value,
