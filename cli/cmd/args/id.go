@@ -60,7 +60,7 @@ func ValidID(cmd *cobra.Command, args []string) error {
 
 	split := strings.Split(args[0], "-")
 	if len(split) > 3 {
-		return fmt.Errorf("invalid ID %s. Must be in format BLDG, BLDG-ROOM, or BLDG-ROOM-CP1")
+		return fmt.Errorf("invalid ID %s. Must be in format BLDG, BLDG-ROOM, or BLDG-ROOM-CP1", args[0])
 	}
 
 	return nil

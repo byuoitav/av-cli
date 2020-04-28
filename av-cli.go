@@ -10,6 +10,7 @@ import (
 
 	"github.com/byuoitav/auth/wso2"
 	"github.com/byuoitav/common/db"
+	"github.com/byuoitav/common/structs"
 	empty "github.com/golang/protobuf/ptypes/empty"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -29,8 +30,8 @@ type Server struct {
 
 func (s *Server) Swab(id *ID, stream AvCli_SwabServer) error {
 	dbAddr := strings.Replace(s.DBAddress, "dev", id.Designation, 1)
-	dbAddr = strings.Replace(s.DBAddress, "stg", id.Designation, 1)
-	dbAddr = strings.Replace(s.DBAddress, "prd", id.Designation, 1)
+	dbAddr = strings.Replace(dbAddr, "stg", id.Designation, 1)
+	dbAddr = strings.Replace(dbAddr, "prd", id.Designation, 1)
 
 	db := db.GetDBWithCustomAuth(dbAddr, id.Designation, s.DBPassword)
 
@@ -56,16 +57,15 @@ func (s *Server) Swab(id *ID, stream AvCli_SwabServer) error {
 			})
 		}
 
-		c := make(chan SwabResult)
+		c := make(chan *SwabResult)
 		expectedCount := 0
 
 		for i := range rooms {
-			go func() {
-				tmpRoom := rooms[i]
+			go func(tmpRoom structs.Room) {
 				devices, err := db.GetDevicesByRoom(tmpRoom.ID)
 				if err != nil {
 					err = fmt.Errorf("unable to get devices from database: %v", err)
-					c <- SwabResult{
+					c <- &SwabResult{
 						Id:    tmpRoom.ID,
 						Error: err.Error(),
 					}
@@ -74,7 +74,7 @@ func (s *Server) Swab(id *ID, stream AvCli_SwabServer) error {
 
 				if len(devices) == 0 {
 					err = fmt.Errorf("no devices found in %s", tmpRoom.ID)
-					c <- SwabResult{
+					c <- &SwabResult{
 						Id:    tmpRoom.ID,
 						Error: err.Error(),
 					}
@@ -88,12 +88,12 @@ func (s *Server) Swab(id *ID, stream AvCli_SwabServer) error {
 						go func() {
 							err := swabDevice(context.TODO(), tmpDevice.Address)
 							if err != nil {
-								c <- SwabResult{
+								c <- &SwabResult{
 									Id:    tmpDevice.ID,
 									Error: err.Error(),
 								}
 							} else {
-								c <- SwabResult{
+								c <- &SwabResult{
 									Id:    tmpDevice.ID,
 									Error: "",
 								}
@@ -102,19 +102,19 @@ func (s *Server) Swab(id *ID, stream AvCli_SwabServer) error {
 						expectedCount++
 					}
 				}
-			}()
+			}(rooms[i])
 		}
 
 		actualCount := 0
 
-		for {
-			select {
-			case res := <-c:
-				stream.Send(&res)
-				actualCount++
-				if actualCount == expectedCount {
-					return nil
-				}
+		for res := range c {
+			if err := stream.Send(res); err != nil {
+				return err
+			}
+
+			actualCount++
+			if actualCount == expectedCount {
+				return nil
 			}
 		}
 
@@ -137,7 +137,7 @@ func (s *Server) Swab(id *ID, stream AvCli_SwabServer) error {
 			})
 		}
 
-		c := make(chan SwabResult)
+		c := make(chan *SwabResult)
 		expectedCount := 0
 
 		for i := range devices {
@@ -147,12 +147,12 @@ func (s *Server) Swab(id *ID, stream AvCli_SwabServer) error {
 				go func() {
 					err := swabDevice(context.TODO(), tmpDevice.Address)
 					if err != nil {
-						c <- SwabResult{
+						c <- &SwabResult{
 							Id:    tmpDevice.ID,
 							Error: err.Error(),
 						}
 					} else {
-						c <- SwabResult{
+						c <- &SwabResult{
 							Id:    tmpDevice.ID,
 							Error: "",
 						}
@@ -164,14 +164,14 @@ func (s *Server) Swab(id *ID, stream AvCli_SwabServer) error {
 
 		actualCount := 0
 
-		for {
-			select {
-			case res := <-c:
-				stream.Send(&res)
-				actualCount++
-				if actualCount == expectedCount {
-					return nil
-				}
+		for res := range c {
+			if err := stream.Send(res); err != nil {
+				return err
+			}
+
+			actualCount++
+			if actualCount == expectedCount {
+				return nil
 			}
 		}
 
@@ -288,8 +288,8 @@ func (s *Server) Float(id *ID, stream AvCli_FloatServer) error {
 	}
 
 	dbAddr := strings.Replace(s.DBAddress, "dev", id.Designation, 1)
-	dbAddr = strings.Replace(s.DBAddress, "stg", id.Designation, 1)
-	dbAddr = strings.Replace(s.DBAddress, "prd", id.Designation, 1)
+	dbAddr = strings.Replace(dbAddr, "stg", id.Designation, 1)
+	dbAddr = strings.Replace(dbAddr, "prd", id.Designation, 1)
 
 	db := db.GetDBWithCustomAuth(dbAddr, id.Designation, s.DBPassword)
 
@@ -315,7 +315,7 @@ func (s *Server) Float(id *ID, stream AvCli_FloatServer) error {
 			})
 		}
 
-		c := make(chan FloatResult)
+		c := make(chan *FloatResult)
 		expectedCount := 0
 
 		for i := range rooms {
@@ -324,7 +324,7 @@ func (s *Server) Float(id *ID, stream AvCli_FloatServer) error {
 				devices, err := db.GetDevicesByRoom(tmpRoom.ID)
 				if err != nil {
 					err = fmt.Errorf("unable to get devices from database: %v", err)
-					c <- FloatResult{
+					c <- &FloatResult{
 						Id:    tmpRoom.ID,
 						Error: err.Error(),
 					}
@@ -333,7 +333,7 @@ func (s *Server) Float(id *ID, stream AvCli_FloatServer) error {
 
 				if len(devices) == 0 {
 					err = fmt.Errorf("no devices found in %s", tmpRoom.ID)
-					c <- FloatResult{
+					c <- &FloatResult{
 						Id:    tmpRoom.ID,
 						Error: err.Error(),
 					}
@@ -346,12 +346,12 @@ func (s *Server) Float(id *ID, stream AvCli_FloatServer) error {
 						go func() {
 							err := s.floatShip(tmpDevice.ID, id.Designation)
 							if err != nil {
-								c <- FloatResult{
+								c <- &FloatResult{
 									Id:    tmpDevice.ID,
 									Error: err.Error(),
 								}
 							} else {
-								c <- FloatResult{
+								c <- &FloatResult{
 									Id:    tmpDevice.ID,
 									Error: "",
 								}
@@ -365,14 +365,14 @@ func (s *Server) Float(id *ID, stream AvCli_FloatServer) error {
 		}
 
 		actualCount := 0
-		for {
-			select {
-			case res := <-c:
-				stream.Send(&res)
-				actualCount++
-				if actualCount == expectedCount {
-					return nil
-				}
+		for res := range c {
+			if err := stream.Send(res); err != nil {
+				return err
+			}
+
+			actualCount++
+			if actualCount == expectedCount {
+				return nil
 			}
 		}
 
@@ -395,7 +395,7 @@ func (s *Server) Float(id *ID, stream AvCli_FloatServer) error {
 			})
 		}
 
-		c := make(chan FloatResult)
+		c := make(chan *FloatResult)
 		expectedCount := 0
 
 		for i := range devices {
@@ -404,12 +404,12 @@ func (s *Server) Float(id *ID, stream AvCli_FloatServer) error {
 				go func() {
 					err := s.floatShip(tmpDevice.ID, id.Designation)
 					if err != nil {
-						c <- FloatResult{
+						c <- &FloatResult{
 							Id:    tmpDevice.ID,
 							Error: err.Error(),
 						}
 					} else {
-						c <- FloatResult{
+						c <- &FloatResult{
 							Id:    tmpDevice.ID,
 							Error: "",
 						}
@@ -418,15 +418,16 @@ func (s *Server) Float(id *ID, stream AvCli_FloatServer) error {
 				expectedCount++
 			}
 		}
+
 		actualCount := 0
-		for {
-			select {
-			case res := <-c:
-				stream.Send(&res)
-				actualCount++
-				if actualCount == expectedCount {
-					return nil
-				}
+		for res := range c {
+			if err := stream.Send(res); err != nil {
+				return err
+			}
+
+			actualCount++
+			if actualCount == expectedCount {
+				return nil
 			}
 		}
 

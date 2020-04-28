@@ -38,11 +38,11 @@ func New(ctx context.Context, cliAddr string, cliToken string, slackToken string
 	}, nil
 }
 
-func (c *Client) debugf(format string, a ...interface{}) {
-	if c.Logger != nil {
-		c.Logger.Debugf(format, a...)
-	}
-}
+//func (c *Client) debugf(format string, a ...interface{}) {
+//	if c.Logger != nil {
+//		c.Logger.Debugf(format, a...)
+//	}
+//}
 
 func (c *Client) infof(format string, a ...interface{}) {
 	if c.Logger != nil {
@@ -56,8 +56,8 @@ func (c *Client) warnf(format string, a ...interface{}) {
 	}
 }
 
-func (c *Client) errorf(format string, a ...interface{}) {
-	if c.Logger != nil {
-		c.Logger.Errorf(format, a...)
-	}
-}
+//func (c *Client) errorf(format string, a ...interface{}) {
+//	if c.Logger != nil {
+//		c.Logger.Errorf(format, a...)
+//	}
+//}
