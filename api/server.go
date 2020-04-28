@@ -138,9 +138,11 @@ type authClient struct {
 }
 
 type authRequest struct {
-	Token  string `json:"token"`
-	User   string `json:"user"`
-	Method string `json:"methhead"` // i've been watching too much breaking bad
+	Input struct {
+		Token  string `json:"token"`
+		User   string `json:"user"`
+		Method string `json:"method"`
+	} `json:"input"`
 }
 
 type authResponse struct {
@@ -162,6 +164,8 @@ func (client *authClient) unaryServerInterceptor() grpc.UnaryServerInterceptor {
 			return nil, errMissingMetadata
 		}
 
+		fmt.Printf("md: %s\n" md)
+
 		auth := md["authorization"]
 		user := md["x-user"]
 
@@ -174,11 +178,10 @@ func (client *authClient) unaryServerInterceptor() grpc.UnaryServerInterceptor {
 		}
 
 		// build opa request
-		authReq := authRequest{
-			Token:  strings.TrimPrefix(auth[0], "Bearer "),
-			User:   user[0],
-			Method: info.FullMethod,
-		}
+		var authReq authRequest
+		authReq.Token = strings.TrimPrefix(auth[0], "Bearer ")
+		authReq.User = user[0]
+		authReq.Method = info.FullMethod
 
 		reqBody, err := json.Marshal(authReq)
 		if err != nil {
@@ -186,7 +189,7 @@ func (client *authClient) unaryServerInterceptor() grpc.UnaryServerInterceptor {
 		}
 
 		fmt.Printf("sending this request: %s\n", reqBody)
-		url := fmt.Sprintf("https://%s/v1/data/avcli", client.Address)
+		url := fmt.Sprintf("https://%s/v1/data/cli", client.Address)
 
 		httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(reqBody))
 		if err != nil {
@@ -206,6 +209,8 @@ func (client *authClient) unaryServerInterceptor() grpc.UnaryServerInterceptor {
 			return nil, fmt.Errorf("unable to read response: %w", err)
 		}
 
+		fmt.Printf("response from opa: %s\n", respBody)
+
 		if resp.StatusCode != http.StatusOK {
 			return nil, fmt.Errorf("got a %v from OPA. response:\n%s", resp.StatusCode, respBody)
 		}
@@ -214,6 +219,8 @@ func (client *authClient) unaryServerInterceptor() grpc.UnaryServerInterceptor {
 		if err := json.Unmarshal(respBody, &authResp); err != nil {
 			return nil, fmt.Errorf("unable to unmarshal response: %w", err)
 		}
+
+		fmt.Printf("parsed response: %+v\n", authResp)
 
 		if !authResp.Result.Allow {
 			return nil, errNotAuthorized
