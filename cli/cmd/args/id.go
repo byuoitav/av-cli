@@ -52,6 +52,20 @@ func ValidDeviceID(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+//ValidID checks if the argument is a valid device/room/building ID
+func ValidID(cmd *cobra.Command, args []string) error {
+	if len(args) == 0 {
+		return fmt.Errorf("ID required")
+	}
+
+	split := strings.Split(args[0], "-")
+	if len(split) > 3 {
+		return fmt.Errorf("invalid ID %s. Must be in format BLDG, BLDG-ROOM, or BLDG-ROOM-CP1", args[0])
+	}
+
+	return nil
+}
+
 // Valid is always valid
 func Valid(cmd *cobra.Command, args []string) error {
 	return nil

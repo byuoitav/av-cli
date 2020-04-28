@@ -35,6 +35,9 @@ func main() {
 		authAddr    string
 		authToken   string
 		disableAuth bool
+		gatewayURL  string
+		key         string
+		secret      string
 	)
 
 	pflag.IntVarP(&port, "port", "P", 8080, "port to run lazarette on")
@@ -42,6 +45,9 @@ func main() {
 	pflag.StringVar(&authAddr, "auth-addr", "", "address of the auth server")
 	pflag.StringVar(&authToken, "auth-token", "", "authorization token to use when calling the auth server")
 	pflag.BoolVar(&disableAuth, "disable-auth", false, "disables auth checks")
+	pflag.StringVarP(&gatewayURL, "gateWayURL", "g", "", "wso2 gatewayURL")
+	pflag.StringVarP(&key, "key", "k", "", "wso2 key")
+	pflag.StringVarP(&secret, "secret", "s", "", "wso2 secret")
 	pflag.Parse()
 
 	// build the logger
@@ -95,7 +101,13 @@ func main() {
 
 	// build the grpc server
 	cli := &avcli.Server{
-		Logger: log,
+		Logger:     log,
+		DBUsername: os.Getenv("DB_USERNAME"),
+		DBPassword: os.Getenv("DB_PASSWORD"),
+		DBAddress:  os.Getenv("DB_ADDRESS"),
+		GatewayURL: gatewayURL,
+		Key:        key,
+		Secret:     secret,
 	}
 
 	server := grpc.NewServer(grpc.UnaryInterceptor(authClient.unaryServerInterceptor()))
