@@ -59,7 +59,7 @@ module "api" {
   // required
   name           = "cli-api"
   image          = "docker.pkg.github.com/byuoitav/av-cli/api-dev"
-  image_version  = "9dc1de2"
+  image_version  = "07ddc8e"
   container_port = 8080
   repo_url       = "https://github.com/byuoitav/av-cli"
 
@@ -81,8 +81,7 @@ module "api" {
     "--auth-token", "Bearer " + data.aws_ssm_parameter.auth_token,
     "--gateway-addr", "api.byu.edu",
     "--client-id", data.aws_ssm_parameter.cli_client_id.value,
-    "--client-secret", data.aws_ssm_parameter.cli_client_secret.value,
-    "--disable-auth"
+    "--client-secret", data.aws_ssm_parameter.cli_client_secret.value
   ]
   ingress_annotations = {
     "nginx.ingress.kubernetes.io/backend-protocol" = "GRPC"

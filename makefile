@@ -19,9 +19,9 @@ CLI_PKG_LIST := $(shell cd cli && go list ${CLI_PKG}/...)
 SLACK_PKG_LIST := $(shell cd slack && go list ${SLACK_PKG}/...)
 
 BUILD_CLI=go build -ldflags "-s -w \
-		   -X \"$(PKG)/cmd.version=$(VERSION)\" \
-		   -X \"$(PKG)/cmd.buildTime=$(BUILD_TIME)\" \
-		   -X \"$(PKG)/cmd.gitCommit=$(COMMIT_HASH)\""
+		   -X \"$(CLI_PKG)/cmd.version=$(VERSION)\" \
+		   -X \"$(CLI_PKG)/cmd.buildTime=$(BUILD_TIME)\" \
+		   -X \"$(CLI_PKG)/cmd.gitCommit=$(COMMIT_HASH)\""
 
 .PHONY: all deps build test test-cov clean lint install
 
