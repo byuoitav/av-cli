@@ -11,6 +11,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/byuoitav/auth/wso2"
 	avcli "github.com/byuoitav/av-cli"
 	"github.com/spf13/pflag"
 	"go.uber.org/zap"
@@ -35,9 +36,10 @@ func main() {
 		authAddr    string
 		authToken   string
 		disableAuth bool
-		gatewayURL  string
-		key         string
-		secret      string
+
+		gatewayAddr  string
+		clientID     string
+		clientSecret string
 	)
 
 	pflag.IntVarP(&port, "port", "P", 8080, "port to run lazarette on")
@@ -45,9 +47,9 @@ func main() {
 	pflag.StringVar(&authAddr, "auth-addr", "", "address of the auth server")
 	pflag.StringVar(&authToken, "auth-token", "", "authorization token to use when calling the auth server")
 	pflag.BoolVar(&disableAuth, "disable-auth", false, "disables auth checks")
-	pflag.StringVarP(&gatewayURL, "gateWayURL", "g", "", "wso2 gatewayURL")
-	pflag.StringVarP(&key, "key", "k", "", "wso2 key")
-	pflag.StringVarP(&secret, "secret", "s", "", "wso2 secret")
+	pflag.StringVar(&gatewayAddr, "gateway-addr", "api.byu.edu", "wso2 gateway address")
+	pflag.StringVar(&clientID, "client-id", "", "wso2 key")
+	pflag.StringVar(&clientSecret, "client-secret", "", "wso2 secret")
 	pflag.Parse()
 
 	// build the logger
@@ -105,9 +107,11 @@ func main() {
 		DBUsername: os.Getenv("DB_USERNAME"),
 		DBPassword: os.Getenv("DB_PASSWORD"),
 		DBAddress:  os.Getenv("DB_ADDRESS"),
-		GatewayURL: gatewayURL,
-		Key:        key,
-		Secret:     secret,
+		Client: &wso2.Client{
+			GatewayURL:   fmt.Sprintf("https://%s", gatewayAddr),
+			ClientID:     clientID,
+			ClientSecret: clientSecret,
+		},
 	}
 
 	server := grpc.NewServer(grpc.UnaryInterceptor(authClient.unaryServerInterceptor()))

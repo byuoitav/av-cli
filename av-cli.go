@@ -23,9 +23,8 @@ type Server struct {
 	DBUsername string
 	DBPassword string
 	DBAddress  string
-	GatewayURL string
-	Key        string
-	Secret     string
+
+	Client *wso2.Client
 }
 
 func (s *Server) Swab(id *ID, stream AvCli_SwabServer) error {
@@ -268,25 +267,6 @@ func swabDevice(ctx context.Context, address string) error {
 }
 
 func (s *Server) Float(id *ID, stream AvCli_FloatServer) error {
-	if s.GatewayURL == "" {
-		return stream.Send(&FloatResult{
-			Id:    id.Id,
-			Error: "Gateway URL not set",
-		})
-	}
-	if s.Key == "" {
-		return stream.Send(&FloatResult{
-			Id:    id.Id,
-			Error: "Key not set",
-		})
-	}
-	if s.Secret == "" {
-		return stream.Send(&FloatResult{
-			Id:    id.Id,
-			Error: "Secret not set",
-		})
-	}
-
 	dbAddr := strings.Replace(s.DBAddress, "dev", id.Designation, 1)
 	dbAddr = strings.Replace(dbAddr, "stg", id.Designation, 1)
 	dbAddr = strings.Replace(dbAddr, "prd", id.Designation, 1)
@@ -459,13 +439,7 @@ func (s *Server) floatShip(deviceID, designation string) error {
 		return fmt.Errorf("couldn't make request: %v", err)
 	}
 
-	client := wso2.Client{
-		GatewayURL:   s.GatewayURL,
-		ClientID:     s.Key,
-		ClientSecret: s.Secret,
-	}
-
-	resp, err := client.Do(req)
+	resp, err := s.Client.Do(req)
 	if err != nil {
 		return fmt.Errorf("couldn't perform request: %v", err)
 	}

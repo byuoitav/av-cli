@@ -5,6 +5,7 @@ replace github.com/byuoitav/av-cli => ../
 go 1.14
 
 require (
+	github.com/akamai/AkamaiOPEN-edgegrid-golang v0.9.13 // indirect
 	github.com/byuoitav/auth v0.1.2 // indirect
 	github.com/byuoitav/av-cli v0.0.0-00010101000000-000000000000
 	github.com/byuoitav/av-cli/cli v0.0.0-20200423221954-131a0fa73198 // indirect
