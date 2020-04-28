@@ -2,6 +2,7 @@ package pi
 
 import (
 	"context"
+	"crypto/x509"
 	"errors"
 	"fmt"
 	"net"
@@ -18,6 +19,7 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 )
 
@@ -31,10 +33,16 @@ var screenshotCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		pool, err := x509.SystemCertPool()
+		if err != nil {
+			fmt.Printf("unable to get system cert pool: %s", err)
+			os.Exit(1)
+		}
+
 		ctx, cancel := context.WithTimeout(cmd.Context(), 15*time.Second)
 		defer cancel()
 
-		conn, err := grpc.DialContext(ctx, viper.GetString("api"), grpc.WithInsecure())
+		conn, err := grpc.Dial(viper.GetString("api"), grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(pool, "")))
 		if err != nil {
 			fail("unable to connect to api: %s\n", err)
 		}
@@ -47,7 +55,7 @@ var screenshotCmd = &cobra.Command{
 			if s, ok := status.FromError(err); ok {
 				switch s.Code() {
 				case codes.Unavailable:
-					fail("api is unavailable\n")
+					fail("api is unavailable: %s\n", s.Err())
 				default:
 					fail("%s\n", s.Err())
 				}
