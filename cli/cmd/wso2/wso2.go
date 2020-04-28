@@ -60,9 +60,9 @@ type IDInfo struct {
 	jwt.StandardClaims
 }
 
-// GetAccessToken .
-func GetAccessToken() string {
-	return getToks().AccessToken
+// GetIDToken .
+func GetIDToken() string {
+	return getToks().IDToken
 }
 
 // GetIDInfo .
