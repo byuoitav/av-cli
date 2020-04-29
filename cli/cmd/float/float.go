@@ -38,7 +38,7 @@ var Cmd = &cobra.Command{
 
 		idToken := wso2.GetIDToken()
 
-		conn, err := grpc.Dial(viper.GetString("api"), getTransportSecurityDialOption(pool))
+		conn, err := grpc.Dial(viper.GetString("api"), avcli.getTransportSecurityDialOption(pool))
 		if err != nil {
 			fmt.Printf("error making grpc connection: %v", err)
 			os.Exit(1)
@@ -52,7 +52,7 @@ var Cmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		auth := auth{
+		auth := avcli.auth{
 			token: idToken,
 			user:  "",
 		}
@@ -62,7 +62,7 @@ var Cmd = &cobra.Command{
 			if s, ok := status.FromError(err); ok {
 				switch s.Code() {
 				case codes.Unavailable:
-					fail("api is unavailable\n")
+					fail("api is unavailable: %s\n", s.Err())
 				default:
 					fail("%s\n", s.Err())
 				}

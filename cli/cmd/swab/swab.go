@@ -3,12 +3,14 @@ package swab
 import (
 	"context"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 
 	avcli "github.com/byuoitav/av-cli"
 	"github.com/byuoitav/av-cli/cli/cmd/args"
+	"github.com/byuoitav/av-cli/cli/cmd/wso2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
@@ -36,6 +38,8 @@ var Cmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		idToken := wso2.GetIDToken()
+
 		conn, err := grpc.Dial(viper.GetString("api"), grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(pool, "")))
 		if err != nil {
 			fmt.Printf("error making grpc connection: %v", err)
@@ -50,7 +54,12 @@ var Cmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		stream, err := cli.Swab(context.TODO(), &avcli.ID{Id: arg[0], Designation: designation})
+		auth := avcli.auth{
+			token: idToken,
+			user:  "",
+		}
+
+		stream, err := cli.Swab(context.TODO(), &avcli.ID{Id: arg[0], Designation: designation}, grpc.PerRPCCredentials(auth))
 		if err != nil {
 			if s, ok := status.FromError(err); ok {
 				switch s.Code() {
@@ -66,9 +75,13 @@ var Cmd = &cobra.Command{
 
 		for {
 			in, err := stream.Recv()
-			if err == io.EOF {
+			switch {
+			case errors.Is(err, io.EOF):
 				return
+			case err != nil:
+				fmt.Printf("error: %s\nfd", err)
 			}
+
 			if in.Error != "" {
 				fmt.Printf("there was an error swabbing %s: %s\n", in.Id, in.Error)
 			} else {
