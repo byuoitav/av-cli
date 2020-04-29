@@ -204,7 +204,7 @@ func (client *authClient) authenticate(ctx context.Context, method string) error
 		return fmt.Errorf("unable to marshal request body: %w", err)
 	}
 
-	client.Logger.Debugf("Authenticating %s for %s", authReq.Input.User, authReq.Input.Method)
+	client.Logger.Debugf("Authenticating %s for %s (token: %s)", authReq.Input.User, authReq.Input.Method, authReq.Input.Token)
 	url := fmt.Sprintf("https://%s/v1/data/cli", client.Address)
 
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(reqBody))

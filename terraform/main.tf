@@ -32,7 +32,6 @@ data "aws_ssm_parameter" "cli_client_secret" {
 data "aws_ssm_parameter" "db_address" {
   name = "/env/couch-address"
 }
-
 data "aws_ssm_parameter" "db_username" {
   name = "/env/couch-username"
 }
@@ -59,7 +58,7 @@ module "api" {
   // required
   name           = "cli-api"
   image          = "docker.pkg.github.com/byuoitav/av-cli/api-dev"
-  image_version  = "4154ae7"
+  image_version  = "417db85"
   container_port = 8080
   repo_url       = "https://github.com/byuoitav/av-cli"
 
@@ -109,7 +108,7 @@ module "slack_cli" {
   // required
   name           = "slack-cli"
   image          = "docker.pkg.github.com/byuoitav/av-cli/slack-dev"
-  image_version  = "ec85ced"
+  image_version  = "417db85"
   container_port = 8080
   repo_url       = "https://github.com/byuoitav/av-cli"
 
