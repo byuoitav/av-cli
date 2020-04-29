@@ -8,6 +8,9 @@ service AvCli {
 	rpc Float(ID) returns (stream FloatResult) {}
 	rpc Screenshot(ID) returns (ScreenshotResult) {}
 	rpc DuplicateRoom(DuplicateRoomRequest) returns (google.protobuf.Empty) {}
+	// rpc FixTime(ID) returns (stream FixTimeResult) {}
+	// rpc Sink(ID) returns (stream SinkResult) {}
+	// Smee ones
 }
 
 message ID {
@@ -21,6 +24,16 @@ message SwabResult {
 }
 
 message FloatResult {
+	string id = 1;
+	string error = 2;
+}
+
+message FixTimeResult {
+	string id = 1;
+	string error = 2;
+}
+
+message SinkResult {
 	string id = 1;
 	string error = 2;
 }

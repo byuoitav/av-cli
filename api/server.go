@@ -193,9 +193,11 @@ func (client *authClient) authenticate(ctx context.Context, method string) error
 		return errMissingUser
 	}
 
+	fmt.Printf("auth header: %q\n", auth[0])
+
 	// build opa request
 	var authReq authRequest
-	authReq.Input.Token = strings.TrimPrefix(auth[0], "Bearer ")
+	authReq.Input.Token = strings.TrimPrefix(strings.TrimSpace(auth[0]), "Bearer ")
 	authReq.Input.User = user[0]
 	authReq.Input.Method = method
 
