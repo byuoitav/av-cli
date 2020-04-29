@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/byuoitav/av-cli/slack/internal/slackcli"
+	"github.com/byuoitav/av-cli"
 	"github.com/labstack/echo"
 	"github.com/slack-go/slack"
 )
@@ -45,12 +46,12 @@ func handleSlackRequests(slackCli *slackcli.Client) echo.HandlerFunc {
 				cmd = trim(cmd, "screenshot")
 
 				// spawn a routine to post a screenshot
-				cmdSplit := strings.Split(cmd, " ")
-				if len(cmdSplit) != 1 {
-					return c.String(http.StatusOK, "Invalid paramater to screenshot. Usage: /av pi screenshot [BLDG-ROOM-CP1]")
+				cmdFields := strings.Fields(cmd)
+				if len(cmdFields) != 1 {
+					return c.String(http.StatusOK, "Invalid parameter to screenshot. Usage: /av pi screenshot [BLDG-ROOM-CP1]")
 				}
 
-				id := cmdSplit[0]
+				id := cmdFields[0]
 
 				go func() {
 					ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -63,8 +64,27 @@ func handleSlackRequests(slackCli *slackcli.Client) echo.HandlerFunc {
 			default:
 				return c.String(http.StatusOK, "`pi` doesn't have that command.\n\nAvailable commands:\n\tscreenshot")
 			}
+
+		case string.HasPrefix(cmd, "swab"):
+			cmd = trim(cmd, "swab")
+
+			cmdFields := strings.Fields(cmd)
+			if len(cmdFields) != 1{
+				return c.String(http.StatusOK, "Invalid parameter to swab. Usage: /av swab [BLDG | BLDG-ROOM | BLDG-ROOM-DEVICE]")
+			}
+
+			id := cmdFields[0]
+
+			go func() {
+				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				defer cancel()
+
+				c.cli.Swab(ctx, req, req.UserID, id)
+			}()
+
+			return c.String(http.StatusOK, fmt.Sprintf("Swabbing %s...", id))
 		default:
-			return c.String(http.StatusOK, "I don't know how to handle that command.")
+			return c.String(http.StatusOK, "I don't know how to handle that command.\n\nAvailable commands:\n\tpi\n\tswab")
 		}
 	}
 }
