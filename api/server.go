@@ -114,7 +114,7 @@ func main() {
 		},
 	}
 
-	server := grpc.NewServer(grpc.UnaryInterceptor(authClient.unaryServerInterceptor()))
+	server := grpc.NewServer(grpc.UnaryInterceptor(authClient.unaryServerInterceptor()), grpc.StreamInterceptor(authClient.streamServerInterceptor()))
 	avcli.RegisterAvCliServer(server, cli)
 
 	// bind to a port
@@ -152,11 +152,103 @@ type authResponse struct {
 	} `json:"result"`
 }
 
+func (client *authClient) streamServerInterceptor() grpc.StreamServerInterceptor {
+	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		if client.Disabled {
+			return handler(srv, ss)
+		}
+
+		md, ok := metadata.FromIncomingContext(ss.Context())
+		if !ok {
+			return errMissingMetadata
+		}
+
+		fmt.Printf("md: %s\n", md)
+
+		auth := md["authorization"]
+		user := md["x-user"]
+
+		if len(auth) == 0 {
+			return errMissingToken
+		}
+
+		if len(user) == 0 {
+			return errMissingUser
+		}
+
+		if err := client.authenticate(ss.Context(), auth[0], user[0], info.FullMethod); err != nil {
+			return err
+		}
+
+		return handler(srv, ss)
+	}
+}
+
+func (client *authClient) authenticate(ctx context.Context, token, user, method string) error {
+	if len(token) == 0 {
+		return errMissingToken
+	}
+
+	if len(user) == 0 {
+		return errMissingUser
+	}
+
+	// build opa request
+	var authReq authRequest
+	authReq.Input.Token = strings.TrimPrefix(token, "Bearer ")
+	authReq.Input.User = user
+	authReq.Input.Method = method
+
+	reqBody, err := json.Marshal(authReq)
+	if err != nil {
+		return fmt.Errorf("unable to marshal request body: %w", err)
+	}
+
+	fmt.Printf("sending this request: %s\n", reqBody)
+	url := fmt.Sprintf("https://%s/v1/data/cli", client.Address)
+
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(reqBody))
+	if err != nil {
+		return fmt.Errorf("unable to build request: %w", err)
+	}
+
+	httpReq.Header.Add("authorization", client.Token)
+
+	resp, err := http.DefaultClient.Do(httpReq)
+	if err != nil {
+		return fmt.Errorf("unable to do request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("unable to read response: %w", err)
+	}
+
+	fmt.Printf("response from opa: %s\n", respBody)
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("got a %v from auth server. response:\n%s", resp.StatusCode, respBody)
+	}
+
+	var authResp authResponse
+	if err := json.Unmarshal(respBody, &authResp); err != nil {
+		return fmt.Errorf("unable to unmarshal response: %w", err)
+	}
+
+	fmt.Printf("parsed response: %+v\n", authResp)
+
+	if !authResp.Result.Allow {
+		return errNotAuthorized
+	}
+
+	return nil
+}
+
 // TODO logging
 func (client *authClient) unaryServerInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		if client.Disabled {
-			fmt.Printf("Skipping auth!\n")
 			return handler(ctx, req)
 		}
 
@@ -178,53 +270,8 @@ func (client *authClient) unaryServerInterceptor() grpc.UnaryServerInterceptor {
 			return nil, errMissingUser
 		}
 
-		// build opa request
-		var authReq authRequest
-		authReq.Input.Token = strings.TrimPrefix(auth[0], "Bearer ")
-		authReq.Input.User = user[0]
-		authReq.Input.Method = info.FullMethod
-
-		reqBody, err := json.Marshal(authReq)
-		if err != nil {
-			return nil, fmt.Errorf("unable to marshal request body: %w", err)
-		}
-
-		fmt.Printf("sending this request: %s\n", reqBody)
-		url := fmt.Sprintf("https://%s/v1/data/cli", client.Address)
-
-		httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(reqBody))
-		if err != nil {
-			return nil, fmt.Errorf("unable to build request: %w", err)
-		}
-
-		httpReq.Header.Add("authorization", client.Token)
-
-		resp, err := http.DefaultClient.Do(httpReq)
-		if err != nil {
-			return nil, fmt.Errorf("unable to do request: %w", err)
-		}
-		defer resp.Body.Close()
-
-		respBody, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, fmt.Errorf("unable to read response: %w", err)
-		}
-
-		fmt.Printf("response from opa: %s\n", respBody)
-
-		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("got a %v from OPA. response:\n%s", resp.StatusCode, respBody)
-		}
-
-		var authResp authResponse
-		if err := json.Unmarshal(respBody, &authResp); err != nil {
-			return nil, fmt.Errorf("unable to unmarshal response: %w", err)
-		}
-
-		fmt.Printf("parsed response: %+v\n", authResp)
-
-		if !authResp.Result.Allow {
-			return nil, errNotAuthorized
+		if err := client.authenticate(ctx, auth[0], user[0], info.FullMethod); err != nil {
+			return nil, err
 		}
 
 		return handler(ctx, req)
