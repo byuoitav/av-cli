@@ -59,7 +59,7 @@ module "api" {
   // required
   name           = "cli-api"
   image          = "docker.pkg.github.com/byuoitav/av-cli/api-dev"
-  image_version  = "5faaba9"
+  image_version  = "4154ae7"
   container_port = 8080
   repo_url       = "https://github.com/byuoitav/av-cli"
 
@@ -76,7 +76,7 @@ module "api" {
   }
   container_args = [
     "--port", "8080",
-    "--log-level", "0",
+    "--log-level", "-1",
     "--auth-addr", data.aws_ssm_parameter.auth_addr.value,
     "--auth-token", "Bearer ${data.aws_ssm_parameter.auth_token.value}",
     "--gateway-addr", "api.byu.edu",

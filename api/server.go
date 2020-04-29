@@ -152,31 +152,19 @@ type authResponse struct {
 	} `json:"result"`
 }
 
+func (client *authClient) unaryServerInterceptor() grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		if err := client.authenticate(ctx, info.FullMethod); err != nil {
+			return nil, err
+		}
+
+		return handler(ctx, req)
+	}
+}
+
 func (client *authClient) streamServerInterceptor() grpc.StreamServerInterceptor {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if client.Disabled {
-			return handler(srv, ss)
-		}
-
-		md, ok := metadata.FromIncomingContext(ss.Context())
-		if !ok {
-			return errMissingMetadata
-		}
-
-		fmt.Printf("md: %s\n", md)
-
-		auth := md["authorization"]
-		user := md["x-user"]
-
-		if len(auth) == 0 {
-			return errMissingToken
-		}
-
-		if len(user) == 0 {
-			return errMissingUser
-		}
-
-		if err := client.authenticate(ss.Context(), auth[0], user[0], info.FullMethod); err != nil {
+		if err := client.authenticate(ss.Context(), info.FullMethod); err != nil {
 			return err
 		}
 
@@ -184,8 +172,20 @@ func (client *authClient) streamServerInterceptor() grpc.StreamServerInterceptor
 	}
 }
 
-func (client *authClient) authenticate(ctx context.Context, token, user, method string) error {
-	if len(token) == 0 {
+func (client *authClient) authenticate(ctx context.Context, method string) error {
+	if client.Disabled {
+		return nil
+	}
+
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return errMissingMetadata
+	}
+
+	auth := md["authorization"]
+	user := md["x-user"]
+
+	if len(auth) == 0 {
 		return errMissingToken
 	}
 
@@ -195,8 +195,8 @@ func (client *authClient) authenticate(ctx context.Context, token, user, method 
 
 	// build opa request
 	var authReq authRequest
-	authReq.Input.Token = strings.TrimPrefix(token, "Bearer ")
-	authReq.Input.User = user
+	authReq.Input.Token = strings.TrimPrefix(auth[0], "Bearer ")
+	authReq.Input.User = user[0]
 	authReq.Input.Method = method
 
 	reqBody, err := json.Marshal(authReq)
@@ -204,7 +204,7 @@ func (client *authClient) authenticate(ctx context.Context, token, user, method 
 		return fmt.Errorf("unable to marshal request body: %w", err)
 	}
 
-	fmt.Printf("sending this request: %s\n", reqBody)
+	client.Logger.Debugf("Authenticating %s for %s", authReq.Input.User, authReq.Input.Method)
 	url := fmt.Sprintf("https://%s/v1/data/cli", client.Address)
 
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(reqBody))
@@ -239,41 +239,10 @@ func (client *authClient) authenticate(ctx context.Context, token, user, method 
 	fmt.Printf("parsed response: %+v\n", authResp)
 
 	if !authResp.Result.Allow {
+		client.Logger.Debugf("%s is not authorized to do %s", authReq.Input.User, authReq.Input.Method)
 		return errNotAuthorized
 	}
 
+	client.Logger.Debugf("%s has been authorized to do %s", authReq.Input.User, authReq.Input.Method)
 	return nil
-}
-
-// TODO logging
-func (client *authClient) unaryServerInterceptor() grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		if client.Disabled {
-			return handler(ctx, req)
-		}
-
-		md, ok := metadata.FromIncomingContext(ctx)
-		if !ok {
-			return nil, errMissingMetadata
-		}
-
-		fmt.Printf("md: %s\n", md)
-
-		auth := md["authorization"]
-		user := md["x-user"]
-
-		if len(auth) == 0 {
-			return nil, errMissingToken
-		}
-
-		if len(user) == 0 {
-			return nil, errMissingUser
-		}
-
-		if err := client.authenticate(ctx, auth[0], user[0], info.FullMethod); err != nil {
-			return nil, err
-		}
-
-		return handler(ctx, req)
-	}
 }

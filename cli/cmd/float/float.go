@@ -3,6 +3,7 @@ package float
 import (
 	"context"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -71,9 +72,14 @@ var Cmd = &cobra.Command{
 		}
 		for {
 			in, err := stream.Recv()
-			if err == io.EOF {
+			switch {
+			case errors.Is(err, io.EOF):
+				return
+			case err != nil:
+				fmt.Printf("error: %s\nfd", err)
 				return
 			}
+
 			if in.Error != "" {
 				fmt.Printf("there was an error floating to %s: %s\n", in.Id, in.Error)
 			} else {
