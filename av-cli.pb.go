@@ -85,7 +85,7 @@ func (x *ID) GetDesignation() string {
 	return ""
 }
 
-type SwabResult struct {
+type IDResult struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -94,8 +94,8 @@ type SwabResult struct {
 	Error string `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
 }
 
-func (x *SwabResult) Reset() {
-	*x = SwabResult{}
+func (x *IDResult) Reset() {
+	*x = IDResult{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_av_cli_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -103,13 +103,13 @@ func (x *SwabResult) Reset() {
 	}
 }
 
-func (x *SwabResult) String() string {
+func (x *IDResult) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SwabResult) ProtoMessage() {}
+func (*IDResult) ProtoMessage() {}
 
-func (x *SwabResult) ProtoReflect() protoreflect.Message {
+func (x *IDResult) ProtoReflect() protoreflect.Message {
 	mi := &file_av_cli_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -121,36 +121,37 @@ func (x *SwabResult) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use SwabResult.ProtoReflect.Descriptor instead.
-func (*SwabResult) Descriptor() ([]byte, []int) {
+// Deprecated: Use IDResult.ProtoReflect.Descriptor instead.
+func (*IDResult) Descriptor() ([]byte, []int) {
 	return file_av_cli_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *SwabResult) GetId() string {
+func (x *IDResult) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
 }
 
-func (x *SwabResult) GetError() string {
+func (x *IDResult) GetError() string {
 	if x != nil {
 		return x.Error
 	}
 	return ""
 }
 
-type FloatResult struct {
+type SetLogLevelRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	Id    string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Error string `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	Port  int32  `protobuf:"varint,2,opt,name=port,proto3" json:"port,omitempty"`
+	Level int32  `protobuf:"varint,3,opt,name=level,proto3" json:"level,omitempty"`
 }
 
-func (x *FloatResult) Reset() {
-	*x = FloatResult{}
+func (x *SetLogLevelRequest) Reset() {
+	*x = SetLogLevelRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_av_cli_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -158,13 +159,13 @@ func (x *FloatResult) Reset() {
 	}
 }
 
-func (x *FloatResult) String() string {
+func (x *SetLogLevelRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*FloatResult) ProtoMessage() {}
+func (*SetLogLevelRequest) ProtoMessage() {}
 
-func (x *FloatResult) ProtoReflect() protoreflect.Message {
+func (x *SetLogLevelRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_av_cli_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -176,23 +177,30 @@ func (x *FloatResult) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use FloatResult.ProtoReflect.Descriptor instead.
-func (*FloatResult) Descriptor() ([]byte, []int) {
+// Deprecated: Use SetLogLevelRequest.ProtoReflect.Descriptor instead.
+func (*SetLogLevelRequest) Descriptor() ([]byte, []int) {
 	return file_av_cli_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *FloatResult) GetId() string {
+func (x *SetLogLevelRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
 }
 
-func (x *FloatResult) GetError() string {
+func (x *SetLogLevelRequest) GetPort() int32 {
 	if x != nil {
-		return x.Error
+		return x.Port
 	}
-	return ""
+	return 0
+}
+
+func (x *SetLogLevelRequest) GetLevel() int32 {
+	if x != nil {
+		return x.Level
+	}
+	return 0
 }
 
 type ScreenshotResult struct {
@@ -306,35 +314,49 @@ var file_av_cli_proto_rawDesc = []byte{
 	0x74, 0x6f, 0x22, 0x36, 0x0a, 0x02, 0x49, 0x44, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x20, 0x0a, 0x0b, 0x64, 0x65, 0x73, 0x69,
 	0x67, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x64,
-	0x65, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0x32, 0x0a, 0x0a, 0x53, 0x77,
-	0x61, 0x62, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f,
-	0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x22, 0x33,
-	0x0a, 0x0b, 0x46, 0x6c, 0x6f, 0x61, 0x74, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x12, 0x0e, 0x0a,
-	0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x14, 0x0a,
-	0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x65, 0x72,
-	0x72, 0x6f, 0x72, 0x22, 0x28, 0x0a, 0x10, 0x53, 0x63, 0x72, 0x65, 0x65, 0x6e, 0x73, 0x68, 0x6f,
-	0x74, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x70, 0x68, 0x6f, 0x74, 0x6f,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x05, 0x70, 0x68, 0x6f, 0x74, 0x6f, 0x22, 0x42, 0x0a,
-	0x14, 0x44, 0x75, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x66, 0x72, 0x6f, 0x6d, 0x49, 0x44, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x66, 0x72, 0x6f, 0x6d, 0x49, 0x44, 0x12, 0x12, 0x0a,
-	0x04, 0x74, 0x6f, 0x49, 0x44, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x6f, 0x49,
-	0x44, 0x32, 0xd9, 0x01, 0x0a, 0x05, 0x41, 0x76, 0x43, 0x6c, 0x69, 0x12, 0x28, 0x0a, 0x04, 0x53,
-	0x77, 0x61, 0x62, 0x12, 0x09, 0x2e, 0x61, 0x76, 0x63, 0x6c, 0x69, 0x2e, 0x49, 0x44, 0x1a, 0x11,
-	0x2e, 0x61, 0x76, 0x63, 0x6c, 0x69, 0x2e, 0x53, 0x77, 0x61, 0x62, 0x52, 0x65, 0x73, 0x75, 0x6c,
-	0x74, 0x22, 0x00, 0x30, 0x01, 0x12, 0x2a, 0x0a, 0x05, 0x46, 0x6c, 0x6f, 0x61, 0x74, 0x12, 0x09,
-	0x2e, 0x61, 0x76, 0x63, 0x6c, 0x69, 0x2e, 0x49, 0x44, 0x1a, 0x12, 0x2e, 0x61, 0x76, 0x63, 0x6c,
-	0x69, 0x2e, 0x46, 0x6c, 0x6f, 0x61, 0x74, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x22, 0x00, 0x30,
-	0x01, 0x12, 0x32, 0x0a, 0x0a, 0x53, 0x63, 0x72, 0x65, 0x65, 0x6e, 0x73, 0x68, 0x6f, 0x74, 0x12,
-	0x09, 0x2e, 0x61, 0x76, 0x63, 0x6c, 0x69, 0x2e, 0x49, 0x44, 0x1a, 0x17, 0x2e, 0x61, 0x76, 0x63,
-	0x6c, 0x69, 0x2e, 0x53, 0x63, 0x72, 0x65, 0x65, 0x6e, 0x73, 0x68, 0x6f, 0x74, 0x52, 0x65, 0x73,
-	0x75, 0x6c, 0x74, 0x22, 0x00, 0x12, 0x46, 0x0a, 0x0d, 0x44, 0x75, 0x70, 0x6c, 0x69, 0x63, 0x61,
-	0x74, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x12, 0x1b, 0x2e, 0x61, 0x76, 0x63, 0x6c, 0x69, 0x2e, 0x44,
-	0x75, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x52, 0x65, 0x71, 0x75,
-	0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x00, 0x62, 0x06, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x65, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0x30, 0x0a, 0x08, 0x49, 0x44,
+	0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x22, 0x4e, 0x0a, 0x12,
+	0x53, 0x65, 0x74, 0x4c, 0x6f, 0x67, 0x4c, 0x65, 0x76, 0x65, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02,
+	0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x6f, 0x72, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05,
+	0x52, 0x04, 0x70, 0x6f, 0x72, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x6c, 0x65, 0x76, 0x65, 0x6c, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x05, 0x6c, 0x65, 0x76, 0x65, 0x6c, 0x22, 0x28, 0x0a, 0x10,
+	0x53, 0x63, 0x72, 0x65, 0x65, 0x6e, 0x73, 0x68, 0x6f, 0x74, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74,
+	0x12, 0x14, 0x0a, 0x05, 0x70, 0x68, 0x6f, 0x74, 0x6f, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52,
+	0x05, 0x70, 0x68, 0x6f, 0x74, 0x6f, 0x22, 0x42, 0x0a, 0x14, 0x44, 0x75, 0x70, 0x6c, 0x69, 0x63,
+	0x61, 0x74, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x16,
+	0x0a, 0x06, 0x66, 0x72, 0x6f, 0x6d, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06,
+	0x66, 0x72, 0x6f, 0x6d, 0x49, 0x44, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x6f, 0x49, 0x44, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x6f, 0x49, 0x44, 0x32, 0xa1, 0x03, 0x0a, 0x05, 0x41,
+	0x76, 0x43, 0x6c, 0x69, 0x12, 0x26, 0x0a, 0x04, 0x53, 0x77, 0x61, 0x62, 0x12, 0x09, 0x2e, 0x61,
+	0x76, 0x63, 0x6c, 0x69, 0x2e, 0x49, 0x44, 0x1a, 0x0f, 0x2e, 0x61, 0x76, 0x63, 0x6c, 0x69, 0x2e,
+	0x49, 0x44, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x22, 0x00, 0x30, 0x01, 0x12, 0x27, 0x0a, 0x05,
+	0x46, 0x6c, 0x6f, 0x61, 0x74, 0x12, 0x09, 0x2e, 0x61, 0x76, 0x63, 0x6c, 0x69, 0x2e, 0x49, 0x44,
+	0x1a, 0x0f, 0x2e, 0x61, 0x76, 0x63, 0x6c, 0x69, 0x2e, 0x49, 0x44, 0x52, 0x65, 0x73, 0x75, 0x6c,
+	0x74, 0x22, 0x00, 0x30, 0x01, 0x12, 0x32, 0x0a, 0x0a, 0x53, 0x63, 0x72, 0x65, 0x65, 0x6e, 0x73,
+	0x68, 0x6f, 0x74, 0x12, 0x09, 0x2e, 0x61, 0x76, 0x63, 0x6c, 0x69, 0x2e, 0x49, 0x44, 0x1a, 0x17,
+	0x2e, 0x61, 0x76, 0x63, 0x6c, 0x69, 0x2e, 0x53, 0x63, 0x72, 0x65, 0x65, 0x6e, 0x73, 0x68, 0x6f,
+	0x74, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x22, 0x00, 0x12, 0x46, 0x0a, 0x0d, 0x44, 0x75, 0x70,
+	0x6c, 0x69, 0x63, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x12, 0x1b, 0x2e, 0x61, 0x76, 0x63,
+	0x6c, 0x69, 0x2e, 0x44, 0x75, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x6f, 0x6d,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22,
+	0x00, 0x12, 0x29, 0x0a, 0x07, 0x46, 0x69, 0x78, 0x54, 0x69, 0x6d, 0x65, 0x12, 0x09, 0x2e, 0x61,
+	0x76, 0x63, 0x6c, 0x69, 0x2e, 0x49, 0x44, 0x1a, 0x0f, 0x2e, 0x61, 0x76, 0x63, 0x6c, 0x69, 0x2e,
+	0x49, 0x44, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x22, 0x00, 0x30, 0x01, 0x12, 0x26, 0x0a, 0x04,
+	0x53, 0x69, 0x6e, 0x6b, 0x12, 0x09, 0x2e, 0x61, 0x76, 0x63, 0x6c, 0x69, 0x2e, 0x49, 0x44, 0x1a,
+	0x0f, 0x2e, 0x61, 0x76, 0x63, 0x6c, 0x69, 0x2e, 0x49, 0x44, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74,
+	0x22, 0x00, 0x30, 0x01, 0x12, 0x34, 0x0a, 0x14, 0x43, 0x6c, 0x6f, 0x73, 0x65, 0x4d, 0x6f, 0x6e,
+	0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x49, 0x73, 0x73, 0x75, 0x65, 0x12, 0x09, 0x2e, 0x61,
+	0x76, 0x63, 0x6c, 0x69, 0x2e, 0x49, 0x44, 0x1a, 0x0f, 0x2e, 0x61, 0x76, 0x63, 0x6c, 0x69, 0x2e,
+	0x49, 0x44, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x22, 0x00, 0x12, 0x42, 0x0a, 0x0b, 0x53, 0x65,
+	0x74, 0x4c, 0x6f, 0x67, 0x4c, 0x65, 0x76, 0x65, 0x6c, 0x12, 0x19, 0x2e, 0x61, 0x76, 0x63, 0x6c,
+	0x69, 0x2e, 0x53, 0x65, 0x74, 0x4c, 0x6f, 0x67, 0x4c, 0x65, 0x76, 0x65, 0x6c, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x00, 0x62, 0x06,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -352,8 +374,8 @@ func file_av_cli_proto_rawDescGZIP() []byte {
 var file_av_cli_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_av_cli_proto_goTypes = []interface{}{
 	(*ID)(nil),                   // 0: avcli.ID
-	(*SwabResult)(nil),           // 1: avcli.SwabResult
-	(*FloatResult)(nil),          // 2: avcli.FloatResult
+	(*IDResult)(nil),             // 1: avcli.IDResult
+	(*SetLogLevelRequest)(nil),   // 2: avcli.SetLogLevelRequest
 	(*ScreenshotResult)(nil),     // 3: avcli.ScreenshotResult
 	(*DuplicateRoomRequest)(nil), // 4: avcli.DuplicateRoomRequest
 	(*empty.Empty)(nil),          // 5: google.protobuf.Empty
@@ -363,12 +385,20 @@ var file_av_cli_proto_depIdxs = []int32{
 	0, // 1: avcli.AvCli.Float:input_type -> avcli.ID
 	0, // 2: avcli.AvCli.Screenshot:input_type -> avcli.ID
 	4, // 3: avcli.AvCli.DuplicateRoom:input_type -> avcli.DuplicateRoomRequest
-	1, // 4: avcli.AvCli.Swab:output_type -> avcli.SwabResult
-	2, // 5: avcli.AvCli.Float:output_type -> avcli.FloatResult
-	3, // 6: avcli.AvCli.Screenshot:output_type -> avcli.ScreenshotResult
-	5, // 7: avcli.AvCli.DuplicateRoom:output_type -> google.protobuf.Empty
-	4, // [4:8] is the sub-list for method output_type
-	0, // [0:4] is the sub-list for method input_type
+	0, // 4: avcli.AvCli.FixTime:input_type -> avcli.ID
+	0, // 5: avcli.AvCli.Sink:input_type -> avcli.ID
+	0, // 6: avcli.AvCli.CloseMonitoringIssue:input_type -> avcli.ID
+	2, // 7: avcli.AvCli.SetLogLevel:input_type -> avcli.SetLogLevelRequest
+	1, // 8: avcli.AvCli.Swab:output_type -> avcli.IDResult
+	1, // 9: avcli.AvCli.Float:output_type -> avcli.IDResult
+	3, // 10: avcli.AvCli.Screenshot:output_type -> avcli.ScreenshotResult
+	5, // 11: avcli.AvCli.DuplicateRoom:output_type -> google.protobuf.Empty
+	1, // 12: avcli.AvCli.FixTime:output_type -> avcli.IDResult
+	1, // 13: avcli.AvCli.Sink:output_type -> avcli.IDResult
+	1, // 14: avcli.AvCli.CloseMonitoringIssue:output_type -> avcli.IDResult
+	5, // 15: avcli.AvCli.SetLogLevel:output_type -> google.protobuf.Empty
+	8, // [8:16] is the sub-list for method output_type
+	0, // [0:8] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -393,7 +423,7 @@ func file_av_cli_proto_init() {
 			}
 		}
 		file_av_cli_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SwabResult); i {
+			switch v := v.(*IDResult); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -405,7 +435,7 @@ func file_av_cli_proto_init() {
 			}
 		}
 		file_av_cli_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*FloatResult); i {
+			switch v := v.(*SetLogLevelRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -477,6 +507,10 @@ type AvCliClient interface {
 	Float(ctx context.Context, in *ID, opts ...grpc.CallOption) (AvCli_FloatClient, error)
 	Screenshot(ctx context.Context, in *ID, opts ...grpc.CallOption) (*ScreenshotResult, error)
 	DuplicateRoom(ctx context.Context, in *DuplicateRoomRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	FixTime(ctx context.Context, in *ID, opts ...grpc.CallOption) (AvCli_FixTimeClient, error)
+	Sink(ctx context.Context, in *ID, opts ...grpc.CallOption) (AvCli_SinkClient, error)
+	CloseMonitoringIssue(ctx context.Context, in *ID, opts ...grpc.CallOption) (*IDResult, error)
+	SetLogLevel(ctx context.Context, in *SetLogLevelRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 }
 
 type avCliClient struct {
@@ -503,7 +537,7 @@ func (c *avCliClient) Swab(ctx context.Context, in *ID, opts ...grpc.CallOption)
 }
 
 type AvCli_SwabClient interface {
-	Recv() (*SwabResult, error)
+	Recv() (*IDResult, error)
 	grpc.ClientStream
 }
 
@@ -511,8 +545,8 @@ type avCliSwabClient struct {
 	grpc.ClientStream
 }
 
-func (x *avCliSwabClient) Recv() (*SwabResult, error) {
-	m := new(SwabResult)
+func (x *avCliSwabClient) Recv() (*IDResult, error) {
+	m := new(IDResult)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -535,7 +569,7 @@ func (c *avCliClient) Float(ctx context.Context, in *ID, opts ...grpc.CallOption
 }
 
 type AvCli_FloatClient interface {
-	Recv() (*FloatResult, error)
+	Recv() (*IDResult, error)
 	grpc.ClientStream
 }
 
@@ -543,8 +577,8 @@ type avCliFloatClient struct {
 	grpc.ClientStream
 }
 
-func (x *avCliFloatClient) Recv() (*FloatResult, error) {
-	m := new(FloatResult)
+func (x *avCliFloatClient) Recv() (*IDResult, error) {
+	m := new(IDResult)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -569,12 +603,98 @@ func (c *avCliClient) DuplicateRoom(ctx context.Context, in *DuplicateRoomReques
 	return out, nil
 }
 
+func (c *avCliClient) FixTime(ctx context.Context, in *ID, opts ...grpc.CallOption) (AvCli_FixTimeClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_AvCli_serviceDesc.Streams[2], "/avcli.AvCli/FixTime", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &avCliFixTimeClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type AvCli_FixTimeClient interface {
+	Recv() (*IDResult, error)
+	grpc.ClientStream
+}
+
+type avCliFixTimeClient struct {
+	grpc.ClientStream
+}
+
+func (x *avCliFixTimeClient) Recv() (*IDResult, error) {
+	m := new(IDResult)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *avCliClient) Sink(ctx context.Context, in *ID, opts ...grpc.CallOption) (AvCli_SinkClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_AvCli_serviceDesc.Streams[3], "/avcli.AvCli/Sink", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &avCliSinkClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type AvCli_SinkClient interface {
+	Recv() (*IDResult, error)
+	grpc.ClientStream
+}
+
+type avCliSinkClient struct {
+	grpc.ClientStream
+}
+
+func (x *avCliSinkClient) Recv() (*IDResult, error) {
+	m := new(IDResult)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *avCliClient) CloseMonitoringIssue(ctx context.Context, in *ID, opts ...grpc.CallOption) (*IDResult, error) {
+	out := new(IDResult)
+	err := c.cc.Invoke(ctx, "/avcli.AvCli/CloseMonitoringIssue", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *avCliClient) SetLogLevel(ctx context.Context, in *SetLogLevelRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/avcli.AvCli/SetLogLevel", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AvCliServer is the server API for AvCli service.
 type AvCliServer interface {
 	Swab(*ID, AvCli_SwabServer) error
 	Float(*ID, AvCli_FloatServer) error
 	Screenshot(context.Context, *ID) (*ScreenshotResult, error)
 	DuplicateRoom(context.Context, *DuplicateRoomRequest) (*empty.Empty, error)
+	FixTime(*ID, AvCli_FixTimeServer) error
+	Sink(*ID, AvCli_SinkServer) error
+	CloseMonitoringIssue(context.Context, *ID) (*IDResult, error)
+	SetLogLevel(context.Context, *SetLogLevelRequest) (*empty.Empty, error)
 }
 
 // UnimplementedAvCliServer can be embedded to have forward compatible implementations.
@@ -593,6 +713,18 @@ func (*UnimplementedAvCliServer) Screenshot(context.Context, *ID) (*ScreenshotRe
 func (*UnimplementedAvCliServer) DuplicateRoom(context.Context, *DuplicateRoomRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DuplicateRoom not implemented")
 }
+func (*UnimplementedAvCliServer) FixTime(*ID, AvCli_FixTimeServer) error {
+	return status.Errorf(codes.Unimplemented, "method FixTime not implemented")
+}
+func (*UnimplementedAvCliServer) Sink(*ID, AvCli_SinkServer) error {
+	return status.Errorf(codes.Unimplemented, "method Sink not implemented")
+}
+func (*UnimplementedAvCliServer) CloseMonitoringIssue(context.Context, *ID) (*IDResult, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CloseMonitoringIssue not implemented")
+}
+func (*UnimplementedAvCliServer) SetLogLevel(context.Context, *SetLogLevelRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetLogLevel not implemented")
+}
 
 func RegisterAvCliServer(s *grpc.Server, srv AvCliServer) {
 	s.RegisterService(&_AvCli_serviceDesc, srv)
@@ -607,7 +739,7 @@ func _AvCli_Swab_Handler(srv interface{}, stream grpc.ServerStream) error {
 }
 
 type AvCli_SwabServer interface {
-	Send(*SwabResult) error
+	Send(*IDResult) error
 	grpc.ServerStream
 }
 
@@ -615,7 +747,7 @@ type avCliSwabServer struct {
 	grpc.ServerStream
 }
 
-func (x *avCliSwabServer) Send(m *SwabResult) error {
+func (x *avCliSwabServer) Send(m *IDResult) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -628,7 +760,7 @@ func _AvCli_Float_Handler(srv interface{}, stream grpc.ServerStream) error {
 }
 
 type AvCli_FloatServer interface {
-	Send(*FloatResult) error
+	Send(*IDResult) error
 	grpc.ServerStream
 }
 
@@ -636,7 +768,7 @@ type avCliFloatServer struct {
 	grpc.ServerStream
 }
 
-func (x *avCliFloatServer) Send(m *FloatResult) error {
+func (x *avCliFloatServer) Send(m *IDResult) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -676,6 +808,84 @@ func _AvCli_DuplicateRoom_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AvCli_FixTime_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ID)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(AvCliServer).FixTime(m, &avCliFixTimeServer{stream})
+}
+
+type AvCli_FixTimeServer interface {
+	Send(*IDResult) error
+	grpc.ServerStream
+}
+
+type avCliFixTimeServer struct {
+	grpc.ServerStream
+}
+
+func (x *avCliFixTimeServer) Send(m *IDResult) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _AvCli_Sink_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ID)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(AvCliServer).Sink(m, &avCliSinkServer{stream})
+}
+
+type AvCli_SinkServer interface {
+	Send(*IDResult) error
+	grpc.ServerStream
+}
+
+type avCliSinkServer struct {
+	grpc.ServerStream
+}
+
+func (x *avCliSinkServer) Send(m *IDResult) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _AvCli_CloseMonitoringIssue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AvCliServer).CloseMonitoringIssue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/avcli.AvCli/CloseMonitoringIssue",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AvCliServer).CloseMonitoringIssue(ctx, req.(*ID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AvCli_SetLogLevel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetLogLevelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AvCliServer).SetLogLevel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/avcli.AvCli/SetLogLevel",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AvCliServer).SetLogLevel(ctx, req.(*SetLogLevelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _AvCli_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "avcli.AvCli",
 	HandlerType: (*AvCliServer)(nil),
@@ -688,6 +898,14 @@ var _AvCli_serviceDesc = grpc.ServiceDesc{
 			MethodName: "DuplicateRoom",
 			Handler:    _AvCli_DuplicateRoom_Handler,
 		},
+		{
+			MethodName: "CloseMonitoringIssue",
+			Handler:    _AvCli_CloseMonitoringIssue_Handler,
+		},
+		{
+			MethodName: "SetLogLevel",
+			Handler:    _AvCli_SetLogLevel_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -698,6 +916,16 @@ var _AvCli_serviceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Float",
 			Handler:       _AvCli_Float_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "FixTime",
+			Handler:       _AvCli_FixTime_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "Sink",
+			Handler:       _AvCli_Sink_Handler,
 			ServerStreams: true,
 		},
 	},
