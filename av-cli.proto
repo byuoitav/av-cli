@@ -10,7 +10,7 @@ service AvCli {
 	rpc DuplicateRoom(DuplicateRoomRequest) returns (google.protobuf.Empty) {}
 	rpc FixTime(ID) returns (stream IDResult) {}
 	rpc Sink(ID) returns (stream IDResult) {}
-	rpc CloseMonitoringIssue(ID) returns (IDResult) {}
+	rpc CloseMonitoringIssue(ID) returns (google.protobuf.Empty) {}
 	rpc SetLogLevel(SetLogLevelRequest) returns (google.protobuf.Empty) {}
 }
 
@@ -36,5 +36,8 @@ message ScreenshotResult {
 
 message DuplicateRoomRequest {
 	string fromID = 1;
-	string toID = 2;
+	string fromDesignation = 2;
+
+	string toID = 3;
+	string toDesignation = 4;
 }
