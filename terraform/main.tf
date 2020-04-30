@@ -32,7 +32,6 @@ data "aws_ssm_parameter" "cli_client_secret" {
 data "aws_ssm_parameter" "db_address" {
   name = "/env/couch-address"
 }
-
 data "aws_ssm_parameter" "db_username" {
   name = "/env/couch-username"
 }
@@ -59,7 +58,7 @@ module "api" {
   // required
   name           = "cli-api"
   image          = "docker.pkg.github.com/byuoitav/av-cli/api-dev"
-  image_version  = "4154ae7"
+  image_version  = "aba921a"
   container_port = 8080
   repo_url       = "https://github.com/byuoitav/av-cli"
 
@@ -78,7 +77,7 @@ module "api" {
     "--port", "8080",
     "--log-level", "-1",
     "--auth-addr", data.aws_ssm_parameter.auth_addr.value,
-    "--auth-token", "Bearer ${data.aws_ssm_parameter.auth_token.value}",
+    "--auth-token", data.aws_ssm_parameter.auth_token.value,
     "--gateway-addr", "api.byu.edu",
     "--client-id", data.aws_ssm_parameter.cli_client_id.value,
     "--client-secret", data.aws_ssm_parameter.cli_client_secret.value
@@ -109,7 +108,7 @@ module "slack_cli" {
   // required
   name           = "slack-cli"
   image          = "docker.pkg.github.com/byuoitav/av-cli/slack-dev"
-  image_version  = "ec85ced"
+  image_version  = "aba921a"
   container_port = 8080
   repo_url       = "https://github.com/byuoitav/av-cli"
 

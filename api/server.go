@@ -148,7 +148,9 @@ type authRequest struct {
 type authResponse struct {
 	DecisionID string `json:"decision_id"`
 	Result     struct {
-		Allow bool `json:"allow"`
+		Allow             bool   `json:"allow"`
+		OriginatingClient string `json:"originating_client"`
+		User              string `json:"user"`
 	} `json:"result"`
 }
 
@@ -212,7 +214,7 @@ func (client *authClient) authenticate(ctx context.Context, method string) error
 		return fmt.Errorf("unable to build request: %w", err)
 	}
 
-	httpReq.Header.Add("authorization", client.Token)
+	httpReq.Header.Add("authorization", "Bearer "+client.Token)
 
 	resp, err := http.DefaultClient.Do(httpReq)
 	if err != nil {
@@ -225,8 +227,6 @@ func (client *authClient) authenticate(ctx context.Context, method string) error
 		return fmt.Errorf("unable to read response: %w", err)
 	}
 
-	fmt.Printf("response from opa: %s\n", respBody)
-
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("got a %v from auth server. response:\n%s", resp.StatusCode, respBody)
 	}
@@ -236,13 +236,11 @@ func (client *authClient) authenticate(ctx context.Context, method string) error
 		return fmt.Errorf("unable to unmarshal response: %w", err)
 	}
 
-	fmt.Printf("parsed response: %+v\n", authResp)
-
 	if !authResp.Result.Allow {
-		client.Logger.Debugf("%s is not authorized to do %s", authReq.Input.User, authReq.Input.Method)
+		client.Logger.Debugf("%s is not authorized to do %s", authResp.Result.User, authReq.Input.Method)
 		return errNotAuthorized
 	}
 
-	client.Logger.Debugf("%s has been authorized to do %s", authReq.Input.User, authReq.Input.Method)
+	client.Logger.Debugf("%s has been authorized to do %s from %s", authResp.Result.User, authReq.Input.Method, authResp.Result.OriginatingClient)
 	return nil
 }

@@ -4,10 +4,14 @@ package avcli;
 import "google/protobuf/empty.proto";
 
 service AvCli {
-	rpc Swab(ID) returns (stream SwabResult) {}
-	rpc Float(ID) returns (stream FloatResult) {}
+	rpc Swab(ID) returns (stream IDResult) {}
+	rpc Float(ID) returns (stream IDResult) {}
 	rpc Screenshot(ID) returns (ScreenshotResult) {}
 	rpc DuplicateRoom(DuplicateRoomRequest) returns (google.protobuf.Empty) {}
+	rpc FixTime(ID) returns (stream IDResult) {}
+	rpc Sink(ID) returns (stream IDResult) {}
+	rpc CloseMonitoringIssue(ID) returns (IDResult) {}
+	rpc SetLogLevel(SetLogLevelRequest) returns (google.protobuf.Empty) {}
 }
 
 message ID {
@@ -15,14 +19,15 @@ message ID {
 	string designation = 2;
 }
 
-message SwabResult {
+message IDResult {
 	string id = 1;
 	string error = 2;
 }
 
-message FloatResult {
+message SetLogLevelRequest {
 	string id = 1;
-	string error = 2;
+	int32 port = 2;
+	int32 level = 3;
 }
 
 message ScreenshotResult {
