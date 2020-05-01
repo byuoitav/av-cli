@@ -1,13 +1,21 @@
 package pi
 
 import (
+	"context"
+	"crypto/x509"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 
+	avcli "github.com/byuoitav/av-cli"
 	"github.com/byuoitav/av-cli/cli/cmd/args"
-	"github.com/byuoitav/common/db"
+	"github.com/byuoitav/av-cli/cli/cmd/wso2"
 	"github.com/spf13/cobra"
-	"golang.org/x/crypto/ssh"
+	"github.com/spf13/viper"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var sinkCmd = &cobra.Command{
@@ -16,43 +24,60 @@ var sinkCmd = &cobra.Command{
 	Long:  "ssh into a pi and reboot it",
 	Args:  args.ValidDeviceID,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		dev, err := db.GetDB().GetDevice(args[0])
-		if err != nil {
-			fmt.Printf("unable to get device from db: %v", err)
+		fmt.Printf("Rebooting %s\n", args[0])
+		fail := func(format string, a ...interface{}) {
+			fmt.Printf(format, a...)
 			os.Exit(1)
 		}
 
-		client, err := NewSSHClient(dev.Address)
+		pool, err := x509.SystemCertPool()
 		if err != nil {
-			fmt.Printf("unable to ssh into %s: %s", args[0], err)
-			os.Exit(1)
-		}
-		defer client.Close()
-
-		session, err := client.NewSession()
-		if err != nil {
-			fmt.Printf("unable to start new session: %s", err)
-			client.Close()
-			os.Exit(1)
+			fail("unable to get system cert pool: %v", err)
 		}
 
-		fmt.Printf("Rebooting...\n")
+		idToken := wso2.GetIDToken()
 
-		bytes, err := session.CombinedOutput("sudo reboot")
+		conn, err := grpc.Dial(viper.GetString("api"), avcli.getTransportSecurityDialOption(pool))
 		if err != nil {
-			switch err.(type) {
-			case *ssh.ExitMissingError:
-				fmt.Printf("Success.\n")
+			fail("error making grpc connection: %v", err)
+		}
+
+		cli := avcli.NewAvCliClient(conn)
+
+		auth := avcli.auth{
+			token: idToken,
+			user:  "",
+		}
+
+		stream, err := cli.Float(context.TODO(), &avcli.ID{Id: args[0]}, grpc.PerRPCCredentials(auth))
+		if err != nil {
+			if s, ok := status.FromError(err); ok {
+				switch s.Code() {
+				case codes.Unavailable:
+					fail("api is unavailable: %s\n", s.Err())
+				default:
+					fail("%s\n", s.Err())
+				}
+			}
+
+			fail("unable to float: %v\n", err)
+		}
+
+		for {
+			in, err := stream.Recv()
+			switch {
+			case errors.Is(err, io.EOF):
 				return
-			default:
-				fmt.Printf("unable to reboot: %s\noutput on pi:\n%s\n", err, bytes)
-				client.Close()
-				os.Exit(1)
+			case err != nil:
+				fmt.Prtinf("error: %s\n", err)
+				return
+			}
+
+			if in.Error != "" {
+				fmt.Printf("there was an error rebooting %s: %s\n", in.Id, in.Error)
+			} else {
+				fmt.Printf("Successfully rebooted %s\n", in.Id)
 			}
 		}
-
-		fmt.Printf("unable to reboot:\n%s\n", bytes)
-		os.Exit(1)
 	},
 }

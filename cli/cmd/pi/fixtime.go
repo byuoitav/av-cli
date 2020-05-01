@@ -1,12 +1,21 @@
 package pi
 
 import (
+	"context"
+	"crypto/x509"
+	"errors"
 	"fmt"
+	"io"
 	"os"
-	"strings"
 
+	avcli "github.com/byuoitav/av-cli"
 	"github.com/byuoitav/av-cli/cli/cmd/args"
+	"github.com/byuoitav/av-cli/cli/cmd/wso2"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var fixTimeCmd = &cobra.Command{
@@ -15,40 +24,60 @@ var fixTimeCmd = &cobra.Command{
 	Long:  "force an NTP sync of a pi to fix time drift",
 	Args:  args.ValidDeviceID,
 	Run: func(cmd *cobra.Command, args []string) {
-		client, err := NewSSHClient("ITB-1101-CP1.byu.edu")
+		fmt.Printf("Fixing time on %s\n", args[0])
+		fail := func(format string, a ...interface{}) {
+			fmt.Printf(format, a...)
+			os.Exit(1)
+		}
+
+		pool, err := x509.SystemCertPool()
 		if err != nil {
-			fmt.Printf("unable to ssh into %s: %s", args[0], err)
-			os.Exit(1)
+			fail("unable to get system cert pool: %v", err)
 		}
-		defer client.Close()
 
-		session, err := client.NewSession()
+		idToken := wso2.GetIDToken()
+
+		conn, err := grpc.Dial(viper.GetString("api"), avcli.getTransportSecurityDialOption(pool))
 		if err != nil {
-			fmt.Printf("unable to start new session: %s", err)
-			client.Close()
-			os.Exit(1)
+			fail("error making grpc connection: %v", err)
 		}
 
-		fmt.Printf("Fixing time on pi...\n")
+		cli := avcli.NewAvCliClient(conn)
 
-		bytes, err := session.CombinedOutput("date; sudo ntpdate tick.byu.edu && date")
+		auth := avcli.auth{
+			token: idToken,
+			user:  "",
+		}
+
+		stream, err := cli.FixTime(context.TODO(), &avcli.ID{Id: args[0]}, grpc.PerRPCCredentials(auth))
 		if err != nil {
-			fmt.Printf("unable to run fix time command: %s\noutput on pi:\n%s\n", err, bytes)
-			client.Close()
-			os.Exit(1)
+			if s, ok := status.FromError(err); ok {
+				switch s.Code() {
+				case codes.Unavailable:
+					fail("api is unavailable: %s\n", s.Err())
+				default:
+					fail("%s\n", s.Err())
+				}
+			}
+
+			fail("unable to fix time: %v\n", err)
 		}
 
-		f := func(c rune) bool {
-			return c == 0x0a
-		}
+		for {
+			in, err := stream.Recv()
+			switch {
+			case errors.Is(err, io.EOF):
+				return
+			case err != nil:
+				fmt.Printf("error: %s\n", err)
+				return
+			}
 
-		split := strings.FieldsFunc(string(bytes), f)
-		if len(split) != 3 {
-			fmt.Printf("Weird response while updating time:\n%s\n", bytes)
-			client.Close()
-			os.Exit(1)
+			if in.Error != "" {
+				fmt.Printf("there was an error fixing time on %s: %s\n", in.Id, in.Error)
+			} else {
+				fmt.Printf("Successfully floated to %s\n", in.Id)
+			}
 		}
-
-		fmt.Printf("Successfully updated time to: %s\n", split[2])
 	},
 }

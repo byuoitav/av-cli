@@ -32,24 +32,21 @@ var Cmd = &cobra.Command{
 
 		pool, err := x509.SystemCertPool()
 		if err != nil {
-			fmt.Printf("unable to get system cert pool: %s", err)
-			os.Exit(1)
+			fail("unable to get system cert pool: %v", err)
 		}
 
 		idToken := wso2.GetIDToken()
 
 		conn, err := grpc.Dial(viper.GetString("api"), avcli.getTransportSecurityDialOption(pool))
 		if err != nil {
-			fmt.Printf("error making grpc connection: %v", err)
-			os.Exit(1)
+			fail("error making grpc connection: %v", err)
 		}
 
 		cli := avcli.NewAvCliClient(conn)
 
 		_, designation, err := args.GetDB()
 		if err != nil {
-			fmt.Printf("error getting designation: %v", err)
-			os.Exit(1)
+			fail("error getting designation: %v", err)
 		}
 
 		auth := avcli.auth{
@@ -70,13 +67,14 @@ var Cmd = &cobra.Command{
 
 			fail("unable to float: %s\n", err)
 		}
+
 		for {
 			in, err := stream.Recv()
 			switch {
 			case errors.Is(err, io.EOF):
 				return
 			case err != nil:
-				fmt.Printf("error: %s\nfd", err)
+				fmt.Printf("error: %s\n", err)
 				return
 			}
 
