@@ -179,7 +179,10 @@ func (client *authClient) streamServerInterceptor() grpc.StreamServerInterceptor
 
 		md := metadata.Pairs("netID", netID)
 
-		ss.SetHeader(md)
+		err = ss.SetHeader(md)
+		if err != nil {
+			return err
+		}
 		return handler(srv, ss)
 	}
 }
