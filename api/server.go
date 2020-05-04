@@ -37,9 +37,10 @@ func main() {
 		authToken   string
 		disableAuth bool
 
-		gatewayAddr  string
-		clientID     string
-		clientSecret string
+		gatewayAddr   string
+		clientID      string
+		clientSecret  string
+		shipwrightKey string
 	)
 
 	pflag.IntVarP(&port, "port", "P", 8080, "port to run lazarette on")
@@ -50,6 +51,7 @@ func main() {
 	pflag.StringVar(&gatewayAddr, "gateway-addr", "api.byu.edu", "wso2 gateway address")
 	pflag.StringVar(&clientID, "client-id", "", "wso2 key")
 	pflag.StringVar(&clientSecret, "client-secret", "", "wso2 secret")
+	pflag.StringVar(&shipwrightKey, "shipwright-key", "", "shipwright key")
 	pflag.Parse()
 
 	// build the logger
@@ -103,10 +105,11 @@ func main() {
 
 	// build the grpc server
 	cli := &avcli.Server{
-		Logger:     log,
-		DBUsername: os.Getenv("DB_USERNAME"),
-		DBPassword: os.Getenv("DB_PASSWORD"),
-		DBAddress:  os.Getenv("DB_ADDRESS"),
+		Logger:        log,
+		DBUsername:    os.Getenv("DB_USERNAME"),
+		DBPassword:    os.Getenv("DB_PASSWORD"),
+		DBAddress:     os.Getenv("DB_ADDRESS"),
+		ShipwrightKey: shipwrightKey,
 		Client: &wso2.Client{
 			GatewayURL:   fmt.Sprintf("https://%s", gatewayAddr),
 			ClientID:     clientID,
@@ -240,6 +243,7 @@ func (client *authClient) authenticate(ctx context.Context, method string) error
 		client.Logger.Debugf("%s is not authorized to do %s", authResp.Result.User, authReq.Input.Method)
 		return errNotAuthorized
 	}
+	ctx = context.WithValue(ctx, "netID", authResp.Result.User)
 
 	client.Logger.Debugf("%s has been authorized to do %s from %s", authResp.Result.User, authReq.Input.Method, authResp.Result.OriginatingClient)
 	return nil

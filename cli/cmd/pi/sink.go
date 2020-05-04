@@ -2,7 +2,6 @@ package pi
 
 import (
 	"context"
-	"crypto/x509"
 	"errors"
 	"fmt"
 	"io"
@@ -13,7 +12,6 @@ import (
 	"github.com/byuoitav/av-cli/cli/cmd/wso2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -30,26 +28,19 @@ var sinkCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		pool, err := x509.SystemCertPool()
-		if err != nil {
-			fail("unable to get system cert pool: %v", err)
-		}
-
 		idToken := wso2.GetIDToken()
 
-		conn, err := grpc.Dial(viper.GetString("api"), avcli.getTransportSecurityDialOption(pool))
+		auth := avcli.Auth{
+			Token: idToken,
+			User:  "",
+		}
+
+		client, err := avcli.NewClient(viper.GetString("api"), auth)
 		if err != nil {
-			fail("error making grpc connection: %v", err)
+			fail("unable to create client: %v\n", err)
 		}
 
-		cli := avcli.NewAvCliClient(conn)
-
-		auth := avcli.auth{
-			token: idToken,
-			user:  "",
-		}
-
-		stream, err := cli.Float(context.TODO(), &avcli.ID{Id: args[0]}, grpc.PerRPCCredentials(auth))
+		stream, err := client.Sink(context.TODO(), &avcli.ID{Id: args[0]})
 		if err != nil {
 			if s, ok := status.FromError(err); ok {
 				switch s.Code() {
@@ -60,7 +51,7 @@ var sinkCmd = &cobra.Command{
 				}
 			}
 
-			fail("unable to float: %v\n", err)
+			fail("unable to reboot: %v\n", err)
 		}
 
 		for {
@@ -69,7 +60,7 @@ var sinkCmd = &cobra.Command{
 			case errors.Is(err, io.EOF):
 				return
 			case err != nil:
-				fmt.Prtinf("error: %s\n", err)
+				fmt.Printf("error: %s\n", err)
 				return
 			}
 

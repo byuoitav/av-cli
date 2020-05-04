@@ -2,7 +2,6 @@ package pi
 
 import (
 	"context"
-	"crypto/x509"
 	"errors"
 	"fmt"
 	"net"
@@ -17,9 +16,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 )
 
@@ -33,23 +30,21 @@ var screenshotCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		pool, err := x509.SystemCertPool()
-		if err != nil {
-			fmt.Printf("unable to get system cert pool: %s", err)
-			os.Exit(1)
-		}
-
 		ctx, cancel := context.WithTimeout(cmd.Context(), 15*time.Second)
 		defer cancel()
 
-		conn, err := grpc.Dial(viper.GetString("api"), grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(pool, "")))
-		if err != nil {
-			fail("unable to connect to api: %s\n", err)
+		idToken := wso2.GetIDToken()
+		auth := avcli.Auth{
+			Token: idToken,
+			User:  "",
 		}
 
-		cli := avcli.NewAvCliClient(conn)
+		client, err := avcli.NewClient(viper.GetString("api"), auth)
+		if err != nil {
+			fail("unable to create client: %v\n", err)
+		}
 
-		result, err := cli.Screenshot(ctx, &avcli.ID{Id: args[0]})
+		result, err := client.Screenshot(ctx, &avcli.ID{Id: args[0]})
 		switch {
 		case err != nil:
 			if s, ok := status.FromError(err); ok {

@@ -1,15 +1,19 @@
 package pi
 
 import (
+	"context"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
-	"regexp"
+	"strconv"
+	"time"
 
+	avcli "github.com/byuoitav/av-cli"
 	"github.com/byuoitav/av-cli/cli/cmd/args"
-	"github.com/byuoitav/common/db"
+	"github.com/byuoitav/av-cli/cli/cmd/wso2"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var logCmd = &cobra.Command{
@@ -24,48 +28,76 @@ var logCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		dev, err := db.GetDB().GetDevice(args[0])
-		if err != nil {
-			fmt.Printf("unable to get device from db: %v\n", err)
-			os.Exit(1)
+		level := ""
+		switch args[2] {
+		case "-1":
+			level = "debug"
+		case "0":
+			level = "info"
+		case "1":
+			level = "warn"
+		case "2":
+			level = "error"
+		case "3":
+			level = "dpanic"
+		case "4":
+			level = "panic"
+		case "5":
+			level = "fatal"
 		}
 
-		//Make port regex
-		portre, err := regexp.Compile(`[\d]{4,5}`)
-		if err != nil {
-			fmt.Printf("error compiling port regex: %v\n", err)
+		fail := func(format string, a ...interface{}) {
+			fmt.Printf(format, a...)
 			os.Exit(1)
 		}
-		//Match the regex
-		match := portre.FindString(args[1])
-		if match == "" {
-			fmt.Printf("Invalid port: %v\n", args[1])
-			os.Exit(1)
+		fmt.Printf("Setting log level on port %s of %s to %s\n", args[1], args[0], level)
+
+		idToken := wso2.GetIDToken()
+
+		auth := avcli.Auth{
+			Token: idToken,
+			User:  "",
 		}
 
-		req, err := http.NewRequest("PUT", fmt.Sprintf("http://%v:%v/log-level/%v", dev.Address, args[1], args[2]), nil)
+		port, err := strconv.Atoi(args[1])
 		if err != nil {
-			fmt.Printf("couldn't make request: %v", err)
-			os.Exit(1)
+			fail("error converting port to int: %v\n", err)
 		}
 
-		resp, err := http.DefaultClient.Do(req)
+		logLevel, err := strconv.Atoi(args[2])
 		if err != nil {
-			fmt.Printf("couldn't perform request: %v", err)
-			os.Exit(1)
+			fail("error converting log level to int: %v\n", err)
 		}
 
-		defer resp.Body.Close()
+		req := avcli.SetLogLevelRequest{
+			Id:    args[0],
+			Port:  int32(port),
+			Level: int32(logLevel),
+		}
 
-		if resp.StatusCode/100 != 2 {
-			fmt.Printf("non-200 status code: %v", resp.StatusCode)
-			os.Exit(1)
-		}
-		b, err := ioutil.ReadAll(resp.Body)
+		ctx, cancel := context.WithTimeout(cmd.Context(), 15*time.Second)
+		defer cancel()
+
+		client, err := avcli.NewClient(viper.GetString("api"), auth)
 		if err != nil {
-			fmt.Printf("error reading body: %v\n", err)
+			fail("unable to create client: %v\n", err)
 		}
-		fmt.Printf("Response: %s", b)
+
+		_, err = client.SetLogLevel(ctx, &req)
+		if err != nil {
+			if s, ok := status.FromError(err); ok {
+				switch s.Code() {
+				case codes.Unavailable:
+					fail("api is unavailable: %s\n", s.Err())
+				default:
+					fail("bad %s\n", s.Err())
+				}
+			}
+
+			fail("unable to set log level: %s\n", err)
+		}
+
+		fmt.Printf("Log level on port %s of %s set to %s\n", args[1], args[0], level)
 
 	},
 }

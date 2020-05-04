@@ -2,7 +2,6 @@ package swab
 
 import (
 	"context"
-	"crypto/x509"
 	"errors"
 	"fmt"
 	"io"
@@ -13,9 +12,7 @@ import (
 	"github.com/byuoitav/av-cli/cli/cmd/wso2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 )
 
@@ -32,34 +29,24 @@ var Cmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		pool, err := x509.SystemCertPool()
-		if err != nil {
-			fmt.Printf("unable to get system cert pool: %s", err)
-			os.Exit(1)
-		}
-
-		idToken := wso2.GetIDToken()
-
-		conn, err := grpc.Dial(viper.GetString("api"), grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(pool, "")))
-		if err != nil {
-			fmt.Printf("error making grpc connection: %v", err)
-			os.Exit(1)
-		}
-
-		cli := avcli.NewAvCliClient(conn)
-
 		_, designation, err := args.GetDB()
 		if err != nil {
 			fmt.Printf("error getting designation: %v", err)
 			os.Exit(1)
 		}
 
-		auth := avcli.auth{
-			token: idToken,
-			user:  "",
+		idToken := wso2.GetIDToken()
+		auth := avcli.Auth{
+			Token: idToken,
+			User:  "",
 		}
 
-		stream, err := cli.Swab(context.TODO(), &avcli.ID{Id: arg[0], Designation: designation}, grpc.PerRPCCredentials(auth))
+		client, err := avcli.NewClient(viper.GetString("api"), auth)
+		if err != nil {
+			fail("unable to create client: %v\n", err)
+		}
+
+		stream, err := client.Swab(context.TODO(), &avcli.ID{Id: arg[0], Designation: designation})
 		if err != nil {
 			if s, ok := status.FromError(err); ok {
 				switch s.Code() {

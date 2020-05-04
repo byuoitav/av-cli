@@ -2,7 +2,6 @@ package pi
 
 import (
 	"context"
-	"crypto/x509"
 	"errors"
 	"fmt"
 	"io"
@@ -30,26 +29,19 @@ var fixTimeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		pool, err := x509.SystemCertPool()
-		if err != nil {
-			fail("unable to get system cert pool: %v", err)
-		}
-
 		idToken := wso2.GetIDToken()
 
-		conn, err := grpc.Dial(viper.GetString("api"), avcli.getTransportSecurityDialOption(pool))
+		auth := avcli.Auth{
+			Token: idToken,
+			User:  "",
+		}
+
+		client, err := avcli.NewClient(viper.GetString("api"), auth)
 		if err != nil {
-			fail("error making grpc connection: %v", err)
+			fail("unable to create client: %v\n", err)
 		}
 
-		cli := avcli.NewAvCliClient(conn)
-
-		auth := avcli.auth{
-			token: idToken,
-			user:  "",
-		}
-
-		stream, err := cli.FixTime(context.TODO(), &avcli.ID{Id: args[0]}, grpc.PerRPCCredentials(auth))
+		stream, err := client.FixTime(context.TODO(), &avcli.ID{Id: args[0]}, grpc.PerRPCCredentials(auth))
 		if err != nil {
 			if s, ok := status.FromError(err); ok {
 				switch s.Code() {
@@ -76,7 +68,7 @@ var fixTimeCmd = &cobra.Command{
 			if in.Error != "" {
 				fmt.Printf("there was an error fixing time on %s: %s\n", in.Id, in.Error)
 			} else {
-				fmt.Printf("Successfully floated to %s\n", in.Id)
+				fmt.Printf("Time fixed on %s\n", in.Id)
 			}
 		}
 	},
