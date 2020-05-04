@@ -1,4 +1,4 @@
-package float
+package avcli
 
 import (
 	"context"
@@ -8,24 +8,24 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-type auth struct {
-	token string
-	user  string
+type Auth struct {
+	Token string
+	User  string
 }
 
-func (auth) RequireTransportSecurity() bool {
-	return true
+func (Auth) RequireTransportSecurity() bool {
+	return false
 }
 
-func (a auth) GetRequestMetadata(ctx context.Context, in ...string) (map[string]string, error) {
+func (a Auth) GetRequestMetadata(ctx context.Context, in ...string) (map[string]string, error) {
 	return map[string]string{
-		"authorization": "Bearer " + a.token,
-		"x-user":        a.user,
+		"authorization": "Bearer " + a.Token,
+		"x-user":        a.User,
 	}, nil
 }
 
 func getTransportSecurityDialOption(pool *x509.CertPool) grpc.DialOption {
-	if !(auth{}).RequireTransportSecurity() {
+	if !(Auth{}).RequireTransportSecurity() {
 		return grpc.WithInsecure()
 	}
 

@@ -37,9 +37,10 @@ func main() {
 		authToken   string
 		disableAuth bool
 
-		gatewayAddr  string
-		clientID     string
-		clientSecret string
+		gatewayAddr   string
+		clientID      string
+		clientSecret  string
+		shipwrightKey string
 	)
 
 	pflag.IntVarP(&port, "port", "P", 8080, "port to run lazarette on")
@@ -50,6 +51,7 @@ func main() {
 	pflag.StringVar(&gatewayAddr, "gateway-addr", "api.byu.edu", "wso2 gateway address")
 	pflag.StringVar(&clientID, "client-id", "", "wso2 key")
 	pflag.StringVar(&clientSecret, "client-secret", "", "wso2 secret")
+	pflag.StringVar(&shipwrightKey, "shipwright-key", "", "shipwright key")
 	pflag.Parse()
 
 	// build the logger
@@ -103,10 +105,11 @@ func main() {
 
 	// build the grpc server
 	cli := &avcli.Server{
-		Logger:     log,
-		DBUsername: os.Getenv("DB_USERNAME"),
-		DBPassword: os.Getenv("DB_PASSWORD"),
-		DBAddress:  os.Getenv("DB_ADDRESS"),
+		Logger:        log,
+		DBUsername:    os.Getenv("DB_USERNAME"),
+		DBPassword:    os.Getenv("DB_PASSWORD"),
+		DBAddress:     os.Getenv("DB_ADDRESS"),
+		ShipwrightKey: shipwrightKey,
 		Client: &wso2.Client{
 			GatewayURL:   fmt.Sprintf("https://%s", gatewayAddr),
 			ClientID:     clientID,
@@ -156,9 +159,12 @@ type authResponse struct {
 
 func (client *authClient) unaryServerInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		if err := client.authenticate(ctx, info.FullMethod); err != nil {
+		netID, err := client.authenticate(ctx, info.FullMethod)
+		if err != nil {
 			return nil, err
 		}
+
+		ctx = context.WithValue(ctx, "netID", netID)
 
 		return handler(ctx, req)
 	}
@@ -166,33 +172,40 @@ func (client *authClient) unaryServerInterceptor() grpc.UnaryServerInterceptor {
 
 func (client *authClient) streamServerInterceptor() grpc.StreamServerInterceptor {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if err := client.authenticate(ss.Context(), info.FullMethod); err != nil {
+		netID, err := client.authenticate(ss.Context(), info.FullMethod)
+		if err != nil {
 			return err
 		}
 
+		md := metadata.Pairs("netID", netID)
+
+		err = ss.SetHeader(md)
+		if err != nil {
+			return err
+		}
 		return handler(srv, ss)
 	}
 }
 
-func (client *authClient) authenticate(ctx context.Context, method string) error {
+func (client *authClient) authenticate(ctx context.Context, method string) (string, error) {
 	if client.Disabled {
-		return nil
+		return "", nil
 	}
 
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return errMissingMetadata
+		return "", errMissingMetadata
 	}
 
 	auth := md["authorization"]
 	user := md["x-user"]
 
 	if len(auth) == 0 {
-		return errMissingToken
+		return "", errMissingToken
 	}
 
 	if len(user) == 0 {
-		return errMissingUser
+		return "", errMissingUser
 	}
 
 	// build opa request
@@ -203,7 +216,7 @@ func (client *authClient) authenticate(ctx context.Context, method string) error
 
 	reqBody, err := json.Marshal(authReq)
 	if err != nil {
-		return fmt.Errorf("unable to marshal request body: %w", err)
+		return "", fmt.Errorf("unable to marshal request body: %w", err)
 	}
 
 	client.Logger.Debugf("Authenticating %s for %s", authReq.Input.User, authReq.Input.Method)
@@ -211,36 +224,36 @@ func (client *authClient) authenticate(ctx context.Context, method string) error
 
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(reqBody))
 	if err != nil {
-		return fmt.Errorf("unable to build request: %w", err)
+		return "", fmt.Errorf("unable to build request: %w", err)
 	}
 
 	httpReq.Header.Add("authorization", "Bearer "+client.Token)
 
 	resp, err := http.DefaultClient.Do(httpReq)
 	if err != nil {
-		return fmt.Errorf("unable to do request: %w", err)
+		return "", fmt.Errorf("unable to do request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("unable to read response: %w", err)
+		return "", fmt.Errorf("unable to read response: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("got a %v from auth server. response:\n%s", resp.StatusCode, respBody)
+		return "", fmt.Errorf("got a %v from auth server. response:\n%s", resp.StatusCode, respBody)
 	}
 
 	var authResp authResponse
 	if err := json.Unmarshal(respBody, &authResp); err != nil {
-		return fmt.Errorf("unable to unmarshal response: %w", err)
+		return "", fmt.Errorf("unable to unmarshal response: %w", err)
 	}
 
 	if !authResp.Result.Allow {
 		client.Logger.Debugf("%s is not authorized to do %s", authResp.Result.User, authReq.Input.Method)
-		return errNotAuthorized
+		return "", errNotAuthorized
 	}
 
 	client.Logger.Debugf("%s has been authorized to do %s from %s", authResp.Result.User, authReq.Input.Method, authResp.Result.OriginatingClient)
-	return nil
+	return authResp.Result.User, nil
 }

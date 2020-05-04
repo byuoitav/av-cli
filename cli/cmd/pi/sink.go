@@ -1,13 +1,19 @@
 package pi
 
 import (
+	"context"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 
+	avcli "github.com/byuoitav/av-cli"
 	"github.com/byuoitav/av-cli/cli/cmd/args"
-	"github.com/byuoitav/common/db"
+	"github.com/byuoitav/av-cli/cli/cmd/wso2"
 	"github.com/spf13/cobra"
-	"golang.org/x/crypto/ssh"
+	"github.com/spf13/viper"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var sinkCmd = &cobra.Command{
@@ -16,43 +22,53 @@ var sinkCmd = &cobra.Command{
 	Long:  "ssh into a pi and reboot it",
 	Args:  args.ValidDeviceID,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		dev, err := db.GetDB().GetDevice(args[0])
-		if err != nil {
-			fmt.Printf("unable to get device from db: %v", err)
+		fmt.Printf("Rebooting %s\n", args[0])
+		fail := func(format string, a ...interface{}) {
+			fmt.Printf(format, a...)
 			os.Exit(1)
 		}
 
-		client, err := NewSSHClient(dev.Address)
-		if err != nil {
-			fmt.Printf("unable to ssh into %s: %s", args[0], err)
-			os.Exit(1)
-		}
-		defer client.Close()
+		idToken := wso2.GetIDToken()
 
-		session, err := client.NewSession()
-		if err != nil {
-			fmt.Printf("unable to start new session: %s", err)
-			client.Close()
-			os.Exit(1)
+		auth := avcli.Auth{
+			Token: idToken,
+			User:  "",
 		}
 
-		fmt.Printf("Rebooting...\n")
-
-		bytes, err := session.CombinedOutput("sudo reboot")
+		client, err := avcli.NewClient(viper.GetString("api"), auth)
 		if err != nil {
-			switch err.(type) {
-			case *ssh.ExitMissingError:
-				fmt.Printf("Success.\n")
+			fail("unable to create client: %v\n", err)
+		}
+
+		stream, err := client.Sink(context.TODO(), &avcli.ID{Id: args[0]})
+		if err != nil {
+			if s, ok := status.FromError(err); ok {
+				switch s.Code() {
+				case codes.Unavailable:
+					fail("api is unavailable: %s\n", s.Err())
+				default:
+					fail("%s\n", s.Err())
+				}
+			}
+
+			fail("unable to reboot: %v\n", err)
+		}
+
+		for {
+			in, err := stream.Recv()
+			switch {
+			case errors.Is(err, io.EOF):
 				return
-			default:
-				fmt.Printf("unable to reboot: %s\noutput on pi:\n%s\n", err, bytes)
-				client.Close()
-				os.Exit(1)
+			case err != nil:
+				fmt.Printf("error: %s\n", err)
+				return
+			}
+
+			if in.Error != "" {
+				fmt.Printf("there was an error rebooting %s: %s\n", in.Id, in.Error)
+			} else {
+				fmt.Printf("Successfully rebooted %s\n", in.Id)
 			}
 		}
-
-		fmt.Printf("unable to reboot:\n%s\n", bytes)
-		os.Exit(1)
 	},
 }

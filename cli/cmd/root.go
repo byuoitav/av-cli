@@ -5,8 +5,10 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/byuoitav/av-cli/cli/cmd/db"
 	"github.com/byuoitav/av-cli/cli/cmd/float"
 	"github.com/byuoitav/av-cli/cli/cmd/pi"
+	"github.com/byuoitav/av-cli/cli/cmd/smee"
 	"github.com/byuoitav/av-cli/cli/cmd/swab"
 	"github.com/fatih/color"
 	"github.com/mitchellh/go-homedir"
@@ -40,10 +42,10 @@ func init() {
 	rootCmd.AddCommand(float.Cmd)
 	rootCmd.AddCommand(swab.Cmd)
 	rootCmd.AddCommand(pi.Cmd)
-	// rootCmd.AddCommand(smee.Cmd)
+	rootCmd.AddCommand(smee.Cmd)
 	// rootCmd.AddCommand(aws.Cmd)
 	// rootCmd.AddCommand(api.Cmd)
-	// rootCmd.AddCommand(db.Cmd)
+	rootCmd.AddCommand(db.Cmd)
 }
 
 func initConfig() {
