@@ -46,42 +46,42 @@ func NewClient(addr string, a Auth, opts ...grpc.DialOption) (*Client, error) {
 }
 
 func (c *Client) Swab(ctx context.Context, in *ID, opts ...grpc.CallOption) (AvCli_SwabClient, error) {
-	c.checkOpts(opts...)
+	opts = c.checkOpts(opts...)
 	return c.cliClient.Swab(ctx, in, opts...)
 }
 
 func (c *Client) Float(ctx context.Context, in *ID, opts ...grpc.CallOption) (AvCli_FloatClient, error) {
-	c.checkOpts(opts...)
+	opts = c.checkOpts(opts...)
 	return c.cliClient.Float(ctx, in, opts...)
 }
 
 func (c *Client) Screenshot(ctx context.Context, in *ID, opts ...grpc.CallOption) (*ScreenshotResult, error) {
-	c.checkOpts(opts...)
+	opts = c.checkOpts(opts...)
 	return c.cliClient.Screenshot(ctx, in, opts...)
 }
 
 func (c *Client) DuplicateRoom(ctx context.Context, in *DuplicateRoomRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	c.checkOpts(opts...)
+	opts = c.checkOpts(opts...)
 	return c.cliClient.DuplicateRoom(ctx, in, opts...)
 }
 
 func (c *Client) FixTime(ctx context.Context, in *ID, opts ...grpc.CallOption) (AvCli_FixTimeClient, error) {
-	c.checkOpts(opts...)
+	opts = c.checkOpts(opts...)
 	return c.cliClient.FixTime(ctx, in, opts...)
 }
 
 func (c *Client) Sink(ctx context.Context, in *ID, opts ...grpc.CallOption) (AvCli_SinkClient, error) {
-	c.checkOpts(opts...)
+	opts = c.checkOpts(opts...)
 	return c.cliClient.Sink(ctx, in, opts...)
 }
 
 func (c *Client) CloseMonitoringIssue(ctx context.Context, in *ID, opts ...grpc.CallOption) (*empty.Empty, error) {
-	c.checkOpts(opts...)
+	opts = c.checkOpts(opts...)
 	return c.cliClient.CloseMonitoringIssue(ctx, in, opts...)
 }
 
 func (c *Client) SetLogLevel(ctx context.Context, in *SetLogLevelRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	c.checkOpts(opts...)
+	opts = c.checkOpts(opts...)
 	return c.cliClient.SetLogLevel(ctx, in, opts...)
 }
 

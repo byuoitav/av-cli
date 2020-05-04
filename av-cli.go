@@ -887,7 +887,7 @@ func (s *Server) CloseMonitoringIssue(ctx context.Context, id *ID) (*empty.Empty
 
 	body, err := json.Marshal(map[string]interface{}{
 		"resolution-code": "Manual Removal",
-		"notes":           fmt.Sprintf("manually removed room issue through av-cli"), //add in net id later if possible
+		"notes":           fmt.Sprintf("%s manually removed room issue through av-cli", netID), //add in net id later if possible
 	})
 	if err != nil {
 		return &empty.Empty{}, fmt.Errorf("unable to build marshal request body: %v", err)
