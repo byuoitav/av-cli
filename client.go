@@ -29,7 +29,7 @@ func NewClient(addr string, a Auth, opts ...grpc.DialOption) (*Client, error) {
 			add = false
 		}
 	}
-	if add == true {
+	if add {
 		opts = append(opts, getTransportSecurityDialOption(pool))
 	}
 	conn, err := grpc.Dial(addr, opts...)
@@ -92,7 +92,7 @@ func (c *Client) checkOpts(opts ...grpc.CallOption) []grpc.CallOption {
 			add = false
 		}
 	}
-	if add == true {
+	if add {
 		opts = append(opts, grpc.PerRPCCredentials(c.Auth))
 	}
 
