@@ -878,7 +878,7 @@ func (s *Server) CloseMonitoringIssue(ctx context.Context, id *ID) (*empty.Empty
 	if s.ShipwrightKey == "" {
 		return &empty.Empty{}, fmt.Errorf("shipwright key not set")
 	}
-	url := fmt.Sprintf("https://smee.avs.byu.edu/issues/%s/resolve", id.Id)
+	url := fmt.Sprintf("https://smee.av.byu.edu/issues/%s/resolve", id.Id)
 
 	netID, err := GetNetID(ctx)
 	if err != nil {
