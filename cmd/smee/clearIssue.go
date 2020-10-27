@@ -37,7 +37,7 @@ var closeIssueCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		url := fmt.Sprintf("https://smee.avs.byu.edu/issues/%s/resolve", args[0])
+		url := fmt.Sprintf("https://smee.av.byu.edu/issues/%s/resolve", args[0])
 
 		body, err := json.Marshal(map[string]interface{}{
 			"resolution-code": "Manual Removal",
