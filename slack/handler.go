@@ -92,7 +92,7 @@ func verifySlackRequest(signingSecret string) echo.MiddlewareFunc {
 			defer c.Request().Body.Close()
 
 			if err := verifier.Ensure(); err != nil {
-				return c.String(http.StatusUnauthorized, "you're not slack!")
+				return c.NoContent(http.StatusUnauthorized)
 			}
 
 			// let the next handler read the body again
