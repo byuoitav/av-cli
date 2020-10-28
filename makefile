@@ -3,7 +3,7 @@ OWNER := byuoitav
 PKG := github.com/${OWNER}/${NAME}
 PKG_LIST := $(shell go list ${PKG}/...)
 # figure out how to get version from somewhere else
-VERSION := v1.0.6
+VERSION := v1.0.9
 BUILD_TIME := $(shell date)
 GIT_COMMIT := $(shell git log -1 --pretty="%h")
 
@@ -41,10 +41,10 @@ clean:
 	rm -f ${GOPATH}/bin/$(NAME)
 
 dist/$(NAME)-linux-amd64:
-	env GOOS=linux GOARCH=amd64 $(DIST_BUILD) -o dist/$(NAME)-linux-amd64
+	env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(DIST_BUILD) -o dist/$(NAME)-linux-amd64
 
 dist/$(NAME)-darwin-amd64:
-	env GOOS=darwin GOARCH=amd64 $(DIST_BUILD) -o dist/$(NAME)-darwin-amd64
+	env CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(DIST_BUILD) -o dist/$(NAME)-darwin-amd64
 
 dist/$(NAME)-windows-amd64:
-	env GOOS=windows GOARCH=amd64 $(DIST_BUILD) -o dist/$(NAME)-windows-amd64
+	env CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(DIST_BUILD) -o dist/$(NAME)-windows-amd64
