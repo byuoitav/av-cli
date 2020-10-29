@@ -16,8 +16,7 @@ type Client struct {
 	cliToken string
 
 	slack *slack.Client
-
-	Logger *zap.SugaredLogger
+	Log   *zap.Logger
 }
 
 func New(ctx context.Context, cliAddr string, cliToken string, slackToken string) (*Client, error) {
@@ -37,27 +36,3 @@ func New(ctx context.Context, cliAddr string, cliToken string, slackToken string
 		slack:    slack.New(slackToken),
 	}, nil
 }
-
-//func (c *Client) debugf(format string, a ...interface{}) {
-//	if c.Logger != nil {
-//		c.Logger.Debugf(format, a...)
-//	}
-//}
-
-func (c *Client) infof(format string, a ...interface{}) {
-	if c.Logger != nil {
-		c.Logger.Infof(format, a...)
-	}
-}
-
-func (c *Client) warnf(format string, a ...interface{}) {
-	if c.Logger != nil {
-		c.Logger.Warnf(format, a...)
-	}
-}
-
-//func (c *Client) errorf(format string, a ...interface{}) {
-//	if c.Logger != nil {
-//		c.Logger.Errorf(format, a...)
-//	}
-//}

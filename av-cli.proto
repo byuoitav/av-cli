@@ -12,6 +12,8 @@ service AvCli {
 	rpc Sink(ID) returns (stream IDResult) {}
 	rpc CloseMonitoringIssue(ID) returns (google.protobuf.Empty) {}
 	rpc SetLogLevel(SetLogLevelRequest) returns (google.protobuf.Empty) {}
+
+	// TODO decom smee room
 }
 
 message ID {

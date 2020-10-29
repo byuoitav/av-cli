@@ -9,16 +9,17 @@ import (
 
 	avcli "github.com/byuoitav/av-cli"
 	"github.com/slack-go/slack"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func (c *Client) Screenshot(ctx context.Context, req slack.SlashCommand, user string, id string) {
-	c.infof("Getting a screenshot of %s for %s", id, user)
+	c.Log.Info("Getting a screenshot", zap.String("id", id), zap.String("for", user))
 
 	handle := func(err error) {
-		c.warnf("unable to take screenshot: %s", err)
+		c.Log.Warn("unable to take screenshot", zap.Error(err))
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -27,7 +28,7 @@ func (c *Client) Screenshot(ctx context.Context, req slack.SlashCommand, user st
 
 		_, _, err = c.slack.PostMessageContext(ctx, req.ChannelID, slack.MsgOptionReplaceOriginal(req.ResponseURL), slack.MsgOptionText(msg, false))
 		if err != nil {
-			c.warnf("failed to post error to slack: %s", err)
+			c.Log.Warn("failed to post error to slack", zap.Error(err))
 		}
 	}
 
