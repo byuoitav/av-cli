@@ -83,6 +83,7 @@ func (c *Client) Swab(ctx context.Context, req slack.SlashCommand, user string, 
 	_, _, _, err = c.slack.SendMessageContext(ctx, req.ChannelID, slack.MsgOptionReplaceOriginal(req.ResponseURL), slack.MsgOptionBlocks(blocks...))
 	if err != nil {
 		handle(fmt.Errorf("unable to send result to slack: %w", err))
+		return
 	}
 
 	c.Log.Info("Successfully swabbed", zap.String("id", id))

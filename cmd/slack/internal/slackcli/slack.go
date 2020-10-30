@@ -33,6 +33,6 @@ func New(ctx context.Context, cliAddr string, cliToken string, slackToken string
 	return &Client{
 		cli:      avcli.NewAvCliClient(conn),
 		cliToken: cliToken,
-		slack:    slack.New(slackToken),
+		slack:    slack.New(slackToken, slack.OptionDebug(true)),
 	}, nil
 }
