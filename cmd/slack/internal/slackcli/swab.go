@@ -41,7 +41,7 @@ func (c *Client) Swab(ctx context.Context, req slack.SlashCommand, user string, 
 
 	blocks := []slack.Block{
 		slack.NewHeaderBlock(&slack.TextBlockObject{
-			Type: slack.MarkdownType,
+			Type: slack.PlainTextType,
 			Text: fmt.Sprintf("%s swab result", id),
 		}),
 	}
@@ -56,18 +56,14 @@ func (c *Client) Swab(ctx context.Context, req slack.SlashCommand, user string, 
 		}
 
 		if result.GetError() != "" {
-			// add an error for this pi
 			blocks = append(blocks, slack.NewSectionBlock(&slack.TextBlockObject{
-				Type:  slack.MarkdownType,
-				Text:  fmt.Sprintf(":downvote: %s `%s`", result.GetId(), result.GetError()),
-				Emoji: true,
+				Type: slack.MarkdownType,
+				Text: fmt.Sprintf(":downvote: %s `%s`", result.GetId(), result.GetError()),
 			}, nil, nil))
 		} else {
-			// add a success for this pi
 			blocks = append(blocks, slack.NewSectionBlock(&slack.TextBlockObject{
-				Type:  slack.MarkdownType,
-				Text:  fmt.Sprintf(":upvote: %s", result.GetId()),
-				Emoji: true,
+				Type: slack.MarkdownType,
+				Text: fmt.Sprintf(":upvote: %s", result.GetId()),
 			}, nil, nil))
 		}
 

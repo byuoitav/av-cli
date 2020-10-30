@@ -26,6 +26,7 @@ func main() {
 		slackToken         string
 	)
 
+	// TODO add option to create slack client with slack.OptionDebug(true)
 	pflag.IntVarP(&port, "port", "P", 8080, "port to run lazarette on")
 	pflag.Int8VarP(&logLevel, "log-level", "L", 0, "level to log at. refer to https://godoc.org/go.uber.org/zap/zapcore#Level for options")
 	pflag.StringVarP(&avcliAPIAddr, "avcli-api", "a", "cli-api", "address of the avcli API")
