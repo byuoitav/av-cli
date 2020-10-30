@@ -1,14 +1,6 @@
 package board
 
-import (
-	"fmt"
-	"os"
-	"os/exec"
-	"syscall"
-
-	"github.com/byuoitav/av-cli/cli/cmd/args"
-	"github.com/spf13/cobra"
-)
+/*
 
 // Cmd .
 var Cmd = &cobra.Command{
@@ -30,3 +22,4 @@ var Cmd = &cobra.Command{
 		}
 	},
 }
+*/

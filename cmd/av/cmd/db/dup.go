@@ -1,20 +1,6 @@
 package db
 
-import (
-	"context"
-	"errors"
-	"fmt"
-	"os"
-	"strings"
-
-	avcli "github.com/byuoitav/av-cli"
-	arg "github.com/byuoitav/av-cli/cli/cmd/args"
-	"github.com/byuoitav/av-cli/cli/cmd/wso2"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-)
+/*
 
 var dupCmd = &cobra.Command{
 	Use:   "dup [dst room ID] [src room ID]",
@@ -94,3 +80,4 @@ var dupCmd = &cobra.Command{
 		fmt.Printf("Successfully duplicated %s from %s\n", dst, src)
 	},
 }
+*/

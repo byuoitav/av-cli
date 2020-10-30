@@ -1,24 +1,6 @@
 package pi
 
-import (
-	"context"
-	"errors"
-	"fmt"
-	"net"
-	"net/http"
-	"net/url"
-	"os"
-	"time"
-
-	avcli "github.com/byuoitav/av-cli"
-	"github.com/byuoitav/av-cli/cli/cmd/args"
-	"github.com/byuoitav/av-cli/cli/cmd/wso2"
-	"github.com/fatih/color"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-)
+/*
 
 var screenshotCmd = &cobra.Command{
 	Use:   "screenshot [device ID]",
@@ -119,3 +101,4 @@ var screenshotCmd = &cobra.Command{
 		}
 	},
 }
+*/

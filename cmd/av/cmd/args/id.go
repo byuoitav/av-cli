@@ -1,14 +1,6 @@
 package args
 
-import (
-	"fmt"
-	"os"
-	"strings"
-
-	"github.com/byuoitav/common/db"
-	"github.com/manifoldco/promptui"
-	"github.com/spf13/cobra"
-)
+/*
 
 // ValidBuildingID checks if the argument is a valid building id
 func ValidBuildingID(cmd *cobra.Command, args []string) error {
@@ -107,3 +99,4 @@ func GetDB() (db.DB, string, error) {
 	return db.GetDBWithCustomAuth(finalAddr, dbDesignation, os.Getenv("DB_PASSWORD")), dbDesignation, nil
 
 }
+*/

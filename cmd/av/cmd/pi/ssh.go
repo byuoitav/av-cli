@@ -1,14 +1,6 @@
 package pi
 
-import (
-	"fmt"
-	"io/ioutil"
-	"time"
-
-	"github.com/manifoldco/promptui"
-	"github.com/spf13/viper"
-	"golang.org/x/crypto/ssh"
-)
+/*
 
 var (
 	defaultKeys = [...]string{"$HOME/.ssh/id_rsa"}
@@ -78,3 +70,4 @@ func getPasswordFunc(label string, maxTries int) func() (string, error) {
 		return pass, nil
 	}
 }
+*/

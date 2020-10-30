@@ -1,15 +1,7 @@
 package api
 
-import (
-	"fmt"
-	"os"
-	"os/exec"
-	"strings"
 
-	"github.com/byuoitav/av-cli/cli/cmd/args"
-	arg "github.com/byuoitav/av-cli/cli/cmd/args"
-	"github.com/spf13/cobra"
-)
+/*
 
 func init() {
 	Cmd.AddCommand(upCmd)
@@ -102,3 +94,4 @@ var downCmd = &cobra.Command{
 		}
 	},
 }
+*/

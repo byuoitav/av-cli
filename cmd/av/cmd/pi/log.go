@@ -1,21 +1,6 @@
 package pi
 
-import (
-	"context"
-	"fmt"
-	"os"
-	"strconv"
-	"time"
-
-	avcli "github.com/byuoitav/av-cli"
-	"github.com/byuoitav/av-cli/cli/cmd/args"
-	"github.com/byuoitav/av-cli/cli/cmd/wso2"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-)
-
+/*
 var logCmd = &cobra.Command{
 	Use:   "log [device ID] [port] [log-level]",
 	Short: "change a log level",
@@ -101,3 +86,4 @@ var logCmd = &cobra.Command{
 
 	},
 }
+*/

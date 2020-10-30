@@ -1,20 +1,6 @@
 package smee
 
-import (
-	"context"
-	"fmt"
-	"os"
-	"time"
-
-	avcli "github.com/byuoitav/av-cli"
-	"github.com/byuoitav/av-cli/cli/cmd/args"
-	"github.com/byuoitav/av-cli/cli/cmd/wso2"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-)
-
+/*
 var closeIssueCmd = &cobra.Command{
 	Use:   "closeIssue [room ID]",
 	Short: "Close a room issue in smee",
@@ -58,3 +44,4 @@ var closeIssueCmd = &cobra.Command{
 		fmt.Printf("Room issue closed for %s.\n", args[0])
 	},
 }
+*/
