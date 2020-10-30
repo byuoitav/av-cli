@@ -12,19 +12,12 @@ import (
 
 func dataService(ctx context.Context, config dataServiceConfig) avcli.DataService {
 	var opts []couch.Option
-	var url string
-
-	if config.Insecure {
-		url = "http://" + config.Addr
-	} else {
-		url = "https://" + config.Addr
-	}
 
 	if len(config.Username) > 0 {
 		opts = append(opts, couch.WithBasicAuth(config.Username, config.Password))
 	}
 
-	ds, err := couch.New(ctx, url, opts...)
+	ds, err := couch.New(ctx, config.Addr, opts...)
 	if err != nil {
 		panic(fmt.Sprintf("unable to setup couch: %s", err))
 	}

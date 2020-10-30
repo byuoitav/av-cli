@@ -20,7 +20,6 @@ type dataServiceConfig struct {
 	Addr     string
 	Username string
 	Password string
-	Insecure bool
 }
 
 var (
@@ -57,7 +56,6 @@ func main() {
 	pflag.StringVar(&dataServiceConfig.Addr, "db-address", "", "database address")
 	pflag.StringVar(&dataServiceConfig.Username, "db-username", "", "database username")
 	pflag.StringVar(&dataServiceConfig.Password, "db-password", "", "database password")
-	pflag.BoolVar(&dataServiceConfig.Insecure, "db-insecure", false, "don't use SSL in database connection")
 	pflag.Parse()
 
 	// ctx for setup
