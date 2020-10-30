@@ -26,15 +26,19 @@ func (s *Server) Swab(cliID *avcli.ID, stream avcli.AvCli_SwabServer) error {
 	if !isRoom {
 		pi, err := s.Data.Device(ctx, id)
 		if err != nil {
-			// TODO
+			return status.Errorf(codes.Unknown, "unable to get device: %s", err)
 		}
 
 		pis = append(pis, pi)
 	} else {
 		pis, err = s.Data.Room(ctx, id)
 		if err != nil {
-			// TODO
+			return status.Errorf(codes.Unknown, "unable to get room: %s", err)
 		}
+	}
+
+	if len(pis) == 0 {
+		return status.Errorf(codes.Unknown, "no pis found")
 	}
 
 	results := make(chan *avcli.IDResult)
@@ -60,7 +64,7 @@ func (s *Server) Swab(cliID *avcli.ID, stream avcli.AvCli_SwabServer) error {
 		select {
 		case result := <-results:
 			if err := stream.Send(result); err != nil {
-				return fmt.Errorf("unable to send message: %w", err)
+				return fmt.Errorf("unable to send result: %w", err)
 			}
 
 			expectedResults--
@@ -68,7 +72,7 @@ func (s *Server) Swab(cliID *avcli.ID, stream avcli.AvCli_SwabServer) error {
 				return nil
 			}
 		case <-ctx.Done():
-			return fmt.Errorf("unable to send all results: %w", err)
+			return status.FromContextError(ctx.Err()).Err()
 		}
 	}
 }

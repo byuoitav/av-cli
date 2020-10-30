@@ -81,6 +81,7 @@ func main() {
 	// build the server
 	r := gin.New()
 	r.Use(gin.Recovery())
+	// r.RemoveExtraSlash = true // TODO do i need this?
 
 	debug := r.Group("/debug")
 	debug.GET("/healthz", func(c *gin.Context) {
@@ -103,10 +104,6 @@ func main() {
 
 	api := r.Group("/", verifySlackRequest(slackSigningSecret))
 	api.POST("/", handleSlackRequests(slackCli))
-
-	/*
-		e.Pre(middleware.RemoveTrailingSlash())
-	*/
 
 	// start the server
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))

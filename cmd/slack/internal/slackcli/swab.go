@@ -2,7 +2,9 @@ package slackcli
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"time"
 
 	avcli "github.com/byuoitav/av-cli"
 	"github.com/slack-go/slack"
@@ -15,23 +17,73 @@ func (c *Client) Swab(ctx context.Context, req slack.SlashCommand, user string, 
 
 	auth := auth{
 		token: c.cliToken,
-		user:  user, // TODO should be their netID
+		user:  user,
+	}
+
+	handle := func(err error) {
+		c.Log.Warn("unable to swab", zap.Error(err))
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		msg := fmt.Sprintf("I was unable to swab %s. :cry:. Error:\n```\n%s\n```", id, err)
+		_, _, err = c.slack.PostMessageContext(ctx, req.ChannelID, slack.MsgOptionReplaceOriginal(req.ResponseURL), slack.MsgOptionText(msg, false))
+		if err != nil {
+			c.Log.Warn("failed to post error to slack", zap.Error(err))
+		}
 	}
 
 	stream, err := c.cli.Swab(ctx, &avcli.ID{Id: id}, grpc.PerRPCCredentials(auth))
 	if err != nil {
-		// TODO handle error
+		handle(err)
+		return
 	}
 
-	// TODO figure out what we want the response message to look like
+	blocks := []slack.Block{
+		slack.NewHeaderBlock(&slack.TextBlockObject{
+			Type: slack.MarkdownType,
+			Text: fmt.Sprintf("%s swab result", id),
+		}),
+	}
 
 	for {
 		result, err := stream.Recv()
-		switch {
-		case err == io.EOF:
+		if err == io.EOF {
 			break
-		case err != nil:
-			// TODO handle error
+		} else if err != nil {
+			handle(fmt.Errorf("error receiving from stream: %w", err))
+			return
 		}
+
+		if result.GetError() != "" {
+			// add an error for this pi
+			blocks = append(blocks, slack.NewSectionBlock(&slack.TextBlockObject{
+				Type:  slack.MarkdownType,
+				Text:  fmt.Sprintf(":downvote: %s `%s`", result.GetId(), result.GetError()),
+				Emoji: true,
+			}, nil, nil))
+		} else {
+			// add a success for this pi
+			blocks = append(blocks, slack.NewSectionBlock(&slack.TextBlockObject{
+				Type:  slack.MarkdownType,
+				Text:  fmt.Sprintf(":upvote: %s", result.GetId()),
+				Emoji: true,
+			}, nil, nil))
+		}
+
+		blocks = append(blocks, slack.NewDividerBlock())
 	}
+
+	// delete the last divider
+	if blocks[len(blocks)-1].BlockType() == slack.MBTDivider {
+		blocks = blocks[:len(blocks)-1]
+	}
+
+	// send the message
+	_, _, _, err = c.slack.SendMessageContext(ctx, req.ChannelID, slack.MsgOptionReplaceOriginal(req.ResponseURL), slack.MsgOptionBlocks(blocks...))
+	if err != nil {
+		handle(fmt.Errorf("unable to send result to slack: %w", err))
+	}
+
+	c.Log.Info("Successfully swabbed", zap.String("id", id))
 }

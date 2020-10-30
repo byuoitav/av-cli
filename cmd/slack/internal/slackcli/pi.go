@@ -74,4 +74,6 @@ func (c *Client) Screenshot(ctx context.Context, req slack.SlashCommand, user st
 	if err != nil {
 		handle(fmt.Errorf("unable to upload screenshot to slack: %w", err))
 	}
+
+	c.Log.Info("Successfully took screenshot", zap.String("of", id))
 }

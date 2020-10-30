@@ -19,8 +19,7 @@ import (
 func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// TODO get the user, send in metadata
-		// TODO write handler logic here
-		// TODO actual error handling for slack API
+		// TODO req.UserName should be their real netID (is there some mapping somewhere?)
 		req, err := slack.SlashCommandParse(c.Request)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
@@ -50,7 +49,6 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 
 				id := cmdSplit[0]
 
-				// spawn a routine to post a screenshot
 				go func() {
 					ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 					defer cancel()
@@ -75,7 +73,12 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 
 			id := cmdSplit[0]
 
-			// TODO swab
+			go func() {
+				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				defer cancel()
+
+				slackCli.Swab(ctx, req, req.UserName, id)
+			}()
 
 			c.String(http.StatusOK, fmt.Sprintf("Swabbing %s...", id))
 			return
@@ -89,7 +92,6 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 func verifySlackRequest(signingSecret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// skip verification if no secret was given
-		// TODO shouldn't we just say unauthorized...?
 		if len(signingSecret) == 0 {
 			return
 		}
