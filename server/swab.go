@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"net/http"
@@ -27,7 +28,7 @@ func (s *Server) Swab(id *avcli.ID, stream avcli.AvCli_SwabServer) error {
 	for i := range pis {
 		go func(pi avcli.Pi) {
 			var errstr string
-			if err := swab(ctx, pi); err != nil {
+			if err := s.swab(ctx, pi); err != nil {
 				errstr = err.Error()
 			}
 
@@ -57,7 +58,7 @@ func (s *Server) Swab(id *avcli.ID, stream avcli.AvCli_SwabServer) error {
 	}
 }
 
-func swab(ctx context.Context, pi avcli.Pi) error {
+func (s *Server) swab(ctx context.Context, pi avcli.Pi) error {
 	// start the replication
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("http://%s:7012/replication/start", pi.Address), nil)
 	if err != nil {
@@ -89,7 +90,40 @@ func swab(ctx context.Context, pi avcli.Pi) error {
 	}
 	resp.Body.Close()
 
-	// TODO restart the dmm
+	// restart the dmm
+	client, err := s.piSSH(ctx, pi.Address)
+	if err != nil {
+		return fmt.Errorf("unable to ssh: %w", err)
+	}
+	defer client.Close()
 
-	return nil
+	session, err := client.NewSession()
+	if err != nil {
+		return fmt.Errorf("unable to open new ssh session: %w", err)
+	}
+	defer session.Close()
+
+	buf := &bytes.Buffer{}
+	session.Stderr = buf
+	session.Stdout = buf
+
+	if err := session.Start("sudo systemctl restart device-monitoring.service"); err != nil {
+		return fmt.Errorf("unable to restart device monitoring: unable to start command: %w", err)
+	}
+
+	errResp := make(chan error)
+	go func() {
+		errResp <- session.Wait()
+	}()
+
+	select {
+	case err := <-errResp:
+		if err != nil {
+			return fmt.Errorf("unable to restart device monitoring: %w. output: %s", err, buf.String())
+		}
+
+		return nil
+	case <-ctx.Done():
+		return fmt.Errorf("unable to restart device monitoring: %w", ctx.Err())
+	}
 }

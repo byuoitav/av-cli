@@ -41,6 +41,7 @@ func main() {
 		clientID          string
 		clientSecret      string
 		shipwrightKey     string
+		piPassword        string
 		dataServiceConfig dataServiceConfig
 	)
 
@@ -53,6 +54,7 @@ func main() {
 	pflag.StringVar(&clientID, "client-id", "", "wso2 key")
 	pflag.StringVar(&clientSecret, "client-secret", "", "wso2 secret")
 	pflag.StringVar(&shipwrightKey, "shipwright-key", "", "shipwright key")
+	pflag.StringVar(&piPassword, "pi-password", "", "password for the pi user of the pis")
 	pflag.StringVar(&dataServiceConfig.Addr, "db-address", "", "database address")
 	pflag.StringVar(&dataServiceConfig.Username, "db-username", "", "database username")
 	pflag.StringVar(&dataServiceConfig.Password, "db-password", "", "database password")
@@ -84,8 +86,9 @@ func main() {
 
 	// build the grpc server
 	cli := &server.Server{
-		Log:  log,
-		Data: ds,
+		Log:        log,
+		Data:       ds,
+		PiPassword: piPassword,
 		Client: &wso2.Client{
 			GatewayURL:   fmt.Sprintf("https://%s", gatewayAddr),
 			ClientID:     clientID,

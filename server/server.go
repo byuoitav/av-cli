@@ -18,8 +18,9 @@ import (
 var _ avcli.AvCliServer = &Server{}
 
 type Server struct {
-	Log  *zap.Logger
-	Data avcli.DataService
+	Log        *zap.Logger
+	Data       avcli.DataService
+	PiPassword string
 	// ShipwrightKey string
 
 	Client *wso2.Client
@@ -76,14 +77,6 @@ func (s *Server) Pis(ctx context.Context, cliID *avcli.ID) ([]avcli.Pi, error) {
 
 func (s *Server) DuplicateRoom(ctx context.Context, req *avcli.DuplicateRoomRequest) (*empty.Empty, error) {
 	return nil, errors.New("not implemented")
-}
-
-func (s *Server) FixTime(id *avcli.ID, stream avcli.AvCli_FixTimeServer) error {
-	return errors.New("not implemented")
-}
-
-func (s *Server) Sink(id *avcli.ID, stream avcli.AvCli_SinkServer) error {
-	return errors.New("not implemented")
 }
 
 func (s *Server) CloseMonitoringIssue(ctx context.Context, id *avcli.ID) (*empty.Empty, error) {

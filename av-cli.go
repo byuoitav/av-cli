@@ -11,33 +11,6 @@ func (s *Server) Swab(id *ID, stream AvCli_SwabServer) error {
 		}
 	}
 }
-
-func swabDevice(ctx context.Context, address string) error {
-	client, err := NewSSHClient(address)
-	if err != nil {
-		err = fmt.Errorf("unable to ssh into %s: %s", address, err)
-		return err
-	}
-
-	session, err := client.NewSession()
-	if err != nil {
-		err = fmt.Errorf("unable to start new session: %s", err)
-		client.Close()
-		return err
-	}
-
-	fmt.Printf("%s\tRestarting DMM... \n", address)
-
-	bytes, err := session.CombinedOutput("sudo systemctl restart device-monitoring.service")
-	if err != nil {
-		err = fmt.Errorf("unable to reboot: %s\noutput on pi: \n%s\n", err, bytes)
-		client.Close()
-		return err
-	}
-	client.Close()
-
-	return nil
-}
 */
 
 /*
@@ -306,38 +279,6 @@ func (s *Server) DuplicateRoom(ctx context.Context, req *DuplicateRoomRequest) (
 }
 
 func (s *Server) FixTime(id *ID, stream AvCli_FixTimeServer) error {
-	client, err := NewSSHClient(id.Id + ".byu.edu")
-	if err != nil {
-		err = fmt.Errorf("unable to ssh into %s: %s", id.Id, err)
-		return stream.Send(&IDResult{
-			Id:    id.Id,
-			Error: err.Error(),
-		})
-	}
-	defer client.Close()
-
-	session, err := client.NewSession()
-	if err != nil {
-		err = fmt.Errorf("unable to start new session: %s", err)
-		client.Close()
-		return stream.Send(&IDResult{
-			Id:    id.Id,
-			Error: err.Error(),
-		})
-	}
-
-	fmt.Printf("Fixing time on pi...\n")
-
-	bytes, err := session.CombinedOutput("date; sudo ntpdate tick.byu.edu && date")
-	if err != nil {
-		err = fmt.Errorf("unable to run fix time command: %s\noutput on pi:\n%s", err, bytes)
-		client.Close()
-		return stream.Send(&IDResult{
-			Id:    id.Id,
-			Error: err.Error(),
-		})
-	}
-
 	f := func(c rune) bool {
 		return c == 0x0a
 	}
@@ -351,67 +292,6 @@ func (s *Server) FixTime(id *ID, stream AvCli_FixTimeServer) error {
 			Error: er,
 		})
 	}
-
-	return stream.Send(&IDResult{
-		Id:    id.Id,
-		Error: "",
-	})
-}
-
-func (s *Server) Sink(id *ID, stream AvCli_SinkServer) error {
-	device, err := db.GetDB().GetDevice(id.Id)
-	if err != nil {
-		err = fmt.Errorf("unable to get device from db: %v", err)
-		return stream.Send(&IDResult{
-			Id:    id.Id,
-			Error: err.Error(),
-		})
-	}
-
-	client, err := NewSSHClient(device.Address)
-	if err != nil {
-		err = fmt.Errorf("unable to ssh into %s: %v", id.Id, err)
-		return stream.Send(&IDResult{
-			Id:    id.Id,
-			Error: err.Error(),
-		})
-	}
-	defer client.Close()
-
-	session, err := client.NewSession()
-	if err != nil {
-		err = fmt.Errorf("unable to start new session: %v", err)
-		client.Close()
-		return stream.Send(&IDResult{
-			Id:    id.Id,
-			Error: err.Error(),
-		})
-	}
-
-	fmt.Printf("Rebooting...\n")
-
-	bytes, err := session.CombinedOutput("sudo reboot")
-	if err != nil {
-		switch err.(type) {
-		case *ssh.ExitMissingError:
-			return stream.Send(&IDResult{
-				Id:    id.Id,
-				Error: "",
-			})
-		default:
-			err = fmt.Errorf("unable to reboot: %v\noutput on pi:\n%s", err, bytes)
-			return stream.Send(&IDResult{
-				Id:    id.Id,
-				Error: err.Error(),
-			})
-		}
-	}
-
-	er := fmt.Sprintf("unable to reboot:\n%s\n", bytes)
-	return stream.Send(&IDResult{
-		Id:    id.Id,
-		Error: er,
-	})
 }
 
 func (s *Server) CloseMonitoringIssue(ctx context.Context, id *ID) (*empty.Empty, error) {
