@@ -29,6 +29,7 @@ func (s *Server) FixTime(id *avcli.ID, stream avcli.AvCli_FixTimeServer) error {
 				errstr = err.Error()
 			}
 
+			// TODO panic on closed channel
 			results <- &avcli.IDResult{
 				Id:    pi.ID,
 				Error: errstr,

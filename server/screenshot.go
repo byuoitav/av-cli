@@ -20,7 +20,7 @@ func (s *Server) Screenshot(ctx context.Context, cliID *avcli.ID) (*avcli.Screen
 	}
 
 	if isRoom {
-		return nil, status.Errorf(codes.InvalidArgument, "screenshot requires a device id", err)
+		return nil, status.Errorf(codes.InvalidArgument, "screenshot requires a device id")
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
