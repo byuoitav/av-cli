@@ -7,38 +7,18 @@ import (
 	"time"
 
 	avcli "github.com/byuoitav/av-cli"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) Swab(cliID *avcli.ID, stream avcli.AvCli_SwabServer) error {
+func (s *Server) Swab(id *avcli.ID, stream avcli.AvCli_SwabServer) error {
 	// TODO handle different types differently
 	// TODO status errors
-	id, isRoom, err := parseID(cliID)
-	if err != nil {
-		return status.Errorf(codes.InvalidArgument, "unable to parse id: %s", err)
-	}
-
 	ctx, cancel := context.WithTimeout(stream.Context(), 15*time.Second)
 	defer cancel()
 
-	var pis []avcli.Pi
-	if !isRoom {
-		pi, err := s.Data.Device(ctx, id)
-		if err != nil {
-			return status.Errorf(codes.Unknown, "unable to get device: %s", err)
-		}
-
-		pis = append(pis, pi)
-	} else {
-		pis, err = s.Data.Room(ctx, id)
-		if err != nil {
-			return status.Errorf(codes.Unknown, "unable to get room: %s", err)
-		}
-	}
-
-	if len(pis) == 0 {
-		return status.Errorf(codes.Unknown, "no pis found")
+	pis, err := s.Pis(ctx, id)
+	if err != nil {
+		return err
 	}
 
 	results := make(chan *avcli.IDResult)

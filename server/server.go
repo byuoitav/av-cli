@@ -5,11 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/byuoitav/auth/wso2"
 	avcli "github.com/byuoitav/av-cli"
 	"github.com/golang/protobuf/ptypes/empty"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var _ avcli.AvCliServer = &Server{}
@@ -38,6 +41,37 @@ func parseID(cliID *avcli.ID) (id string, isRoom bool, err error) {
 	}
 
 	return
+}
+
+func (s *Server) Pis(ctx context.Context, cliID *avcli.ID) ([]avcli.Pi, error) {
+	id, isRoom, err := parseID(cliID)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "unable to parse id: %s", err)
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	var pis []avcli.Pi
+	if !isRoom {
+		pi, err := s.Data.Device(ctx, id)
+		if err != nil {
+			return nil, status.Errorf(codes.Unknown, "unable to get device: %s", err)
+		}
+
+		pis = append(pis, pi)
+	} else {
+		pis, err = s.Data.Room(ctx, id)
+		if err != nil {
+			return nil, status.Errorf(codes.Unknown, "unable to get room: %s", err)
+		}
+	}
+
+	if len(pis) == 0 {
+		return nil, status.Errorf(codes.Unknown, "no pis found")
+	}
+
+	return pis, nil
 }
 
 func (s *Server) DuplicateRoom(ctx context.Context, req *avcli.DuplicateRoomRequest) (*empty.Empty, error) {

@@ -20,6 +20,7 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// TODO get the user, send in metadata
 		// TODO req.UserName should be their real netID (is there some mapping somewhere?)
+		// TODO request id in ctx
 		req, err := slack.SlashCommandParse(c.Request)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
@@ -58,8 +59,48 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 
 				c.String(http.StatusOK, fmt.Sprintf("Taking a screenshot of %s...", id))
 				return
+			case strings.HasPrefix(cmd, "sink"):
+				cmd = trim(cmd, "sink")
+
+				cmdSplit := strings.Split(cmd, " ")
+				if len(cmdSplit) != 1 {
+					c.String(http.StatusOK, "Invalid paramater to sink. Usage: /av pi sink [(BLDG-ROOM)|(BLDG-ROOM-CP1)]")
+					return
+				}
+
+				id := cmdSplit[0]
+
+				go func() {
+					ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+					defer cancel()
+
+					slackCli.Sink(ctx, req, req.UserName, id)
+				}()
+
+				c.String(http.StatusOK, fmt.Sprintf("Sinking %s...", id))
+				return
+			case strings.HasPrefix(cmd, "fixtime"):
+				cmd = trim(cmd, "fixtime")
+
+				cmdSplit := strings.Split(cmd, " ")
+				if len(cmdSplit) != 1 {
+					c.String(http.StatusOK, "Invalid paramater to fixtime. Usage: /av pi fixtime [(BLDG-ROOM)|(BLDG-ROOM-CP1)]")
+					return
+				}
+
+				id := cmdSplit[0]
+
+				go func() {
+					ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+					defer cancel()
+
+					slackCli.FixTime(ctx, req, req.UserName, id)
+				}()
+
+				c.String(http.StatusOK, fmt.Sprintf("Fixing time on %s...", id))
+				return
 			default:
-				c.String(http.StatusOK, "`pi` doesn't have that command.\n\nAvailable commands:\n\tscreenshot")
+				c.String(http.StatusOK, "`pi` doesn't have that command.\n\nAvailable commands:\n\tscreenshot\n\tsink\n\tfixtime")
 				return
 			}
 		case strings.HasPrefix(cmd, "swab"):
@@ -67,7 +108,7 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 
 			cmdSplit := strings.Split(cmd, " ")
 			if len(cmdSplit) != 1 {
-				c.String(http.StatusOK, "Invalid paramater to swab. Usage: /av pi swab [(BLDG-ROOM)|(BLDG-ROOM-CP1)]")
+				c.String(http.StatusOK, "Invalid paramater to swab. Usage: /av swab [(BLDG-ROOM)|(BLDG-ROOM-CP1)]")
 				return
 			}
 
@@ -78,6 +119,26 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 				defer cancel()
 
 				slackCli.Swab(ctx, req, req.UserName, id)
+			}()
+
+			c.String(http.StatusOK, fmt.Sprintf("Swabbing %s...", id))
+			return
+		case strings.HasPrefix(cmd, "float"):
+			cmd = trim(cmd, "float")
+
+			cmdSplit := strings.Split(cmd, " ")
+			if len(cmdSplit) != 1 {
+				c.String(http.StatusOK, "Invalid paramater to float. Usage: /av float [(BLDG-ROOM)|(BLDG-ROOM-CP1)]")
+				return
+			}
+
+			id := cmdSplit[0]
+
+			go func() {
+				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				defer cancel()
+
+				slackCli.Float(ctx, req, req.UserName, id)
 			}()
 
 			c.String(http.StatusOK, fmt.Sprintf("Swabbing %s...", id))

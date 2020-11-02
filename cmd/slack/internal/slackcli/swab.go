@@ -75,8 +75,14 @@ func (c *Client) Swab(ctx context.Context, req slack.SlashCommand, user string, 
 		blocks = blocks[:len(blocks)-1]
 	}
 
+	msgOpts := []slack.MsgOption{
+		slack.MsgOptionReplaceOriginal(req.ResponseURL),
+		slack.MsgOptionDeleteOriginal(req.ResponseURL),
+		slack.MsgOptionBlocks(blocks...),
+	}
+
 	// send the message
-	_, _, _, err = c.slack.SendMessageContext(ctx, req.ChannelID, slack.MsgOptionReplaceOriginal(req.ResponseURL), slack.MsgOptionBlocks(blocks...))
+	_, _, _, err = c.slack.SendMessageContext(ctx, req.ChannelID, msgOpts...)
 	if err != nil {
 		handle(fmt.Errorf("unable to send result to slack: %w", err))
 		return

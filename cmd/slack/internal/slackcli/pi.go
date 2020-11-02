@@ -77,3 +77,9 @@ func (c *Client) Screenshot(ctx context.Context, req slack.SlashCommand, user st
 
 	c.Log.Info("Successfully took screenshot", zap.String("of", id))
 }
+
+func (c *Client) Sink(ctx context.Context, req slack.SlashCommand, user string, id string) {
+}
+
+func (c *Client) FixTime(ctx context.Context, req slack.SlashCommand, user string, id string) {
+}
