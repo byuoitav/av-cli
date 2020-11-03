@@ -13,7 +13,7 @@ func (s *Server) FixTime(id *avcli.ID, stream avcli.AvCli_FixTimeServer) error {
 	ctx, cancel := context.WithTimeout(stream.Context(), 15*time.Second)
 	defer cancel()
 
-	return s.runPerPi(ctx, id, stream, func(pi avcli.Pi) error {
+	eturn s.runPerPi(ctx, id, stream, func(pi avcli.Pi) error {
 		client, err := s.piSSH(ctx, pi.Address)
 		if err != nil {
 			return fmt.Errorf("unable to ssh: %w", err)

@@ -44,9 +44,7 @@ module "api" {
   image_pull_secret = "github-docker-registry"
   public_urls       = ["cli.av.byu.edu"]
   health_check      = false
-  container_env = {
-    "PI_PASSWORD" = data.aws_ssm_parameter.pi_password.value
-  }
+  container_env     = {}
   container_args = [
     "--port", "8080",
     "--log-level", "debug",
@@ -58,6 +56,7 @@ module "api" {
     "--db-address", data.aws_ssm_parameter.db_address.value,
     "--db-username", data.aws_ssm_parameter.db_username.value,
     "--db-password", data.aws_ssm_parameter.db_password.value,
+    "--pi-password", data.aws_ssm_parameter.pi_password.value,
   ]
   ingress_annotations = {
     "nginx.ingress.kubernetes.io/backend-protocol" = "GRPC"
