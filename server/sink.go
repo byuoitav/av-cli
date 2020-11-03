@@ -9,91 +9,50 @@ import (
 
 	avcli "github.com/byuoitav/av-cli"
 	"golang.org/x/crypto/ssh"
-	"google.golang.org/grpc/status"
 )
 
 func (s *Server) Sink(id *avcli.ID, stream avcli.AvCli_SinkServer) error {
 	ctx, cancel := context.WithTimeout(stream.Context(), 15*time.Second)
 	defer cancel()
 
-	pis, err := s.Pis(ctx, id)
-	if err != nil {
-		return err
-	}
+	return s.runPerPi(ctx, id, stream, func(pi avcli.Pi) error {
+		client, err := s.piSSH(ctx, pi.Address)
+		if err != nil {
+			return fmt.Errorf("unable to ssh: %w", err)
+		}
+		defer client.Close()
 
-	results := make(chan *avcli.IDResult)
-	defer close(results)
+		session, err := client.NewSession()
+		if err != nil {
+			return fmt.Errorf("unable to open new ssh session: %w", err)
+		}
+		defer session.Close()
 
-	for i := range pis {
-		go func(pi avcli.Pi) {
-			var errstr string
-			if err := s.sink(ctx, pi); err != nil {
-				errstr = err.Error()
-			}
+		buf := &bytes.Buffer{}
+		session.Stderr = buf
+		session.Stdout = buf
 
-			results <- &avcli.IDResult{
-				Id:    pi.ID,
-				Error: errstr,
-			}
-		}(pis[i])
-	}
+		if err := session.Start("sudo reboot"); err != nil {
+			return fmt.Errorf("unable to start command: %w", err)
+		}
 
-	expectedResults := len(pis)
+		errResp := make(chan error)
+		go func() {
+			errResp <- session.Wait()
+		}()
 
-	for {
 		select {
-		case result := <-results:
-			if err := stream.Send(result); err != nil {
-				return fmt.Errorf("unable to send result: %w", err)
-			}
-
-			expectedResults--
-			if expectedResults == 0 {
+		case err := <-errResp:
+			switch {
+			case errors.Is(err, &ssh.ExitMissingError{}):
 				return nil
+			case err != nil:
+				return fmt.Errorf("unable to run command: %w. output: %s", err, buf.String())
 			}
+
+			return fmt.Errorf("unexpected response from command: %s", buf.String())
 		case <-ctx.Done():
-			return status.FromContextError(ctx.Err()).Err()
+			return fmt.Errorf("unable to run command: %w", ctx.Err())
 		}
-	}
-}
-
-func (s *Server) sink(ctx context.Context, pi avcli.Pi) error {
-	client, err := s.piSSH(ctx, pi.Address)
-	if err != nil {
-		return fmt.Errorf("unable to ssh: %w", err)
-	}
-	defer client.Close()
-
-	session, err := client.NewSession()
-	if err != nil {
-		return fmt.Errorf("unable to open new ssh session: %w", err)
-	}
-	defer session.Close()
-
-	buf := &bytes.Buffer{}
-	session.Stderr = buf
-	session.Stdout = buf
-
-	if err := session.Start("sudo reboot"); err != nil {
-		return fmt.Errorf("unable to start command: %w", err)
-	}
-
-	errResp := make(chan error)
-	go func() {
-		errResp <- session.Wait()
-	}()
-
-	select {
-	case err := <-errResp:
-		switch {
-		case errors.Is(err, &ssh.ExitMissingError{}):
-			return nil
-		case err != nil:
-			return fmt.Errorf("unable to run command: %w. output: %s", err, buf.String())
-		}
-
-		return fmt.Errorf("unexpected response from command: %s", buf.String())
-	case <-ctx.Done():
-		return fmt.Errorf("unable to run command: %w", ctx.Err())
-	}
+	})
 }
