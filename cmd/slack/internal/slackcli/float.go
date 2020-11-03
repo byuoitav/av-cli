@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+// TODO pass default designation to *Client & use that for all calls
 func (c *Client) Float(ctx context.Context, req slack.SlashCommand, user string, id string) {
 	c.Log.Info("Floating", zap.String("id", id), zap.String("for", user))
 
@@ -33,7 +34,7 @@ func (c *Client) Float(ctx context.Context, req slack.SlashCommand, user string,
 		}
 	}
 
-	stream, err := c.cli.Float(ctx, &avcli.ID{Id: id}, grpc.PerRPCCredentials(auth))
+	stream, err := c.cli.Float(ctx, &avcli.ID{Id: id, Designation: "prd"}, grpc.PerRPCCredentials(auth))
 	if err != nil {
 		handle(err)
 		return

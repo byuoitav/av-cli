@@ -100,7 +100,7 @@ func (c *Client) Sink(ctx context.Context, req slack.SlashCommand, user string, 
 		}
 	}
 
-	stream, err := c.cli.Float(ctx, &avcli.ID{Id: id}, grpc.PerRPCCredentials(auth))
+	stream, err := c.cli.Sink(ctx, &avcli.ID{Id: id}, grpc.PerRPCCredentials(auth))
 	if err != nil {
 		handle(err)
 		return
@@ -179,7 +179,7 @@ func (c *Client) FixTime(ctx context.Context, req slack.SlashCommand, user strin
 		}
 	}
 
-	stream, err := c.cli.Float(ctx, &avcli.ID{Id: id}, grpc.PerRPCCredentials(auth))
+	stream, err := c.cli.FixTime(ctx, &avcli.ID{Id: id}, grpc.PerRPCCredentials(auth))
 	if err != nil {
 		handle(err)
 		return
