@@ -35,74 +35,66 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 		}
 
 		switch {
-		case strings.HasPrefix(cmd, "pi"):
-			cmd = trim(cmd, "pi")
+		case strings.HasPrefix(cmd, "screenshot"):
+			cmd = trim(cmd, "screenshot")
 
-			switch {
-			case strings.HasPrefix(cmd, "screenshot"):
-				cmd = trim(cmd, "screenshot")
-
-				cmdSplit := strings.Split(cmd, " ")
-				if len(cmdSplit) != 1 {
-					c.String(http.StatusOK, "Invalid paramater to screenshot. Usage: /av pi screenshot [BLDG-ROOM-CP1]")
-					return
-				}
-
-				id := cmdSplit[0]
-
-				go func() {
-					ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-					defer cancel()
-
-					slackCli.Screenshot(ctx, req, req.UserName, id)
-				}()
-
-				c.String(http.StatusOK, fmt.Sprintf("Taking a screenshot of %s...", id))
-				return
-			case strings.HasPrefix(cmd, "sink"):
-				cmd = trim(cmd, "sink")
-
-				cmdSplit := strings.Split(cmd, " ")
-				if len(cmdSplit) != 1 {
-					c.String(http.StatusOK, "Invalid paramater to sink. Usage: /av pi sink [(BLDG-ROOM)|(BLDG-ROOM-CP1)]")
-					return
-				}
-
-				id := cmdSplit[0]
-
-				go func() {
-					ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-					defer cancel()
-
-					slackCli.Sink(ctx, req, req.UserName, id)
-				}()
-
-				c.String(http.StatusOK, fmt.Sprintf("Sinking %s...", id))
-				return
-			case strings.HasPrefix(cmd, "fixtime"):
-				cmd = trim(cmd, "fixtime")
-
-				cmdSplit := strings.Split(cmd, " ")
-				if len(cmdSplit) != 1 {
-					c.String(http.StatusOK, "Invalid paramater to fixtime. Usage: /av pi fixtime [(BLDG-ROOM)|(BLDG-ROOM-CP1)]")
-					return
-				}
-
-				id := cmdSplit[0]
-
-				go func() {
-					ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-					defer cancel()
-
-					slackCli.FixTime(ctx, req, req.UserName, id)
-				}()
-
-				c.String(http.StatusOK, fmt.Sprintf("Fixing time on %s...", id))
-				return
-			default:
-				c.String(http.StatusOK, "`pi` doesn't have that command.\n\nAvailable commands:\n\tscreenshot\n\tsink\n\tfixtime")
+			cmdSplit := strings.Split(cmd, " ")
+			if len(cmdSplit) != 1 {
+				c.String(http.StatusOK, "Invalid paramater to screenshot. Usage: /av screenshot [BLDG-ROOM-CP1]")
 				return
 			}
+
+			id := cmdSplit[0]
+
+			go func() {
+				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				defer cancel()
+
+				slackCli.Screenshot(ctx, req, req.UserName, id)
+			}()
+
+			c.String(http.StatusOK, fmt.Sprintf("Taking a screenshot of %s...", id))
+			return
+		case strings.HasPrefix(cmd, "sink"):
+			cmd = trim(cmd, "sink")
+
+			cmdSplit := strings.Split(cmd, " ")
+			if len(cmdSplit) != 1 {
+				c.String(http.StatusOK, "Invalid paramater to sink. Usage: /av sink [(BLDG-ROOM)|(BLDG-ROOM-CP1)]")
+				return
+			}
+
+			id := cmdSplit[0]
+
+			go func() {
+				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				defer cancel()
+
+				slackCli.Sink(ctx, req, req.UserName, id)
+			}()
+
+			c.String(http.StatusOK, fmt.Sprintf("Sinking %s...", id))
+			return
+		case strings.HasPrefix(cmd, "fixtime"):
+			cmd = trim(cmd, "fixtime")
+
+			cmdSplit := strings.Split(cmd, " ")
+			if len(cmdSplit) != 1 {
+				c.String(http.StatusOK, "Invalid paramater to fixtime. Usage: /av fixtime [(BLDG-ROOM)|(BLDG-ROOM-CP1)]")
+				return
+			}
+
+			id := cmdSplit[0]
+
+			go func() {
+				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				defer cancel()
+
+				slackCli.FixTime(ctx, req, req.UserName, id)
+			}()
+
+			c.String(http.StatusOK, fmt.Sprintf("Fixing time on %s...", id))
+			return
 		case strings.HasPrefix(cmd, "swab"):
 			cmd = trim(cmd, "swab")
 
@@ -142,6 +134,27 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 			}()
 
 			c.String(http.StatusOK, fmt.Sprintf("Swabbing %s...", id))
+			return
+		case strings.HasPrefix(cmd, "db dup"):
+			cmd = trim(cmd, "db dup")
+
+			cmdSplit := strings.Split(cmd, " ")
+			if len(cmdSplit) != 2 {
+				c.String(http.StatusOK, "Invalid paramater to db dup. Usage: /av db dup [SRC-ID] [DST-ID]")
+				return
+			}
+
+			src := cmdSplit[0]
+			dst := cmdSplit[1]
+
+			go func() {
+				ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+				defer cancel()
+
+				slackCli.CopyRoom(ctx, req, req.UserName, src, dst)
+			}()
+
+			c.String(http.StatusOK, fmt.Sprintf("Copying %s -> %s...", src, dst))
 			return
 		default:
 			c.String(http.StatusOK, "I don't know how to handle that command.")

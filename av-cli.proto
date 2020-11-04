@@ -7,7 +7,7 @@ service AvCli {
 	rpc Swab(ID) returns (stream IDResult) {}
 	rpc Float(ID) returns (stream IDResult) {}
 	rpc Screenshot(ID) returns (ScreenshotResult) {}
-	rpc DuplicateRoom(DuplicateRoomRequest) returns (google.protobuf.Empty) {}
+	rpc CopyRoom(CopyRoomRequest) returns (google.protobuf.Empty) {}
 	rpc FixTime(ID) returns (stream IDResult) {}
 	rpc Sink(ID) returns (stream IDResult) {}
 	rpc CloseMonitoringIssue(ID) returns (google.protobuf.Empty) {}
@@ -36,10 +36,10 @@ message ScreenshotResult {
 	bytes photo = 1;
 }
 
-message DuplicateRoomRequest {
-	string fromID = 1;
-	string fromDesignation = 2;
+message CopyRoomRequest {
+	string src = 1;
+	string srcDesignation = 2;
 
-	string toID = 3;
-	string toDesignation = 4;
+	string dst = 3;
+	string dstDesignation = 4;
 }

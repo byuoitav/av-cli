@@ -60,9 +60,9 @@ func (c *Client) Screenshot(ctx context.Context, in *ID, opts ...grpc.CallOption
 	return c.cliClient.Screenshot(ctx, in, opts...)
 }
 
-func (c *Client) DuplicateRoom(ctx context.Context, in *DuplicateRoomRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+func (c *Client) CopyRoom(ctx context.Context, in *CopyRoomRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	opts = c.checkOpts(opts...)
-	return c.cliClient.DuplicateRoom(ctx, in, opts...)
+	return c.cliClient.CopyRoom(ctx, in, opts...)
 }
 
 func (c *Client) FixTime(ctx context.Context, in *ID, opts ...grpc.CallOption) (AvCli_FixTimeClient, error) {

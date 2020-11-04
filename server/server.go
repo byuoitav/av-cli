@@ -75,10 +75,6 @@ func (s *Server) Pis(ctx context.Context, cliID *avcli.ID) ([]avcli.Pi, error) {
 	return pis, nil
 }
 
-func (s *Server) DuplicateRoom(ctx context.Context, req *avcli.DuplicateRoomRequest) (*empty.Empty, error) {
-	return nil, errors.New("not implemented")
-}
-
 func (s *Server) CloseMonitoringIssue(ctx context.Context, id *avcli.ID) (*empty.Empty, error) {
 	return nil, errors.New("not implemented")
 }
