@@ -26,6 +26,10 @@ data "aws_ssm_parameter" "auth_token" {
   name = "/env/avcli/opa-token"
 }
 
+data "aws_ssm_parameter" "monitoring_secret" {
+  name = "/env/avcli/monitoring-secret"
+}
+
 data "aws_ssm_parameter" "auth_addr" {
   name = "/env/auth-addr"
 }
@@ -36,7 +40,7 @@ module "api" {
   // required
   name           = "cli-api"
   image          = "docker.pkg.github.com/byuoitav/av-cli/api-dev"
-  image_version  = "v0.1.9-alpha"
+  image_version  = "v0.1.10-alpha"
   container_port = 8080
   repo_url       = "https://github.com/byuoitav/av-cli"
 
@@ -57,6 +61,8 @@ module "api" {
     "--db-username", data.aws_ssm_parameter.db_username.value,
     "--db-password", data.aws_ssm_parameter.db_password.value,
     "--pi-password", data.aws_ssm_parameter.pi_password.value,
+    "--monitoring-secret", data.aws_ssm_parameter.monitoring_secret.value,
+    "--monitoring-url", "http://shipwright-prd",
   ]
   ingress_annotations = {
     "nginx.ingress.kubernetes.io/backend-protocol" = "GRPC"
