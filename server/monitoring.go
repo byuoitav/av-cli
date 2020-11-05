@@ -55,6 +55,7 @@ func (s *Server) CloseMonitoringIssue(ctx context.Context, cliID *avcli.ID) (*em
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("%v response from monitoring service", resp.StatusCode)
+		}
 
 		return nil, fmt.Errorf("%v response from monitoring service: %s", resp.StatusCode, body)
 	}

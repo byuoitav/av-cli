@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"runtime"
 	"strings"
 	"time"
 
@@ -156,8 +157,52 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 
 			c.String(http.StatusOK, fmt.Sprintf("Copying %s -> %s...", src, dst))
 			return
+		case strings.HasPrefix(cmd, "closeIssue"):
+			cmd = trim(cmd, "closeIssue")
+
+			cmdSplit := strings.Split(cmd, " ")
+			if len(cmdSplit) != 1 {
+				c.String(http.StatusOK, "Invalid paramater to closeIssue. Usage: /av closeIssue [BLDG-ROOM]")
+				return
+			}
+
+			id := cmdSplit[0]
+
+			go func() {
+				ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+				defer cancel()
+
+				slackCli.CloseMonitoringIssue(ctx, req, req.UserName, id)
+			}()
+
+			c.String(http.StatusOK, fmt.Sprintf("Closing room issue %s", id))
+			return
+		case strings.HasPrefix(cmd, "info"):
+			info := &strings.Builder{}
+			info.WriteString("```\n")
+			info.WriteString("BYU OIT AV's (slack) cli\n\n")
+			info.WriteString(fmt.Sprintf("Your netID:\t%s\n", req.UserName))
+			info.WriteString(fmt.Sprintf("Go version:\t%s\n", runtime.Version()))
+			info.WriteString(fmt.Sprintf("OS/Arch:\t%s/%s\n", runtime.GOOS, runtime.GOARCH))
+			info.WriteString("```")
+			c.String(http.StatusOK, info.String())
+		case strings.HasPrefix(cmd, "help"):
+			usage := &strings.Builder{}
+			usage.WriteString("```\n")
+			usage.WriteString("BYU OIT AV's (slack) cli\n\n")
+			usage.WriteString("Available Commands:\n")
+			usage.WriteString("\t/av screenshot [BLDG-ROOM-CP1]\n")
+			usage.WriteString("\t/av swab [(BLDG-ROOM)|(BLDG-ROOM-CP1)]\n")
+			usage.WriteString("\t/av sink [(BLDG-ROOM)|(BLDG-ROOM-CP1)]\n")
+			usage.WriteString("\t/av float [(BLDG-ROOM)|(BLDG-ROOM-CP1)]\n")
+			usage.WriteString("\t/av fixtime [(BLDG-ROOM)|(BLDG-ROOM-CP1)]\n")
+			usage.WriteString("\t/av db dup [SRC-ID] [DST-ID]\n")
+			usage.WriteString("\t/av closeIssue [BLDG-ROOM]\n")
+			usage.WriteString("\t/av info\n")
+			usage.WriteString("```")
+			c.String(http.StatusOK, usage.String())
 		default:
-			c.String(http.StatusOK, "I don't know how to handle that command.")
+			c.String(http.StatusOK, "I don't know how to handle that command. Run `/av help` for usage.")
 			return
 		}
 	}
