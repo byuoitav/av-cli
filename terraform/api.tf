@@ -40,7 +40,7 @@ module "api" {
   // required
   name           = "cli-api"
   image          = "docker.pkg.github.com/byuoitav/av-cli/api-dev"
-  image_version  = "v0.1.10-alpha"
+  image_version  = "v0.1.1-beta"
   container_port = 8080
   repo_url       = "https://github.com/byuoitav/av-cli"
 

@@ -11,6 +11,7 @@ service AvCli {
 	rpc FixTime(ID) returns (stream IDResult) {}
 	rpc Sink(ID) returns (stream IDResult) {}
 	rpc CloseMonitoringIssue(ID) returns (google.protobuf.Empty) {}
+	rpc RemoveDeviceFromMonitoring(ID) returns (google.protobuf.Empty) {}
 	rpc SetLogLevel(SetLogLevelRequest) returns (google.protobuf.Empty) {}
 
 	// TODO decom smee room

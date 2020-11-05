@@ -10,6 +10,8 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
+var _ AvCliClient = &Client{}
+
 type Client struct {
 	Auth      Auth
 	cliClient AvCliClient
@@ -77,6 +79,11 @@ func (c *Client) Sink(ctx context.Context, in *ID, opts ...grpc.CallOption) (AvC
 func (c *Client) CloseMonitoringIssue(ctx context.Context, in *ID, opts ...grpc.CallOption) (*empty.Empty, error) {
 	opts = c.checkOpts(opts...)
 	return c.cliClient.CloseMonitoringIssue(ctx, in, opts...)
+}
+
+func (c *Client) RemoveDeviceFromMonitoring(ctx context.Context, in *ID, opts ...grpc.CallOption) (*empty.Empty, error) {
+	opts = c.checkOpts(opts...)
+	return c.cliClient.RemoveDeviceFromMonitoring(ctx, in, opts...)
 }
 
 func (c *Client) SetLogLevel(ctx context.Context, in *SetLogLevelRequest, opts ...grpc.CallOption) (*empty.Empty, error) {

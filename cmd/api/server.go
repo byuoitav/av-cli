@@ -37,13 +37,15 @@ func main() {
 		authToken   string
 		disableAuth bool
 
-		gatewayAddr       string
-		clientID          string
-		clientSecret      string
-		monitoringURL     string
-		monitoringSecret  string
-		piPassword        string
-		dataServiceConfig dataServiceConfig
+		gatewayAddr         string
+		clientID            string
+		clientSecret        string
+		monitoringURL       string
+		monitoringSecret    string
+		monitoringRedisAddr string
+		monitoringELKURL    string
+		piPassword          string
+		dataServiceConfig   dataServiceConfig
 	)
 
 	pflag.IntVarP(&port, "port", "P", 8080, "port to run lazarette on")
@@ -56,6 +58,8 @@ func main() {
 	pflag.StringVar(&clientSecret, "client-secret", "", "wso2 secret")
 	pflag.StringVar(&monitoringURL, "monitoring-url", "", "monitoring url (ie https://monitoring.com)")
 	pflag.StringVar(&monitoringSecret, "monitoring-secret", "", "monitoring secret")
+	pflag.StringVar(&monitoringRedisAddr, "monitoring-redis", "", "monitoring redis addr")
+	pflag.StringVar(&monitoringELKURL, "monitoring-elk", "", "monitoring elk base url")
 	pflag.StringVar(&piPassword, "pi-password", "", "password for the pi user of the pis")
 	pflag.StringVar(&dataServiceConfig.Addr, "db-address", "", "database address")
 	pflag.StringVar(&dataServiceConfig.Username, "db-username", "", "database username")
@@ -88,11 +92,13 @@ func main() {
 
 	// build the grpc server
 	cli := &server.Server{
-		Log:               log,
-		Data:              ds,
-		PiPassword:        piPassword,
-		MonitoringBaseURL: monitoringURL,
-		MonitoringSecret:  monitoringSecret,
+		Log:                  log,
+		Data:                 ds,
+		PiPassword:           piPassword,
+		MonitoringBaseURL:    monitoringURL,
+		MonitoringSecret:     monitoringSecret,
+		MonitoringRedisAddr:  monitoringRedisAddr,
+		MonitoringELKBaseURL: monitoringELKURL,
 		Client: &wso2.Client{
 			GatewayURL:   fmt.Sprintf("https://%s", gatewayAddr),
 			ClientID:     clientID,

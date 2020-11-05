@@ -18,11 +18,14 @@ import (
 var _ avcli.AvCliServer = &Server{}
 
 type Server struct {
-	Log               *zap.Logger
-	Data              avcli.DataService
-	PiPassword        string
-	MonitoringBaseURL string
-	MonitoringSecret  string
+	Log        *zap.Logger
+	Data       avcli.DataService
+	PiPassword string
+
+	MonitoringBaseURL    string
+	MonitoringSecret     string
+	MonitoringRedisAddr  string
+	MonitoringELKBaseURL string
 
 	Client *wso2.Client
 }
