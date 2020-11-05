@@ -175,7 +175,27 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 				slackCli.CloseMonitoringIssue(ctx, req, req.UserName, id)
 			}()
 
-			c.String(http.StatusOK, fmt.Sprintf("Closing room issue %s", id))
+			c.String(http.StatusOK, fmt.Sprintf("Closing room issue %s...", id))
+			return
+		case strings.HasPrefix(cmd, "rmDevice"):
+			cmd = trim(cmd, "rmDevice")
+
+			cmdSplit := strings.Split(cmd, " ")
+			if len(cmdSplit) != 1 {
+				c.String(http.StatusOK, "Invalid paramater to rmDevice. Usage: /av rmDevice [BLDG-ROOM-CP1]")
+				return
+			}
+
+			id := cmdSplit[0]
+
+			go func() {
+				ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+				defer cancel()
+
+				slackCli.RemoveDeviceFromMonitoring(ctx, req, req.UserName, id)
+			}()
+
+			c.String(http.StatusOK, fmt.Sprintf("Removing %s from monitoring...", id))
 			return
 		case strings.HasPrefix(cmd, "info"):
 			info := &strings.Builder{}
@@ -211,6 +231,9 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 
 			usage.WriteString("\t/av closeIssue [BLDG-ROOM]\n")
 			usage.WriteString("\t\tCloses an issue in SMEE\n")
+
+			usage.WriteString("\t/av rmDevice [BLDG-ROOM-CP1]\n")
+			usage.WriteString("\t\tRemoves a device from monitoring in SMEE. This does NOT remove the device from the database\n")
 
 			usage.WriteString("\t/av info\n")
 			usage.WriteString("\t\tSee version information\n")
