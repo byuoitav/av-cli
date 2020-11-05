@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	empty "github.com/golang/protobuf/ptypes/empty"
-	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -99,10 +98,12 @@ func (c *Client) checkOpts(opts ...grpc.CallOption) []grpc.CallOption {
 	return opts
 }
 
-func GetNetID(ctx context.Context) (string, error) {
+// TODO don't use a string
+func NetID(ctx context.Context) string {
 	val := ctx.Value("netID")
 	if netID, ok := val.(string); ok {
-		return netID, nil
+		return netID
 	}
-	return "", errors.New("unable to get netID from context")
+
+	return ""
 }

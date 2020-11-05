@@ -18,10 +18,11 @@ import (
 var _ avcli.AvCliServer = &Server{}
 
 type Server struct {
-	Log        *zap.Logger
-	Data       avcli.DataService
-	PiPassword string
-	// ShipwrightKey string
+	Log               *zap.Logger
+	Data              avcli.DataService
+	PiPassword        string
+	MonitoringBaseURL string
+	MonitoringSecret  string
 
 	Client *wso2.Client
 }
@@ -31,11 +32,11 @@ func parseID(cliID *avcli.ID) (id string, isRoom bool, err error) {
 	switch len(split) {
 	case 2:
 		// it's a room
-		id = fmt.Sprintf("%s-%s", split[0], split[1])
+		id = fmt.Sprintf("%s-%s", strings.ToUpper(split[0]), strings.ToUpper(split[1]))
 		isRoom = true
 	case 3:
 		// it's a device
-		id = fmt.Sprintf("%s-%s-%s", split[0], split[1], split[2])
+		id = fmt.Sprintf("%s-%s-%s", strings.ToUpper(split[0]), strings.ToUpper(split[1]), strings.ToUpper(split[2]))
 		isRoom = false
 	default:
 		err = errors.New("not a room or device id")
@@ -73,10 +74,6 @@ func (s *Server) Pis(ctx context.Context, cliID *avcli.ID) ([]avcli.Pi, error) {
 	}
 
 	return pis, nil
-}
-
-func (s *Server) CloseMonitoringIssue(ctx context.Context, id *avcli.ID) (*empty.Empty, error) {
-	return nil, errors.New("not implemented")
 }
 
 func (s *Server) SetLogLevel(ctx context.Context, logReq *avcli.SetLogLevelRequest) (*empty.Empty, error) {

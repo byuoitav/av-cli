@@ -40,7 +40,8 @@ func main() {
 		gatewayAddr       string
 		clientID          string
 		clientSecret      string
-		shipwrightKey     string
+		monitoringURL     string
+		monitoringSecret  string
 		piPassword        string
 		dataServiceConfig dataServiceConfig
 	)
@@ -53,7 +54,8 @@ func main() {
 	pflag.StringVar(&gatewayAddr, "gateway-addr", "api.byu.edu", "wso2 gateway address")
 	pflag.StringVar(&clientID, "client-id", "", "wso2 key")
 	pflag.StringVar(&clientSecret, "client-secret", "", "wso2 secret")
-	pflag.StringVar(&shipwrightKey, "shipwright-key", "", "shipwright key")
+	pflag.StringVar(&monitoringURL, "monitoring-url", "", "monitoring url (ie https://monitoring.com)")
+	pflag.StringVar(&monitoringSecret, "monitoring-secret", "", "monitoring secret")
 	pflag.StringVar(&piPassword, "pi-password", "", "password for the pi user of the pis")
 	pflag.StringVar(&dataServiceConfig.Addr, "db-address", "", "database address")
 	pflag.StringVar(&dataServiceConfig.Username, "db-username", "", "database username")
@@ -86,9 +88,11 @@ func main() {
 
 	// build the grpc server
 	cli := &server.Server{
-		Log:        log,
-		Data:       ds,
-		PiPassword: piPassword,
+		Log:               log,
+		Data:              ds,
+		PiPassword:        piPassword,
+		MonitoringBaseURL: monitoringURL,
+		MonitoringSecret:  monitoringSecret,
 		Client: &wso2.Client{
 			GatewayURL:   fmt.Sprintf("https://%s", gatewayAddr),
 			ClientID:     clientID,
