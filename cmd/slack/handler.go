@@ -192,13 +192,28 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 			usage.WriteString("BYU OIT AV's (slack) cli\n\n")
 			usage.WriteString("Available Commands:\n")
 			usage.WriteString("\t/av screenshot [BLDG-ROOM-CP1]\n")
+			usage.WriteString("\t\tTakes a screenshot of a Pi\n")
+
 			usage.WriteString("\t/av swab [(BLDG-ROOM)|(BLDG-ROOM-CP1)]\n")
+			usage.WriteString("\t\tRefreshes data on Pis\n")
+
 			usage.WriteString("\t/av sink [(BLDG-ROOM)|(BLDG-ROOM-CP1)]\n")
+			usage.WriteString("\t\tReboots Pis\n")
+
 			usage.WriteString("\t/av float [(BLDG-ROOM)|(BLDG-ROOM-CP1)]\n")
+			usage.WriteString("\t\tRedeploys code to Pis\n")
+
 			usage.WriteString("\t/av fixtime [(BLDG-ROOM)|(BLDG-ROOM-CP1)]\n")
+			usage.WriteString("\t\tSyncs time on pis with BYU's servers\n")
+
 			usage.WriteString("\t/av db dup [SRC-ID] [DST-ID]\n")
+			usage.WriteString("\t\tDuplicates a room in the database\n")
+
 			usage.WriteString("\t/av closeIssue [BLDG-ROOM]\n")
+			usage.WriteString("\t\tCloses an issue in SMEE\n")
+
 			usage.WriteString("\t/av info\n")
+			usage.WriteString("\t\tSee version information\n")
 			usage.WriteString("```")
 			c.String(http.StatusOK, usage.String())
 		default:
