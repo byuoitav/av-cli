@@ -30,6 +30,14 @@ data "aws_ssm_parameter" "monitoring_secret" {
   name = "/env/avcli/monitoring-secret"
 }
 
+data "aws_ssm_parameter" "monitoring_redis_addr" {
+  name = "/env/avcli/monitoring-redis-addr"
+}
+
+data "aws_ssm_parameter" "monitoring_elk_url" {
+  name = "/env/avcli/monitoring-elk-url"
+}
+
 data "aws_ssm_parameter" "auth_addr" {
   name = "/env/auth-addr"
 }
@@ -40,7 +48,7 @@ module "api" {
   // required
   name           = "cli-api"
   image          = "docker.pkg.github.com/byuoitav/av-cli/api-dev"
-  image_version  = "v0.1.1-beta"
+  image_version  = "v0.1.2-beta"
   container_port = 8080
   repo_url       = "https://github.com/byuoitav/av-cli"
 
@@ -63,6 +71,8 @@ module "api" {
     "--pi-password", data.aws_ssm_parameter.pi_password.value,
     "--monitoring-secret", data.aws_ssm_parameter.monitoring_secret.value,
     "--monitoring-url", "http://shipwright-prd",
+    "--monitoring-redis", data.aws_ssm_parameter.monitoring_redis_addr.value,
+    "--monitoring-elk", data.aws_ssm_parameter.monitoring_elk_url.value,
   ]
   ingress_annotations = {
     "nginx.ingress.kubernetes.io/backend-protocol" = "GRPC"
