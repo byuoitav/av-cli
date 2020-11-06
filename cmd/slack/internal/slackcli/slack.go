@@ -46,7 +46,6 @@ func (c *Client) handle(ctx context.Context, req slack.SlashCommand, user string
 
 	opts := []slack.MsgOption{
 		slack.MsgOptionReplaceOriginal(req.ResponseURL),
-		slack.MsgOptionDeleteOriginal(req.ResponseURL),
 	}
 	opts = append(opts, f(auth)...)
 
