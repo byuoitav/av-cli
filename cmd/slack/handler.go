@@ -201,9 +201,9 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 			info := &strings.Builder{}
 			info.WriteString("```\n")
 			info.WriteString("BYU OIT AV's (slack) cli\n\n")
-			info.WriteString(fmt.Sprintf("Your netID:\t%s\n", req.UserName))
-			info.WriteString(fmt.Sprintf("Go version:\t%s\n", runtime.Version()))
-			info.WriteString(fmt.Sprintf("OS/Arch:\t\t%s/%s\n", runtime.GOOS, runtime.GOARCH))
+			info.WriteString(fmt.Sprintf("Your netID: %s\n", req.UserName))
+			info.WriteString(fmt.Sprintf("Go version: %s\n", runtime.Version()))
+			info.WriteString(fmt.Sprintf("OS/Arch:    %s/%s\n", runtime.GOOS, runtime.GOARCH))
 			info.WriteString("```")
 			c.String(http.StatusOK, info.String())
 		case strings.HasPrefix(cmd, "help"):

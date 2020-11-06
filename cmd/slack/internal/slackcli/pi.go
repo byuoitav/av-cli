@@ -80,159 +80,127 @@ func (c *Client) Screenshot(ctx context.Context, req slack.SlashCommand, user st
 }
 
 func (c *Client) Sink(ctx context.Context, req slack.SlashCommand, user string, id string) {
-	c.Log.Info("Sinking", zap.String("id", id), zap.String("for", user))
+	c.handle(ctx, req, user, func(auth auth) []slack.MsgOption {
+		c.Log.Info("Sinking", zap.String("id", id), zap.String("for", user))
 
-	auth := auth{
-		token: c.cliToken,
-		user:  user,
-	}
+		args := &avcli.ID{
+			Id:          id,
+			Designation: "prd",
+		}
 
-	handle := func(err error) {
-		c.Log.Warn("unable to sink", zap.Error(err))
-
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		msg := fmt.Sprintf("I was unable to sink %s. :cry:. Error:\n```\n%s\n```", id, err)
-		_, _, err = c.slack.PostMessageContext(ctx, req.ChannelID, slack.MsgOptionReplaceOriginal(req.ResponseURL), slack.MsgOptionText(msg, false))
+		stream, err := c.cli.Sink(ctx, args, grpc.PerRPCCredentials(auth))
 		if err != nil {
-			c.Log.Warn("failed to post error to slack", zap.Error(err))
-		}
-	}
-
-	stream, err := c.cli.Sink(ctx, &avcli.ID{Id: id}, grpc.PerRPCCredentials(auth))
-	if err != nil {
-		handle(err)
-		return
-	}
-
-	blocks := []slack.Block{
-		slack.NewHeaderBlock(&slack.TextBlockObject{
-			Type: slack.PlainTextType,
-			Text: fmt.Sprintf("%s sink result", id),
-		}),
-	}
-
-	for {
-		result, err := stream.Recv()
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			handle(fmt.Errorf("error receiving from stream: %w", err))
-			return
+			c.Log.Warn("unable to sink", zap.Error(err))
+			return []slack.MsgOption{
+				slack.MsgOptionText(fmt.Sprintf("I was unable to sink %s. :cry:. Error:\n```\n%s\n```", id, err), false),
+			}
 		}
 
-		if result.GetError() != "" {
-			blocks = append(blocks, slack.NewSectionBlock(&slack.TextBlockObject{
-				Type: slack.MarkdownType,
-				Text: fmt.Sprintf(":downvote: %s `%s`", result.GetId(), result.GetError()),
-			}, nil, nil))
-		} else {
-			blocks = append(blocks, slack.NewSectionBlock(&slack.TextBlockObject{
-				Type: slack.MarkdownType,
-				Text: fmt.Sprintf(":upvote: %s", result.GetId()),
-			}, nil, nil))
+		blocks := []slack.Block{
+			slack.NewHeaderBlock(&slack.TextBlockObject{
+				Type: slack.PlainTextType,
+				Text: fmt.Sprintf("%s sink result", id),
+			}),
 		}
 
-		blocks = append(blocks, slack.NewDividerBlock())
-	}
+		for {
+			result, err := stream.Recv()
+			if err == io.EOF {
+				break
+			} else if err != nil {
+				// TODO show which ones were successful?
+				c.Log.Warn("unable to recv from stream", zap.Error(err))
+				return []slack.MsgOption{
+					slack.MsgOptionText(fmt.Sprintf("I was unable to sink %s. :cry:. Error:\n```\n%s\n```", id, err), false),
+				}
+			}
 
-	// delete the last divider
-	if blocks[len(blocks)-1].BlockType() == slack.MBTDivider {
-		blocks = blocks[:len(blocks)-1]
-	}
+			if result.GetError() != "" {
+				blocks = append(blocks, slack.NewSectionBlock(&slack.TextBlockObject{
+					Type: slack.MarkdownType,
+					Text: fmt.Sprintf(":downvote: %s `%s`", result.GetId(), result.GetError()),
+				}, nil, nil))
+			} else {
+				blocks = append(blocks, slack.NewSectionBlock(&slack.TextBlockObject{
+					Type: slack.MarkdownType,
+					Text: fmt.Sprintf(":upvote: %s", result.GetId()),
+				}, nil, nil))
+			}
 
-	msgOpts := []slack.MsgOption{
-		slack.MsgOptionReplaceOriginal(req.ResponseURL),
-		slack.MsgOptionDeleteOriginal(req.ResponseURL),
-		slack.MsgOptionBlocks(blocks...),
-	}
+			blocks = append(blocks, slack.NewDividerBlock())
+		}
 
-	// send the message
-	_, _, _, err = c.slack.SendMessageContext(ctx, req.ChannelID, msgOpts...)
-	if err != nil {
-		handle(fmt.Errorf("unable to send result to slack: %w", err))
-		return
-	}
+		// delete the last divider
+		if blocks[len(blocks)-1].BlockType() == slack.MBTDivider {
+			blocks = blocks[:len(blocks)-1]
+		}
 
-	c.Log.Info("Successfully sunk", zap.String("id", id))
+		c.Log.Info("Successfully sunk", zap.String("id", id))
+		return []slack.MsgOption{
+			slack.MsgOptionBlocks(blocks...),
+		}
+	})
 }
 
 func (c *Client) FixTime(ctx context.Context, req slack.SlashCommand, user string, id string) {
-	c.Log.Info("Fixing time", zap.String("on", id), zap.String("for", user))
+	c.handle(ctx, req, user, func(auth auth) []slack.MsgOption {
+		c.Log.Info("Fixing time", zap.String("on", id), zap.String("for", user))
 
-	auth := auth{
-		token: c.cliToken,
-		user:  user,
-	}
+		args := &avcli.ID{
+			Id:          id,
+			Designation: "prd",
+		}
 
-	handle := func(err error) {
-		c.Log.Warn("unable to fix time", zap.Error(err))
-
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		msg := fmt.Sprintf("I was unable to fix time on %s. :cry:. Error:\n```\n%s\n```", id, err)
-		_, _, err = c.slack.PostMessageContext(ctx, req.ChannelID, slack.MsgOptionReplaceOriginal(req.ResponseURL), slack.MsgOptionText(msg, false))
+		stream, err := c.cli.FixTime(ctx, args, grpc.PerRPCCredentials(auth))
 		if err != nil {
-			c.Log.Warn("failed to post error to slack", zap.Error(err))
-		}
-	}
-
-	stream, err := c.cli.FixTime(ctx, &avcli.ID{Id: id}, grpc.PerRPCCredentials(auth))
-	if err != nil {
-		handle(err)
-		return
-	}
-
-	blocks := []slack.Block{
-		slack.NewHeaderBlock(&slack.TextBlockObject{
-			Type: slack.PlainTextType,
-			Text: fmt.Sprintf("%s fix time result", id),
-		}),
-	}
-
-	for {
-		result, err := stream.Recv()
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			handle(fmt.Errorf("error receiving from stream: %w", err))
-			return
+			c.Log.Warn("unable to fix time", zap.Error(err))
+			return []slack.MsgOption{
+				slack.MsgOptionText(fmt.Sprintf("I was unable to fix time on %s. :cry:. Error:\n```\n%s\n```", id, err), false),
+			}
 		}
 
-		if result.GetError() != "" {
-			blocks = append(blocks, slack.NewSectionBlock(&slack.TextBlockObject{
-				Type: slack.MarkdownType,
-				Text: fmt.Sprintf(":downvote: %s `%s`", result.GetId(), result.GetError()),
-			}, nil, nil))
-		} else {
-			blocks = append(blocks, slack.NewSectionBlock(&slack.TextBlockObject{
-				Type: slack.MarkdownType,
-				Text: fmt.Sprintf(":upvote: %s", result.GetId()),
-			}, nil, nil))
+		blocks := []slack.Block{
+			slack.NewHeaderBlock(&slack.TextBlockObject{
+				Type: slack.PlainTextType,
+				Text: fmt.Sprintf("%s fix time result", id),
+			}),
 		}
 
-		blocks = append(blocks, slack.NewDividerBlock())
-	}
+		for {
+			result, err := stream.Recv()
+			if err == io.EOF {
+				break
+			} else if err != nil {
+				// TODO show which ones were successful?
+				c.Log.Warn("unable to recv from stream", zap.Error(err))
+				return []slack.MsgOption{
+					slack.MsgOptionText(fmt.Sprintf("I was unable to fix time on %s. :cry:. Error:\n```\n%s\n```", id, err), false),
+				}
+			}
 
-	// delete the last divider
-	if blocks[len(blocks)-1].BlockType() == slack.MBTDivider {
-		blocks = blocks[:len(blocks)-1]
-	}
+			if result.GetError() != "" {
+				blocks = append(blocks, slack.NewSectionBlock(&slack.TextBlockObject{
+					Type: slack.MarkdownType,
+					Text: fmt.Sprintf(":downvote: %s `%s`", result.GetId(), result.GetError()),
+				}, nil, nil))
+			} else {
+				blocks = append(blocks, slack.NewSectionBlock(&slack.TextBlockObject{
+					Type: slack.MarkdownType,
+					Text: fmt.Sprintf(":upvote: %s", result.GetId()),
+				}, nil, nil))
+			}
 
-	msgOpts := []slack.MsgOption{
-		slack.MsgOptionReplaceOriginal(req.ResponseURL),
-		slack.MsgOptionDeleteOriginal(req.ResponseURL),
-		slack.MsgOptionBlocks(blocks...),
-	}
+			blocks = append(blocks, slack.NewDividerBlock())
+		}
 
-	// send the message
-	_, _, _, err = c.slack.SendMessageContext(ctx, req.ChannelID, msgOpts...)
-	if err != nil {
-		handle(fmt.Errorf("unable to send result to slack: %w", err))
-		return
-	}
+		// delete the last divider
+		if blocks[len(blocks)-1].BlockType() == slack.MBTDivider {
+			blocks = blocks[:len(blocks)-1]
+		}
 
-	c.Log.Info("Successfully fixed time", zap.String("on", id))
+		c.Log.Info("Successfully fixed time", zap.String("on", id))
+		return []slack.MsgOption{
+			slack.MsgOptionBlocks(blocks...),
+		}
+	})
 }
