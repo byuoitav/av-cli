@@ -80,7 +80,7 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 			}()
 
 			msg.Text = fmt.Sprintf("Sinking %s...", id)
-			msg.ResponseType = slack.ResponseTypeInChannel
+			msg.ResponseType = slack.ResponseTypeEphemeral
 			return
 		case strings.HasPrefix(cmd, "fixtime"):
 			cmd = trim(cmd, "fixtime")
@@ -101,7 +101,7 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 			}()
 
 			msg.Text = fmt.Sprintf("Fixing time on %s...", id)
-			msg.ResponseType = slack.ResponseTypeInChannel
+			msg.ResponseType = slack.ResponseTypeEphemeral
 			return
 		case strings.HasPrefix(cmd, "swab"):
 			cmd = trim(cmd, "swab")
@@ -122,7 +122,7 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 			}()
 
 			msg.Text = fmt.Sprintf("Swabbing %s...", id)
-			msg.ResponseType = slack.ResponseTypeInChannel
+			msg.ResponseType = slack.ResponseTypeEphemeral
 			return
 		case strings.HasPrefix(cmd, "float"):
 			cmd = trim(cmd, "float")
@@ -143,7 +143,7 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 			}()
 
 			msg.Text = fmt.Sprintf("Float %s...", id)
-			msg.ResponseType = slack.ResponseTypeInChannel
+			msg.ResponseType = slack.ResponseTypeEphemeral
 			return
 		case strings.HasPrefix(cmd, "db dup"):
 			cmd = trim(cmd, "db dup")
@@ -165,7 +165,7 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 			}()
 
 			msg.Text = fmt.Sprintf("Copying %s -> %s...", src, dst)
-			msg.ResponseType = slack.ResponseTypeInChannel
+			msg.ResponseType = slack.ResponseTypeEphemeral
 			return
 		case strings.HasPrefix(cmd, "closeIssue"):
 			cmd = trim(cmd, "closeIssue")
@@ -186,7 +186,7 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 			}()
 
 			msg.Text = fmt.Sprintf("Closing room issue %s...", id)
-			msg.ResponseType = slack.ResponseTypeInChannel
+			msg.ResponseType = slack.ResponseTypeEphemeral
 			return
 		case strings.HasPrefix(cmd, "rmDevice"):
 			cmd = trim(cmd, "rmDevice")
@@ -207,7 +207,7 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 			}()
 
 			msg.Text = fmt.Sprintf("Removing %s from monitoring...", id)
-			msg.ResponseType = slack.ResponseTypeInChannel
+			msg.ResponseType = slack.ResponseTypeEphemeral
 			return
 		case strings.HasPrefix(cmd, "info"):
 			info := &strings.Builder{}
