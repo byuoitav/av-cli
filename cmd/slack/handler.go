@@ -142,7 +142,7 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 				slackCli.Float(ctx, req, req.UserName, id)
 			}()
 
-			msg.Text = fmt.Sprintf("Swabbing %s...", id)
+			msg.Text = fmt.Sprintf("Float %s...", id)
 			msg.ResponseType = slack.ResponseTypeInChannel
 			return
 		case strings.HasPrefix(cmd, "db dup"):
