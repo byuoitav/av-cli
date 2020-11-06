@@ -25,14 +25,14 @@ func (c *Client) Float(ctx context.Context, req slack.SlashCommand, user string,
 		if err != nil {
 			c.Log.Warn("unable to float", zap.Error(err))
 			return []slack.MsgOption{
-				slack.MsgOptionText(fmt.Sprintf("I was unable to float %s. :cry:. Error:\n```\n%s\n```", id, err), false),
+				slack.MsgOptionText(fmt.Sprintf("<@%s>: I was unable to float %s. :cry:. Error:\n```\n%s\n```", req.UserID, id, err), false),
 			}
 		}
 
 		blocks := []slack.Block{
 			slack.NewHeaderBlock(&slack.TextBlockObject{
 				Type: slack.PlainTextType,
-				Text: fmt.Sprintf("%s float result", id),
+				Text: fmt.Sprintf("%s float result (for <@%s>)", id, req.UserID),
 			}),
 		}
 
@@ -44,7 +44,7 @@ func (c *Client) Float(ctx context.Context, req slack.SlashCommand, user string,
 				// TODO show which ones were successful?
 				c.Log.Warn("unable to recv from stream", zap.Error(err))
 				return []slack.MsgOption{
-					slack.MsgOptionText(fmt.Sprintf("I was unable to float %s. :cry:. Error:\n```\n%s\n```", id, err), false),
+					slack.MsgOptionText(fmt.Sprintf("<@%s>: I was unable to float %s. :cry:. Error:\n```\n%s\n```", req.UserID, id, err), false),
 				}
 			}
 

@@ -22,13 +22,13 @@ func (c *Client) CloseMonitoringIssue(ctx context.Context, req slack.SlashComman
 		if _, err := c.cli.CloseMonitoringIssue(ctx, args, grpc.PerRPCCredentials(auth)); err != nil {
 			c.Log.Warn("unable to close monitoring issue", zap.Error(err))
 			return []slack.MsgOption{
-				slack.MsgOptionText(fmt.Sprintf("I was unable to close monitoring issue %s. :cry:. Error:\n```\n%s\n```", id, err), false),
+				slack.MsgOptionText(fmt.Sprintf("<@%s>: I was unable to close monitoring issue %s. :cry:. Error:\n```\n%s\n```", req.UserID, id, err), false),
 			}
 		}
 
 		c.Log.Info("Successfully closed monitoring issue", zap.String("id", id))
 		return []slack.MsgOption{
-			slack.MsgOptionText(fmt.Sprintf(":upvote: Closed issue %s", id), false),
+			slack.MsgOptionText(fmt.Sprintf("<@%s>: I closed issue %s", req.UserID, id), false),
 		}
 	})
 }
@@ -45,13 +45,13 @@ func (c *Client) RemoveDeviceFromMonitoring(ctx context.Context, req slack.Slash
 		if _, err := c.cli.RemoveDeviceFromMonitoring(ctx, args, grpc.PerRPCCredentials(auth)); err != nil {
 			c.Log.Warn("unable to remove device from monitoring issue", zap.Error(err))
 			return []slack.MsgOption{
-				slack.MsgOptionText(fmt.Sprintf("I was unable to remove %s from monitoring. :cry:. Error:\n```\n%s\n```", id, err), false),
+				slack.MsgOptionText(fmt.Sprintf("<@%s>: I was unable to remove %s from monitoring. :cry:. Error:\n```\n%s\n```", req.UserID, id, err), false),
 			}
 		}
 
 		c.Log.Info("Successfully removed device from monitoring", zap.String("id", id))
 		return []slack.MsgOption{
-			slack.MsgOptionText(fmt.Sprintf(":upvote: Removed %s from monitoring", id), false),
+			slack.MsgOptionText(fmt.Sprintf("<@%s>: I removed %s from monitoring", req.UserID, id), false),
 		}
 	})
 }

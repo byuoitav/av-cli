@@ -68,7 +68,7 @@ func (c *Client) Screenshot(ctx context.Context, req slack.SlashCommand, user st
 		Filetype:       "jpg",
 		Filename:       fmt.Sprintf("%s_%s.jpg", id, now.Format(time.RFC3339)),
 		Title:          fmt.Sprintf("%s Screenshot @ %s", id, now.Format(time.RFC3339)),
-		InitialComment: fmt.Sprintf("<@%s> - here is your screenshot of %s!", req.UserID, id),
+		InitialComment: fmt.Sprintf("<@%s>: here is your screenshot of %s!", req.UserID, id),
 		Reader:         bytes.NewBuffer(result.GetPhoto()),
 		Channels:       []string{req.ChannelID},
 	})
@@ -92,14 +92,14 @@ func (c *Client) Sink(ctx context.Context, req slack.SlashCommand, user string, 
 		if err != nil {
 			c.Log.Warn("unable to sink", zap.Error(err))
 			return []slack.MsgOption{
-				slack.MsgOptionText(fmt.Sprintf("I was unable to sink %s. :cry:. Error:\n```\n%s\n```", id, err), false),
+				slack.MsgOptionText(fmt.Sprintf("<@%s>: I was unable to sink %s. :cry:. Error:\n```\n%s\n```", req.UserID, id, err), false),
 			}
 		}
 
 		blocks := []slack.Block{
 			slack.NewHeaderBlock(&slack.TextBlockObject{
 				Type: slack.PlainTextType,
-				Text: fmt.Sprintf("%s sink result", id),
+				Text: fmt.Sprintf("%s sink result (for <@%s>)", id, req.UserID),
 			}),
 		}
 
@@ -111,7 +111,7 @@ func (c *Client) Sink(ctx context.Context, req slack.SlashCommand, user string, 
 				// TODO show which ones were successful?
 				c.Log.Warn("unable to recv from stream", zap.Error(err))
 				return []slack.MsgOption{
-					slack.MsgOptionText(fmt.Sprintf("I was unable to sink %s. :cry:. Error:\n```\n%s\n```", id, err), false),
+					slack.MsgOptionText(fmt.Sprintf("<@%s>: I was unable to sink %s. :cry:. Error:\n```\n%s\n```", req.UserID, id, err), false),
 				}
 			}
 
@@ -155,14 +155,14 @@ func (c *Client) FixTime(ctx context.Context, req slack.SlashCommand, user strin
 		if err != nil {
 			c.Log.Warn("unable to fix time", zap.Error(err))
 			return []slack.MsgOption{
-				slack.MsgOptionText(fmt.Sprintf("I was unable to fix time on %s. :cry:. Error:\n```\n%s\n```", id, err), false),
+				slack.MsgOptionText(fmt.Sprintf("<@%s>: I was unable to fix time on %s. :cry:. Error:\n```\n%s\n```", req.UserID, id, err), false),
 			}
 		}
 
 		blocks := []slack.Block{
 			slack.NewHeaderBlock(&slack.TextBlockObject{
 				Type: slack.PlainTextType,
-				Text: fmt.Sprintf("%s fix time result", id),
+				Text: fmt.Sprintf("%s fix time result (for <@%s>)", id, req.UserID),
 			}),
 		}
 
@@ -174,7 +174,7 @@ func (c *Client) FixTime(ctx context.Context, req slack.SlashCommand, user strin
 				// TODO show which ones were successful?
 				c.Log.Warn("unable to recv from stream", zap.Error(err))
 				return []slack.MsgOption{
-					slack.MsgOptionText(fmt.Sprintf("I was unable to fix time on %s. :cry:. Error:\n```\n%s\n```", id, err), false),
+					slack.MsgOptionText(fmt.Sprintf("<@%s>: I was unable to fix time on %s. :cry:. Error:\n```\n%s\n```", req.UserID, id, err), false),
 				}
 			}
 

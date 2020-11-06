@@ -24,14 +24,14 @@ func (c *Client) Swab(ctx context.Context, req slack.SlashCommand, user string, 
 		if err != nil {
 			c.Log.Warn("unable to swab", zap.Error(err))
 			return []slack.MsgOption{
-				slack.MsgOptionText(fmt.Sprintf("I was unable to swab %s. :cry:. Error:\n```\n%s\n```", id, err), false),
+				slack.MsgOptionText(fmt.Sprintf("<@%s>: I was unable to swab %s. :cry:. Error:\n```\n%s\n```", req.UserID, id, err), false),
 			}
 		}
 
 		blocks := []slack.Block{
 			slack.NewHeaderBlock(&slack.TextBlockObject{
 				Type: slack.PlainTextType,
-				Text: fmt.Sprintf("%s swab result", id),
+				Text: fmt.Sprintf("%s swab result (for <@%s>)", id, req.UserID),
 			}),
 		}
 
@@ -43,7 +43,7 @@ func (c *Client) Swab(ctx context.Context, req slack.SlashCommand, user string, 
 				// TODO show which ones were successful?
 				c.Log.Warn("unable to recv from stream", zap.Error(err))
 				return []slack.MsgOption{
-					slack.MsgOptionText(fmt.Sprintf("I was unable to swab %s. :cry:. Error:\n```\n%s\n```", id, err), false),
+					slack.MsgOptionText(fmt.Sprintf("<@%s>: I was unable to swab %s. :cry:. Error:\n```\n%s\n```", req.UserID, id, err), false),
 				}
 			}
 
