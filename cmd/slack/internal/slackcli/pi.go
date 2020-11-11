@@ -97,10 +97,10 @@ func (c *Client) Sink(ctx context.Context, req slack.SlashCommand, user string, 
 		}
 
 		blocks := []slack.Block{
-			slack.NewHeaderBlock(&slack.TextBlockObject{
-				Type: slack.PlainTextType,
-				Text: fmt.Sprintf("%s sink result (for <@%s>)", id, req.UserID),
-			}),
+			slack.NewSectionBlock(&slack.TextBlockObject{
+				Type: slack.MarkdownType,
+				Text: fmt.Sprintf("*%s sink result* (for <@%s>)", id, req.UserID),
+			}, nil, nil),
 		}
 
 		for {
@@ -160,10 +160,10 @@ func (c *Client) FixTime(ctx context.Context, req slack.SlashCommand, user strin
 		}
 
 		blocks := []slack.Block{
-			slack.NewHeaderBlock(&slack.TextBlockObject{
-				Type: slack.PlainTextType,
-				Text: fmt.Sprintf("%s fix time result (for <@%s>)", id, req.UserID),
-			}),
+			slack.NewSectionBlock(&slack.TextBlockObject{
+				Type: slack.MarkdownType,
+				Text: fmt.Sprintf("*%s fix time result* (for <@%s>)", id, req.UserID),
+			}, nil, nil),
 		}
 
 		for {

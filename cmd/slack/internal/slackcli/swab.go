@@ -29,10 +29,10 @@ func (c *Client) Swab(ctx context.Context, req slack.SlashCommand, user string, 
 		}
 
 		blocks := []slack.Block{
-			slack.NewHeaderBlock(&slack.TextBlockObject{
-				Type: slack.PlainTextType,
-				Text: fmt.Sprintf("%s swab result (for <@%s>)", id, req.UserID),
-			}),
+			slack.NewSectionBlock(&slack.TextBlockObject{
+				Type: slack.MarkdownType,
+				Text: fmt.Sprintf("*%s swab result* (for <@%s>)", id, req.UserID),
+			}, nil, nil),
 		}
 
 		for {
