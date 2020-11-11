@@ -1,18 +1,8 @@
 package cmd
 
-import (
-	"fmt"
-	"os"
-	"runtime"
+// var cfgFile string
 
-	"github.com/fatih/color"
-	"github.com/mitchellh/go-homedir"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-)
-
-var cfgFile string
-
+/*
 func init() {
 	// disable color if windows
 	switch runtime.GOOS {
@@ -106,3 +96,4 @@ func Execute() {
 		os.Exit(1)
 	}
 }
+*/

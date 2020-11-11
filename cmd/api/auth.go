@@ -33,9 +33,9 @@ type authRequest struct {
 type authResponse struct {
 	DecisionID string `json:"decision_id"`
 	Result     struct {
-		Allow             bool   `json:"allow"`
-		OriginatingClient string `json:"originating_client"`
-		User              string `json:"user"`
+		Allow bool `json:"allow"`
+		// OriginatingClient string `json:"originating_client"`
+		User string `json:"user"`
 	} `json:"result"`
 }
 
@@ -57,7 +57,6 @@ const (
 	netIDMetadataKey     = "x-net-id"
 
 	requestIDCtxKey ctxKey = iota + 1
-	netIDCtxKey
 )
 
 // TODO support using an existing request id header?

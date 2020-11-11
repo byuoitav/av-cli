@@ -1,24 +1,6 @@
 package cmd
 
-import (
-	"encoding/json"
-	"fmt"
-	"io"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"os/exec"
-	"runtime"
-	"strings"
-	"time"
-
-	"github.com/cheggaaa/pb/v3"
-	"github.com/fatih/color"
-	"github.com/manifoldco/promptui"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-)
-
+/*
 func initUpdate() {
 	var delExt string
 	switch runtime.GOOS {
@@ -309,3 +291,4 @@ func move(src, dst string) error {
 
 	return nil
 }
+*/

@@ -1,20 +1,13 @@
 package cmd
 
-import (
-	"fmt"
-	"runtime"
-
-	"github.com/fatih/color"
-	"github.com/spf13/cobra"
-)
-
 var (
-	version   string
-	buildTime string
-	gitCommit string
+//version   string
+//buildTime string
+//gitCommit string
 )
 
 // versionCmd .
+/*
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the current version of av",
@@ -28,3 +21,4 @@ var versionCmd = &cobra.Command{
 		fmt.Printf("  OS/Arch:\t%s/%s\n", runtime.GOOS, runtime.GOARCH)
 	},
 }
+*/
