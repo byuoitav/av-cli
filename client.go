@@ -6,10 +6,11 @@ import (
 	"fmt"
 
 	empty "github.com/golang/protobuf/ptypes/empty"
-	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
+
+var _ AvCliClient = &Client{}
 
 type Client struct {
 	Auth      Auth
@@ -60,9 +61,9 @@ func (c *Client) Screenshot(ctx context.Context, in *ID, opts ...grpc.CallOption
 	return c.cliClient.Screenshot(ctx, in, opts...)
 }
 
-func (c *Client) DuplicateRoom(ctx context.Context, in *DuplicateRoomRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+func (c *Client) CopyRoom(ctx context.Context, in *CopyRoomRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	opts = c.checkOpts(opts...)
-	return c.cliClient.DuplicateRoom(ctx, in, opts...)
+	return c.cliClient.CopyRoom(ctx, in, opts...)
 }
 
 func (c *Client) FixTime(ctx context.Context, in *ID, opts ...grpc.CallOption) (AvCli_FixTimeClient, error) {
@@ -78,6 +79,11 @@ func (c *Client) Sink(ctx context.Context, in *ID, opts ...grpc.CallOption) (AvC
 func (c *Client) CloseMonitoringIssue(ctx context.Context, in *ID, opts ...grpc.CallOption) (*empty.Empty, error) {
 	opts = c.checkOpts(opts...)
 	return c.cliClient.CloseMonitoringIssue(ctx, in, opts...)
+}
+
+func (c *Client) RemoveDeviceFromMonitoring(ctx context.Context, in *ID, opts ...grpc.CallOption) (*empty.Empty, error) {
+	opts = c.checkOpts(opts...)
+	return c.cliClient.RemoveDeviceFromMonitoring(ctx, in, opts...)
 }
 
 func (c *Client) SetLogLevel(ctx context.Context, in *SetLogLevelRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
@@ -99,10 +105,12 @@ func (c *Client) checkOpts(opts ...grpc.CallOption) []grpc.CallOption {
 	return opts
 }
 
-func GetNetID(ctx context.Context) (string, error) {
+// TODO don't use a string
+func NetID(ctx context.Context) string {
 	val := ctx.Value("netID")
 	if netID, ok := val.(string); ok {
-		return netID, nil
+		return netID
 	}
-	return "", errors.New("unable to get netID from context")
+
+	return ""
 }

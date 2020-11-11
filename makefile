@@ -1,62 +1,48 @@
 NAME := av-cli
 OWNER := byuoitav
 PKG := github.com/${OWNER}/${NAME}
-API_PKG := github.com/${OWNER}/${NAME}/api
-CLI_PKG := github.com/${OWNER}/${NAME}/cli
-SLACK_PKG := github.com/${OWNER}/${NAME}/slack
 DOCKER_URL := docker.pkg.github.com
+DOCKER_PKG := ${DOCKER_URL}/${OWNER}/${NAME}
 
-BUILD_TIME := $(shell date)
+# version:
+# use the git tag, if this commit
+# doesn't have a tag, use the git hash
 COMMIT_HASH := $(shell git rev-parse --short HEAD)
-VERSION := $(shell git rev-parse --short HEAD)
+TAG := $(shell git rev-parse --short HEAD)
 ifneq ($(shell git describe --exact-match --tags HEAD 2> /dev/null),)
-	VERSION = $(shell git describe --exact-match --tags HEAD)
+	TAG = $(shell git describe --exact-match --tags HEAD)
 endif
 
-PKG_LIST := $(shell go list ${PKG}/...)
-API_PKG_LIST := $(shell cd api && go list ${API_PKG}/...)
-CLI_PKG_LIST := $(shell cd cli && go list ${CLI_PKG}/...)
-SLACK_PKG_LIST := $(shell cd slack && go list ${SLACK_PKG}/...)
+#BUILD_TIME := $(shell date)
+#COMMIT_HASH := $(shell git rev-parse --short HEAD)
+#VERSION := $(shell git rev-parse --short HEAD)
+#ifneq ($(shell git describe --exact-match --tags HEAD 2> /dev/null),)
+#	VERSION = $(shell git describe --exact-match --tags HEAD)
+#endif
 
-BUILD_CLI=go build -ldflags "-s -w \
+PRD_TAG_REGEX := "v[0-9]+\.[0-9]+\.[0-9]+"
+DEV_TAG_REGEX := "v[0-9]+\.[0-9]+\.[0-9]+-.+"
+
+# go stuff
+PKG_LIST := $(shell go list ${PKG}/...)
+
+#BUILD_CLI=go build -ldflags "-s -w \
 		   -X \"$(CLI_PKG)/cmd.version=$(VERSION)\" \
 		   -X \"$(CLI_PKG)/cmd.buildTime=$(BUILD_TIME)\" \
 		   -X \"$(CLI_PKG)/cmd.gitCommit=$(COMMIT_HASH)\""
 
-.PHONY: all deps build test test-cov clean lint install
+.PHONY: all deps build test test-cov clean
 
 all: clean build
 
-lint:
-	@echo Linting
-	@golangci-lint run --tests=false
-
-	@echo Linting api
-	@cd api && golangci-lint run --tests=false
-
-	@echo Linting cli
-	@cd cli && golangci-lint run --tests=false
-
-	@echo Linting slack
-	@cd slack && golangci-lint run --tests=false
-
 test:
-	@echo Testing
 	@go test -v ${PKG_LIST}
 
-	@echo Testing api
-	@cd api && go test -v ${API_PKG_LIST}
+test-cov:
+	@go test -coverprofile=coverage.txt -covermode=atomic ${PKG_LIST}
 
-	@echo Testing cli
-	@cd cli && go test -v ${CLI_PKG_LIST}
-
-	@echo Testing slack
-	@cd slack && go test -v ${SLACK_PKG_LIST}
-
-#test-cov:
-#	@cd api && go test -coverprofile=coverage.txt -covermode=atomic ${API_PKG_LIST}
-#	@cd cli && go test -coverprofile=coverage.txt -covermode=atomic ${CLI_PKG_LIST}
-#	@cd slack && go test -coverprofile=coverage.txt -covermode=atomic ${SLACK_PKG_LIST}
+lint:
+	@golangci-lint run --tests=false
 
 # must have protoc installed
 deps:
@@ -64,10 +50,8 @@ deps:
 	@go get -u github.com/golang/protobuf/protoc-gen-go
 	@go generate ./...
 
+	@echo Downloading dependencies...
 	@go mod download
-	@cd api && go mod download
-	@cd cli && go mod download
-	@cd slack && go mod download
 
 #install:
 #	go build -o $(NAME) . && mv $(NAME) ${GOPATH}/bin
@@ -76,65 +60,85 @@ build: deps
 	@mkdir -p dist
 
 	@echo
-	@echo Building API for linux-amd64
-	@cd api && env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o ../dist/${NAME}-api-linux-amd64 ${API_PKG}
+	@echo Building api for linux-amd64
+	@cd cmd/api/ && env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o ../../dist/api-linux-amd64
 
 	@echo
-	@echo Building CLI for linux-amd64
-	@cd cli && env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(BUILD_CLI) -o ../dist/${NAME}-cli-linux-amd64 ${CLI_PKG}
-
-	@echo
-	@echo Building CLI for darwin-amd64
-	@cd cli && env CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(BUILD_CLI) -o ../dist/${NAME}-cli-darwin-amd64 ${CLI_PKG}
-
-	@echo
-	@echo Building CLI for windows-amd64
-	@cd cli && env CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(BUILD_CLI) -o ../dist/${NAME}-cli-windows-amd64 ${CLI_PKG}
-
-	@echo
-	@echo Building slackbot for linux-amd64
-	@cd slack && env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o ../dist/${NAME}-slack-linux-amd64 ${SLACK_PKG}
+	@echo Building slack for linux-amd64
+	@cd cmd/slack/ && env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o ../../dist/slack-linux-amd64
 
 	@echo
 	@echo Build output is located in ./dist/.
 
+#	@echo
+#	@echo Building CLI for linux-amd64
+#	@cd cli && env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(BUILD_CLI) -o ../dist/${NAME}-cli-linux-amd64 ${CLI_PKG}
+#
+#	@echo
+#	@echo Building CLI for darwin-amd64
+#	@cd cli && env CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(BUILD_CLI) -o ../dist/${NAME}-cli-darwin-amd64 ${CLI_PKG}
+#
+#	@echo
+#	@echo Building CLI for windows-amd64
+#	@cd cli && env CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(BUILD_CLI) -o ../dist/${NAME}-cli-windows-amd64 ${CLI_PKG}
+
 docker: clean build
-ifneq (${COMMIT_HASH},${VERSION})
-	@echo Building container ${DOCKER_URL}/${OWNER}/${NAME}/api:${VERSION}
-	@docker build -f dockerfile --build-arg NAME=${NAME}-api-linux-amd64 -t ${DOCKER_URL}/${OWNER}/${NAME}/api:${VERSION} dist
+ifeq (${COMMIT_HASH}, ${TAG})
+	@echo Building dev containers with tag ${COMMIT_HASH}
 
-	@echo Building container ${DOCKER_URL}/${OWNER}/${NAME}/slack:${VERSION}
-	@docker build -f dockerfile --build-arg NAME=${NAME}-slack-linux-amd64 -t ${DOCKER_URL}/${OWNER}/${NAME}/slack:${VERSION} dist
-else
-	@echo Building container ${DOCKER_URL}/${OWNER}/${NAME}/api-dev:${COMMIT_HASH}
-	@docker build -f dockerfile --build-arg NAME=${NAME}-api-linux-amd64 -t ${DOCKER_URL}/${OWNER}/${NAME}/api-dev:${COMMIT_HASH} dist
+	@echo Building container ${DOCKER_PKG}/api-dev:${COMMIT_HASH}
+	@docker build -f dockerfile --build-arg NAME=api-linux-amd64 -t ${DOCKER_PKG}/api-dev:${COMMIT_HASH} dist
 
-	@echo Building container ${DOCKER_URL}/${OWNER}/${NAME}/slack-dev:${COMMIT_HASH}
-	@docker build -f dockerfile --build-arg NAME=${NAME}-slack-linux-amd64 -t ${DOCKER_URL}/${OWNER}/${NAME}/slack-dev:${COMMIT_HASH} dist
+	@echo Building container ${DOCKER_PKG}/slack-dev:${COMMIT_HASH}
+	@docker build -f dockerfile --build-arg NAME=slack-linux-amd64 -t ${DOCKER_PKG}/slack-dev:${COMMIT_HASH} dist
+else ifneq ($(shell echo ${TAG} | grep -x -E ${DEV_TAG_REGEX}),)
+	@echo Building dev containers with tag ${TAG}
+
+	@echo Building container ${DOCKER_PKG}/api-dev:${TAG}
+	@docker build -f dockerfile --build-arg NAME=api-linux-amd64 -t ${DOCKER_PKG}/api-dev:${TAG} dist
+
+	@echo Building container ${DOCKER_PKG}/slack-dev:${TAG}
+	@docker build -f dockerfile --build-arg NAME=slack-linux-amd64 -t ${DOCKER_PKG}/slack-dev:${TAG} dist
+else ifneq ($(shell echo ${TAG} | grep -x -E ${PRD_TAG_REGEX}),)
+	@echo Building prd containers with tag ${TAG}
+
+	@echo Building container ${DOCKER_PKG}/api:${TAG}
+	@docker build -f dockerfile --build-arg NAME=api-linux-amd64 -t ${DOCKER_PKG}/api:${TAG} dist
+
+	@echo Building container ${DOCKER_PKG}/slack:${TAG}
+	@docker build -f dockerfile --build-arg NAME=slack-linux-amd64 -t ${DOCKER_PKG}/slack:${TAG} dist
 endif
 
 deploy: docker
-	@echo Logging into ${DOCKER_URL}
+	@echo Logging into Github Package Registry
 	@docker login ${DOCKER_URL} -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
 
-ifneq (${COMMIT_HASH},${VERSION})
-	@echo Pushing container ${DOCKER_URL}/${OWNER}/${NAME}/api:${VERSION}
-	@docker push ${DOCKER_URL}/${OWNER}/${NAME}/api:${VERSION}
+ifeq (${COMMIT_HASH}, ${TAG})
+	@echo Pushing dev containers with tag ${COMMIT_HASH}
 
-	@echo Pushing container ${DOCKER_URL}/${OWNER}/${NAME}/slack:${VERSION}
-	@docker push ${DOCKER_URL}/${OWNER}/${NAME}/slack:${VERSION}
-else
-	@echo Pushing container ${DOCKER_URL}/${OWNER}/${NAME}/api-dev:${COMMIT_HASH}
-	@docker push ${DOCKER_URL}/${OWNER}/${NAME}/api-dev:${COMMIT_HASH}
+	@echo Pushing container ${DOCKER_PKG}/api-dev:${COMMIT_HASH}
+	@docker push ${DOCKER_PKG}/api-dev:${COMMIT_HASH}
 
-	@echo Pushing container ${DOCKER_URL}/${OWNER}/${NAME}/slack-dev:${COMMIT_HASH}
-	@docker push ${DOCKER_URL}/${OWNER}/${NAME}/slack-dev:${COMMIT_HASH}
+	@echo Pushing container ${DOCKER_PKG}/slack-dev:${COMMIT_HASH}
+	@docker push ${DOCKER_PKG}/slack-dev:${COMMIT_HASH}
+else ifneq ($(shell echo ${TAG} | grep -x -E ${DEV_TAG_REGEX}),)
+	@echo Pushing dev containers with tag ${TAG}
+
+	@echo Pushing container ${DOCKER_PKG}/api-dev:${TAG}
+	@docker push ${DOCKER_PKG}/api-dev:${TAG}
+
+	@echo Pushing container ${DOCKER_PKG}/slack-dev:${TAG}
+	@docker push ${DOCKER_PKG}/slack-dev:${TAG}
+else ifneq ($(shell echo ${TAG} | grep -x -E ${PRD_TAG_REGEX}),)
+	@echo Pushing prd containers with tag ${TAG}
+
+	@echo Pushing container ${DOCKER_PKG}/api:${TAG}
+	@docker push ${DOCKER_PKG}/api:${TAG}
+
+	@echo Pushing container ${DOCKER_PKG}/slack:${TAG}
+	@docker push ${DOCKER_PKG}/slack:${TAG}
 endif
 
 clean:
 	@go clean
-	@cd api && go clean
-	@cd cli && go clean
-	@cd slack && go clean
-	rm -f ${GOPATH}/bin/${NAME}
-	rm -rf dist
+	@rm -rf dist/
