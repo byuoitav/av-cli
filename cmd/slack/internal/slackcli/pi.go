@@ -80,7 +80,7 @@ func (c *Client) Screenshot(ctx context.Context, req slack.SlashCommand, user st
 }
 
 func (c *Client) Sink(ctx context.Context, req slack.SlashCommand, user string, id string) {
-	c.handle(ctx, req, user, func(auth auth) []slack.MsgOption {
+	c.handle(req, user, func(auth auth) []slack.MsgOption {
 		c.Log.Info("Sinking", zap.String("id", id), zap.String("for", user))
 
 		args := &avcli.ID{
@@ -143,7 +143,7 @@ func (c *Client) Sink(ctx context.Context, req slack.SlashCommand, user string, 
 }
 
 func (c *Client) FixTime(ctx context.Context, req slack.SlashCommand, user string, id string) {
-	c.handle(ctx, req, user, func(auth auth) []slack.MsgOption {
+	c.handle(req, user, func(auth auth) []slack.MsgOption {
 		c.Log.Info("Fixing time", zap.String("on", id), zap.String("for", user))
 
 		args := &avcli.ID{

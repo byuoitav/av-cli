@@ -13,7 +13,7 @@ import (
 
 // TODO pass default designation to *Client & use that for all calls
 func (c *Client) Float(ctx context.Context, req slack.SlashCommand, user string, id string) {
-	c.handle(ctx, req, user, func(auth auth) []slack.MsgOption {
+	c.handle(req, user, func(auth auth) []slack.MsgOption {
 		c.Log.Info("Floating", zap.String("id", id), zap.String("for", user))
 
 		args := &avcli.ID{

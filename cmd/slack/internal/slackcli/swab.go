@@ -12,7 +12,7 @@ import (
 )
 
 func (c *Client) Swab(ctx context.Context, req slack.SlashCommand, user string, id string) {
-	c.handle(ctx, req, user, func(auth auth) []slack.MsgOption {
+	c.handle(req, user, func(auth auth) []slack.MsgOption {
 		c.Log.Info("Swabbing", zap.String("id", id), zap.String("for", user))
 
 		args := &avcli.ID{

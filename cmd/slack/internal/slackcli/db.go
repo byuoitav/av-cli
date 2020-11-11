@@ -12,7 +12,7 @@ import (
 
 // TODO pass default designation to *Client & use that for all calls
 func (c *Client) CopyRoom(ctx context.Context, req slack.SlashCommand, user string, src, dst string) {
-	c.handle(ctx, req, user, func(auth auth) []slack.MsgOption {
+	c.handle(req, user, func(auth auth) []slack.MsgOption {
 		c.Log.Info("Copying room", zap.String("src", src), zap.String("dst", dst))
 
 		args := &avcli.CopyRoomRequest{

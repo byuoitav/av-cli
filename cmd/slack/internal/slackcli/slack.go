@@ -38,7 +38,7 @@ func New(ctx context.Context, cliAddr string, cliToken string, slackToken string
 	}, nil
 }
 
-func (c *Client) handle(ctx context.Context, req slack.SlashCommand, user string, f func(auth auth) []slack.MsgOption) {
+func (c *Client) handle(req slack.SlashCommand, user string, f func(auth auth) []slack.MsgOption) {
 	auth := auth{
 		token: c.cliToken,
 		user:  user,
@@ -49,7 +49,7 @@ func (c *Client) handle(ctx context.Context, req slack.SlashCommand, user string
 	}
 	opts = append(opts, f(auth)...)
 
-	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	_, _, err := c.slack.PostMessageContext(ctx, req.ChannelID, opts...)

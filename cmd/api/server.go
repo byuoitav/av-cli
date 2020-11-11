@@ -80,7 +80,7 @@ func main() {
 		Address:  authAddr,
 		Token:    authToken,
 		Disabled: disableAuth,
-		Logger:   log,
+		Log:      log,
 	}
 
 	if !authClient.Disabled && len(authClient.Address) == 0 {

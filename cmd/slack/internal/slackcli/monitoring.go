@@ -11,7 +11,7 @@ import (
 )
 
 func (c *Client) CloseMonitoringIssue(ctx context.Context, req slack.SlashCommand, user string, id string) {
-	c.handle(ctx, req, user, func(auth auth) []slack.MsgOption {
+	c.handle(req, user, func(auth auth) []slack.MsgOption {
 		c.Log.Info("Closing monitoring issue", zap.String("id", id))
 
 		args := &avcli.ID{
@@ -34,7 +34,7 @@ func (c *Client) CloseMonitoringIssue(ctx context.Context, req slack.SlashComman
 }
 
 func (c *Client) RemoveDeviceFromMonitoring(ctx context.Context, req slack.SlashCommand, user string, id string) {
-	c.handle(ctx, req, user, func(auth auth) []slack.MsgOption {
+	c.handle(req, user, func(auth auth) []slack.MsgOption {
 		c.Log.Info("Removing device from monitoring", zap.String("id", id))
 
 		args := &avcli.ID{

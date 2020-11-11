@@ -12,6 +12,7 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -28,6 +29,16 @@ type Server struct {
 	MonitoringELKBaseURL string
 
 	Client *wso2.Client
+}
+
+func (s *Server) log(ctx context.Context) *zap.Logger {
+	md, _ := metadata.FromIncomingContext(ctx)
+	log := s.Log
+	if len(md["x-request-id"]) > 0 {
+		log = log.With(zap.String("requestID", md["x-request-id"][0]))
+	}
+
+	return log
 }
 
 func parseID(cliID *avcli.ID) (id string, isRoom bool, err error) {

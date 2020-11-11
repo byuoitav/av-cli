@@ -11,17 +11,23 @@ import (
 	avcli "github.com/byuoitav/av-cli"
 	"github.com/go-redis/redis/v8"
 	"github.com/golang/protobuf/ptypes/empty"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func (s *Server) CloseMonitoringIssue(ctx context.Context, cliID *avcli.ID) (*empty.Empty, error) {
+	log := s.log(ctx)
+	log.Info("Closing monitoring issue", zap.String("id", cliID.GetId()))
+
 	id, isRoom, err := parseID(cliID)
 	if err != nil {
+		log.Warn("unable to parse id", zap.Error(err))
 		return nil, status.Errorf(codes.InvalidArgument, "unable to parse id: %s", err)
 	}
 
 	if !isRoom {
+		log.Warn("id was not a room")
 		return nil, status.Errorf(codes.InvalidArgument, "closing a monitoring issue requires a room id")
 	}
 
@@ -39,6 +45,7 @@ func (s *Server) CloseMonitoringIssue(ctx context.Context, cliID *avcli.ID) (*em
 
 	req, err := http.NewRequest(http.MethodPut, url, bytes.NewReader(reqBody))
 	if err != nil {
+		log.Warn("unable to build request", zap.Error(err))
 		return nil, fmt.Errorf("unable to build request: %w", err)
 	}
 
@@ -48,6 +55,7 @@ func (s *Server) CloseMonitoringIssue(ctx context.Context, cliID *avcli.ID) (*em
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Warn("unable to do request", zap.Error(err))
 		return nil, fmt.Errorf("unable to do request: %w", err)
 	}
 	defer resp.Body.Close()
@@ -55,9 +63,11 @@ func (s *Server) CloseMonitoringIssue(ctx context.Context, cliID *avcli.ID) (*em
 	if resp.StatusCode/100 != 2 {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
+			log.Warn("bad response from monitoring service", zap.Int("statusCode", resp.StatusCode))
 			return nil, fmt.Errorf("%v response from monitoring service", resp.StatusCode)
 		}
 
+		log.Warn("bad response from monitoring service", zap.Int("statusCode", resp.StatusCode), zap.ByteString("body", body))
 		return nil, fmt.Errorf("%v response from monitoring service: %s", resp.StatusCode, body)
 	}
 
@@ -65,12 +75,17 @@ func (s *Server) CloseMonitoringIssue(ctx context.Context, cliID *avcli.ID) (*em
 }
 
 func (s *Server) RemoveDeviceFromMonitoring(ctx context.Context, cliID *avcli.ID) (*empty.Empty, error) {
+	log := s.log(ctx)
+	log.Info("Removing device from monitoring", zap.String("id", cliID.GetId()))
+
 	id, isRoom, err := parseID(cliID)
 	if err != nil {
+		log.Warn("unable to parse id", zap.Error(err))
 		return nil, status.Errorf(codes.InvalidArgument, "unable to parse id: %s", err)
 	}
 
 	if isRoom {
+		log.Warn("id was not a device")
 		return nil, status.Errorf(codes.InvalidArgument, "removing a device from monitoring requires a device id")
 	}
 
@@ -85,6 +100,7 @@ func (s *Server) RemoveDeviceFromMonitoring(ctx context.Context, cliID *avcli.ID
 	defer rdb.Close()
 
 	if err := rdb.Del(ctx, id).Err(); err != nil {
+		log.Warn("unable to delete device from cache", zap.Error(err))
 		return nil, fmt.Errorf("unable to delete device from cache: %w", err)
 	}
 
@@ -107,6 +123,7 @@ func (s *Server) RemoveDeviceFromMonitoring(ctx context.Context, cliID *avcli.ID
 
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(reqBody))
 	if err != nil {
+		log.Warn("unable to build request", zap.Error(err))
 		return nil, fmt.Errorf("unable to build request: %w", err)
 	}
 
@@ -114,6 +131,7 @@ func (s *Server) RemoveDeviceFromMonitoring(ctx context.Context, cliID *avcli.ID
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Warn("unable to do request", zap.Error(err))
 		return nil, fmt.Errorf("unable to do request: %w", err)
 	}
 	defer resp.Body.Close()
@@ -121,11 +139,14 @@ func (s *Server) RemoveDeviceFromMonitoring(ctx context.Context, cliID *avcli.ID
 	if resp.StatusCode/100 != 2 {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
+			log.Warn("bad response from ELK", zap.Int("statusCode", resp.StatusCode))
 			return nil, fmt.Errorf("%v response from ELK", resp.StatusCode)
 		}
 
+		log.Warn("bad response from ELK", zap.Int("statusCode", resp.StatusCode), zap.ByteString("body", body))
 		return nil, fmt.Errorf("%v response from ELK: %s", resp.StatusCode, body)
 	}
 
+	log.Info("Successfully removed device from monitoring")
 	return &empty.Empty{}, nil
 }
