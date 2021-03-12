@@ -16,13 +16,17 @@ func (s *Server) Float(id *avcli.ID, stream avcli.AvCli_FloatServer) error {
 	log.Info("Floating", zap.String("to", id.GetId()))
 
 	// TODO validate designations?
-	ctx, cancel := context.WithTimeout(stream.Context(), 15*time.Second)
+	ctx, cancel := context.WithTimeout(stream.Context(), 90*time.Second)
 	defer cancel()
 
 	return s.runPerPi(ctx, id, stream, func(pi avcli.Pi) error {
 		log := log.With(zap.String("pi", pi.ID))
 
-		req, err := http.NewRequest("GET", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/%v/webhook_device/%v", id.Designation, pi.ID), nil)
+		// no individual pi can take longer than 30 seconds
+		ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+		defer cancel()
+
+		req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/%v/webhook_device/%v", id.Designation, pi.ID), nil)
 		if err != nil {
 			log.Warn("unable to build request", zap.Error(err))
 			return fmt.Errorf("unable to build request: %w", err)

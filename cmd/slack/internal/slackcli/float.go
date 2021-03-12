@@ -41,10 +41,25 @@ func (c *Client) Float(ctx context.Context, req slack.SlashCommand, user string,
 			if err == io.EOF {
 				break
 			} else if err != nil {
-				// TODO show which ones were successful?
 				c.Log.Warn("unable to recv from stream", zap.Error(err))
+				res := []slack.Block{
+					slack.TextBlockObject{
+						Type: slack.MarkdownType,
+						Text: fmt.Sprintf("<@%s>: There was an error while floating %s. :cry:. Error:\n```\n%s\n```", req.UserID, id, err),
+					},
+				}
+
+				if len(blocks) > 1 {
+					// delete the last divider
+					if blocks[len(blocks)-1].BlockType() == slack.MBTDivider {
+						blocks = blocks[:len(blocks)-1]
+					}
+
+					res = append(res, blocks...)
+				}
+
 				return []slack.MsgOption{
-					slack.MsgOptionText(fmt.Sprintf("<@%s>: I was unable to float %s. :cry:. Error:\n```\n%s\n```", req.UserID, id, err), false),
+					slack.MsgOptionBlocks(res...),
 				}
 			}
 

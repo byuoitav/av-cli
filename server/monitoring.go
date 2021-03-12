@@ -20,13 +20,13 @@ func (s *Server) CloseMonitoringIssue(ctx context.Context, cliID *avcli.ID) (*em
 	log := s.log(ctx)
 	log.Info("Closing monitoring issue", zap.String("id", cliID.GetId()))
 
-	id, isRoom, err := parseID(cliID)
+	id, idType, err := parseID(cliID)
 	if err != nil {
 		log.Warn("unable to parse id", zap.Error(err))
 		return nil, status.Errorf(codes.InvalidArgument, "unable to parse id: %s", err)
 	}
 
-	if !isRoom {
+	if idType != idTypeRoom {
 		log.Warn("id was not a room")
 		return nil, status.Errorf(codes.InvalidArgument, "closing a monitoring issue requires a room id")
 	}
@@ -78,13 +78,13 @@ func (s *Server) RemoveDeviceFromMonitoring(ctx context.Context, cliID *avcli.ID
 	log := s.log(ctx)
 	log.Info("Removing device from monitoring", zap.String("id", cliID.GetId()))
 
-	id, isRoom, err := parseID(cliID)
+	id, idType, err := parseID(cliID)
 	if err != nil {
 		log.Warn("unable to parse id", zap.Error(err))
 		return nil, status.Errorf(codes.InvalidArgument, "unable to parse id: %s", err)
 	}
 
-	if isRoom {
+	if idType != idTypeDevice {
 		log.Warn("id was not a device")
 		return nil, status.Errorf(codes.InvalidArgument, "removing a device from monitoring requires a device id")
 	}

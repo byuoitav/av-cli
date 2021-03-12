@@ -18,13 +18,13 @@ func (s *Server) Screenshot(ctx context.Context, cliID *avcli.ID) (*avcli.Screen
 	log.Info("Screenshotting", zap.String("id", cliID.GetId()))
 
 	// TODO status errors
-	id, isRoom, err := parseID(cliID)
+	id, idType, err := parseID(cliID)
 	if err != nil {
 		log.Warn("unable to parse id", zap.Error(err))
 		return nil, status.Errorf(codes.InvalidArgument, "unable to parse id: %s", err)
 	}
 
-	if isRoom {
+	if idType != idTypeDevice {
 		log.Warn("id was not a device id")
 		return nil, status.Errorf(codes.InvalidArgument, "screenshot requires a device id")
 	}

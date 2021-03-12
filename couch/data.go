@@ -16,12 +16,12 @@ type device struct {
 	} `json:"type"`
 }
 
-func (d *DataService) Room(ctx context.Context, id string) ([]avcli.Pi, error) {
+func (d *DataService) prefixQuery(ctx context.Context, prefix string) ([]avcli.Pi, error) {
 	db := d.client.DB(ctx, d.database)
 	query := map[string]interface{}{
 		"selector": map[string]interface{}{
 			"_id": map[string]interface{}{
-				"$regex": id,
+				"$regex": prefix,
 			},
 			"type._id": map[string]interface{}{
 				"$regex": "(Pi3)", // TODO add other types
@@ -34,8 +34,7 @@ func (d *DataService) Room(ctx context.Context, id string) ([]avcli.Pi, error) {
 		return []avcli.Pi{}, fmt.Errorf("unable to find: %w", err)
 	}
 
-	var room []avcli.Pi
-
+	var pis []avcli.Pi
 	for rows.Next() {
 		var dev device
 		if err := rows.ScanDoc(&dev); err != nil {
@@ -46,10 +45,18 @@ func (d *DataService) Room(ctx context.Context, id string) ([]avcli.Pi, error) {
 			continue
 		}
 
-		room = append(room, dev.convert())
+		pis = append(pis, dev.convert())
 	}
 
-	return room, nil
+	return pis, nil
+}
+
+func (d *DataService) Building(ctx context.Context, id string) ([]avcli.Pi, error) {
+	return d.prefixQuery(ctx, id+"-")
+}
+
+func (d *DataService) Room(ctx context.Context, id string) ([]avcli.Pi, error) {
+	return d.prefixQuery(ctx, id+"-")
 }
 
 func (d *DataService) Device(ctx context.Context, id string) (avcli.Pi, error) {

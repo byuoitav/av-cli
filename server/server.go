@@ -41,26 +41,30 @@ func (s *Server) log(ctx context.Context) *zap.Logger {
 	return log
 }
 
-func parseID(cliID *avcli.ID) (id string, isRoom bool, err error) {
-	split := strings.Split(cliID.GetId(), "-")
-	switch len(split) {
-	case 2:
-		// it's a room
-		id = fmt.Sprintf("%s-%s", strings.ToUpper(split[0]), strings.ToUpper(split[1]))
-		isRoom = true
-	case 3:
-		// it's a device
-		id = fmt.Sprintf("%s-%s-%s", strings.ToUpper(split[0]), strings.ToUpper(split[1]), strings.ToUpper(split[2]))
-		isRoom = false
-	default:
-		err = errors.New("not a room or device id")
-	}
+type idType int
 
-	return
+const (
+	idTypeBuilding idType = iota + 1
+	idTypeRoom
+	idTypeDevice
+)
+
+func parseID(cliID *avcli.ID) (string, idType, error) {
+	split := strings.SplitN(cliID.GetId(), "-", 3)
+	switch len(split) {
+	case 1:
+		return strings.ToUpper(split[0]), idTypeBuilding, nil
+	case 2:
+		return fmt.Sprintf("%s-%s", strings.ToUpper(split[0]), strings.ToUpper(split[1])), idTypeRoom, nil
+	case 3:
+		return fmt.Sprintf("%s-%s-%s", strings.ToUpper(split[0]), strings.ToUpper(split[1]), strings.ToUpper(split[2])), idTypeDevice, nil
+	default:
+		return "", 0, errors.New("not a room or device id")
+	}
 }
 
 func (s *Server) Pis(ctx context.Context, cliID *avcli.ID) ([]avcli.Pi, error) {
-	id, isRoom, err := parseID(cliID)
+	id, idType, err := parseID(cliID)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "unable to parse id: %s", err)
 	}
@@ -69,17 +73,23 @@ func (s *Server) Pis(ctx context.Context, cliID *avcli.ID) ([]avcli.Pi, error) {
 	defer cancel()
 
 	var pis []avcli.Pi
-	if !isRoom {
+	switch idType {
+	case idTypeDevice:
 		pi, err := s.Data.Device(ctx, id)
 		if err != nil {
 			return nil, status.Errorf(codes.Unknown, "unable to get device: %s", err)
 		}
 
 		pis = append(pis, pi)
-	} else {
+	case idTypeRoom:
 		pis, err = s.Data.Room(ctx, id)
 		if err != nil {
 			return nil, status.Errorf(codes.Unknown, "unable to get room: %s", err)
+		}
+	case idTypeBuilding:
+		pis, err = s.Data.Building(ctx, id)
+		if err != nil {
+			return nil, status.Errorf(codes.Unknown, "unable to get building: %s", err)
 		}
 	}
 

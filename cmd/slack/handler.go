@@ -136,13 +136,13 @@ func handleSlackRequests(slackCli *slackcli.Client) gin.HandlerFunc {
 			id := cmdSplit[0]
 
 			go func() {
-				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 				defer cancel()
 
 				slackCli.Float(ctx, req, req.UserName, id)
 			}()
 
-			msg.Text = fmt.Sprintf("Float %s...", id)
+			msg.Text = fmt.Sprintf("Floating %s...", id)
 			msg.ResponseType = slack.ResponseTypeEphemeral
 			return
 		case strings.HasPrefix(cmd, "db dup"):
