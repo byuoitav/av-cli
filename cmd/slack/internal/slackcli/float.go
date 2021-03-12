@@ -66,7 +66,7 @@ func (c *Client) Float(ctx context.Context, req slack.SlashCommand, user string,
 			if result.GetError() != "" {
 				blocks = append(blocks, slack.NewSectionBlock(&slack.TextBlockObject{
 					Type: slack.MarkdownType,
-					Text: fmt.Sprintf(":downvote: %s `%s`", result.GetId(), result.GetError()),
+					Text: fmt.Sprintf(":downvote: %s\n```%s```", result.GetId(), result.GetError()),
 				}, nil, nil))
 			} else {
 				blocks = append(blocks, slack.NewSectionBlock(&slack.TextBlockObject{

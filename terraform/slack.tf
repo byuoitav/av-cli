@@ -16,7 +16,7 @@ module "slack_cli" {
   // required
   name           = "slack-cli"
   image          = "docker.pkg.github.com/byuoitav/av-cli/slack-dev"
-  image_version  = "807d4a9"
+  image_version  = "8fc667e"
   container_port = 8080
   repo_url       = "https://github.com/byuoitav/av-cli"
 
