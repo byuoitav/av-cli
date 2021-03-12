@@ -43,10 +43,10 @@ func (c *Client) Float(ctx context.Context, req slack.SlashCommand, user string,
 			} else if err != nil {
 				c.Log.Warn("unable to recv from stream", zap.Error(err))
 				res := []slack.Block{
-					slack.TextBlockObject{
+					slack.NewSectionBlock(&slack.TextBlockObject{
 						Type: slack.MarkdownType,
 						Text: fmt.Sprintf("<@%s>: There was an error while floating %s. :cry:. Error:\n```\n%s\n```", req.UserID, id, err),
-					},
+					}, nil, nil),
 				}
 
 				if len(blocks) > 1 {

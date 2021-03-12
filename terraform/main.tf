@@ -18,5 +18,6 @@ data "aws_ssm_parameter" "eks_cluster_endpoint" {
 }
 
 provider "kubernetes" {
-  host = data.aws_ssm_parameter.eks_cluster_endpoint.value
+  host        = data.aws_ssm_parameter.eks_cluster_endpoint.value
+  config_path = "~/.kube/config"
 }
