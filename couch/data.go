@@ -19,9 +19,10 @@ type device struct {
 func (d *DataService) prefixQuery(ctx context.Context, prefix string) ([]avcli.Pi, error) {
 	db := d.client.DB(ctx, d.database)
 	query := map[string]interface{}{
+		"limit": 1000,
 		"selector": map[string]interface{}{
 			"_id": map[string]interface{}{
-				"$regex": prefix,
+				"$regex": "^" + prefix,
 			},
 			"type._id": map[string]interface{}{
 				"$regex": "(Pi3)", // TODO add other types
