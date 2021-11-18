@@ -29,6 +29,7 @@ type Server struct {
 	MonitoringELKBaseURL string
 
 	Client *wso2.Client
+	avcli.UnimplementedAvCliServer
 }
 
 func (s *Server) log(ctx context.Context) *zap.Logger {

@@ -1,6 +1,6 @@
 package avcli
 
-//go:generate protoc -I ./ --go_out=plugins=grpc:./ ./av-cli.proto
+//go:generate protoc --proto_path=. --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative av-cli.proto
 
 /*
 func (s *Server) Swab(id *ID, stream AvCli_SwabServer) error {

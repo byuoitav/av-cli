@@ -2,45 +2,44 @@ syntax = "proto3";
 package avcli;
 
 import "google/protobuf/empty.proto";
+option go_package = "github.com/byuoitav/avcli";
 
 service AvCli {
-	rpc Swab(ID) returns (stream IDResult) {}
-	rpc Float(ID) returns (stream IDResult) {}
-	rpc Screenshot(ID) returns (ScreenshotResult) {}
-	rpc CopyRoom(CopyRoomRequest) returns (google.protobuf.Empty) {}
-	rpc FixTime(ID) returns (stream IDResult) {}
-	rpc Sink(ID) returns (stream IDResult) {}
-	rpc CloseMonitoringIssue(ID) returns (google.protobuf.Empty) {}
-	rpc RemoveDeviceFromMonitoring(ID) returns (google.protobuf.Empty) {}
-	rpc SetLogLevel(SetLogLevelRequest) returns (google.protobuf.Empty) {}
+  rpc Swab(ID) returns (stream IDResult) {}
+  rpc Float(ID) returns (stream IDResult) {}
+  rpc Screenshot(ID) returns (ScreenshotResult) {}
+  rpc CopyRoom(CopyRoomRequest) returns (google.protobuf.Empty) {}
+  rpc FixTime(ID) returns (stream IDResult) {}
+  rpc Sink(ID) returns (stream IDResult) {}
+  rpc CloseMonitoringIssue(ID) returns (google.protobuf.Empty) {}
+  rpc RemoveDeviceFromMonitoring(ID) returns (google.protobuf.Empty) {}
+  rpc SetLogLevel(SetLogLevelRequest) returns (google.protobuf.Empty) {}
 
-	// TODO decom smee room
+  // TODO decom smee room
 }
 
 message ID {
-	string id = 1;
-	string designation = 2;
+  string id = 1;
+  string designation = 2;
 }
 
 message IDResult {
-	string id = 1;
-	string error = 2;
+  string id = 1;
+  string error = 2;
 }
 
 message SetLogLevelRequest {
-	string id = 1;
-	int32 port = 2;
-	int32 level = 3;
+  string id = 1;
+  int32 port = 2;
+  int32 level = 3;
 }
 
-message ScreenshotResult {
-	bytes photo = 1;
-}
+message ScreenshotResult { bytes photo = 1; }
 
 message CopyRoomRequest {
-	string src = 1;
-	string srcDesignation = 2;
+  string src = 1;
+  string srcDesignation = 2;
 
-	string dst = 3;
-	string dstDesignation = 4;
+  string dst = 3;
+  string dstDesignation = 4;
 }

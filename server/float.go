@@ -46,7 +46,7 @@ func (s *Server) Float(id *avcli.ID, stream avcli.AvCli_FloatServer) error {
 			req, err = http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/dev/refloat/%v", pi.ID), nil)
 			if err != nil {
 				log.Warn("Unable to build request:", zap.Error(err))
-				return fmt.Errorf("Unable to build request: %w", err)
+				return fmt.Errorf("unable to build request: %w", err)
 			}
 		} else {
 			req, err = http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/%v/webhook_device/%v", id.Designation, pi.ID), nil)
