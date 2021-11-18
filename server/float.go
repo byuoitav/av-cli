@@ -24,7 +24,7 @@ func (s *Server) Float(id *avcli.ID, stream avcli.AvCli_FloatServer) error {
 		// Buildings that have been converted over to use Ansible
 		var buildings = []string{"ITB", "JKB"}
 		var buildingMatch = false
-		var req http.Request
+		var req *http.Request
 		var err error
 
 		log := log.With(zap.String("pi", pi.ID))
