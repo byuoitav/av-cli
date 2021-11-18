@@ -35,13 +35,13 @@ PKG_LIST := $(shell go list ${PKG}/...)
 
 all: clean build
 
-test:
+test: deps
 	@go test -v ${PKG_LIST}
 
-test-cov:
+test-cov: deps
 	@go test -coverprofile=coverage.txt -covermode=atomic ${PKG_LIST}
 
-lint:
+lint: deps
 	@golangci-lint run --tests=false
 
 # must have protoc installed

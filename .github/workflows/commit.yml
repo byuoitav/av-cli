@@ -16,6 +16,16 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v1
 
+      - name: Install Protoc
+        run: |
+          # install protoc
+          export PROTOC_VERSION=3.17.3
+          export PROTOC_ZIP=protoc-${PROTOC_VERSION}-linux-x86_64.zip
+          curl -fLO "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/${PROTOC_ZIP}"
+          unzip ${PROTOC_ZIP}
+          mv bin/protoc $(go env GOPATH)/bin/
+          mv include/* ./
+
       - name: Lint go code
         run: |
           export PATH=$PATH:$(go env GOPATH)/bin # temp fix, https://github.com/actions/setup-go/issues/14
@@ -32,6 +42,16 @@ jobs:
 
       - name: Check out code
         uses: actions/checkout@v1
+
+      - name: Install Protoc
+        run: |
+          # install protoc
+          export PROTOC_VERSION=3.17.3
+          export PROTOC_ZIP=protoc-${PROTOC_VERSION}-linux-x86_64.zip
+          curl -fLO "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/${PROTOC_ZIP}"
+          unzip ${PROTOC_ZIP}
+          mv bin/protoc $(go env GOPATH)/bin/
+          mv include/* ./
 
       - name: Run tests
         run: make test-cov
