@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"time"
 
 	avcli "github.com/byuoitav/av-cli"
@@ -34,13 +33,14 @@ func (s *Server) Float(id *avcli.ID, stream avcli.AvCli_FloatServer) error {
 		defer cancel()
 
 		// Loop will interate over list of buildings and if it finds a match, it will change variable to true and break the loop
-		for _, building := range buildings {
-			if strings.Contains(pi.ID, building) {
-				buildingMatch = true
-				break
+		/*
+			for _, building := range buildings {
+				if strings.Contains(pi.ID, building) {
+					buildingMatch = true
+					break
+				}
 			}
-		}
-
+		*/
 		req, err = http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/dev/refloat/%v", pi.ID), nil)
 		if err != nil {
 			log.Warn("Unable to build request:", zap.Error(err))
