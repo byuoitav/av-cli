@@ -22,8 +22,8 @@ func (s *Server) Float(id *avcli.ID, stream avcli.AvCli_FloatServer) error {
 
 	return s.runPerPi(ctx, id, stream, func(pi avcli.Pi) error {
 		// Buildings that have been converted over to use Ansible
-		var buildings = []string{"ITB", "JKB"}
-		var buildingMatch = false
+		//var buildings = []string{"ITB", "JKB"}
+		//var buildingMatch = false
 		var req *http.Request
 		var err error
 
@@ -41,26 +41,34 @@ func (s *Server) Float(id *avcli.ID, stream avcli.AvCli_FloatServer) error {
 			}
 		}
 
-		// if the building matches with the list of buildings above, run that ansible endpoint verses running the old flightdeck endpoint
-		if buildingMatch {
-			req, err = http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/dev/refloat/%v", pi.ID), nil)
-			if err != nil {
-				log.Warn("Unable to build request:", zap.Error(err))
-				return fmt.Errorf("unable to build request: %w", err)
-			}
-		} else {
-			req, err = http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/%v/webhook_device/%v", id.Designation, pi.ID), nil)
-			if err != nil {
-				log.Warn("unable to build request", zap.Error(err))
-				return fmt.Errorf("unable to build request: %w", err)
-			}
+		req, err = http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/dev/refloat/%v", pi.ID), nil)
+		if err != nil {
+			log.Warn("Unable to build request:", zap.Error(err))
+			return fmt.Errorf("unable to build request: %w", err)
 		}
+		// if the building matches with the list of buildings above, run that ansible endpoint verses running the old flightdeck endpoint
 
+		/*
+			if buildingMatch {
+				req, err = http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/dev/refloat/%v", pi.ID), nil)
+				if err != nil {
+					log.Warn("Unable to build request:", zap.Error(err))
+					return fmt.Errorf("unable to build request: %w", err)
+				}
+			} else {
+				req, err = http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/%v/webhook_device/%v", id.Designation, pi.ID), nil)
+				if err != nil {
+					log.Warn("unable to build request", zap.Error(err))
+					return fmt.Errorf("unable to build request: %w", err)
+				}
+			}
+		*/
 		resp, err := s.Client.Do(req)
 		if err != nil {
 			log.Warn("unable to do request", zap.Error(err))
 			return fmt.Errorf("unable to do request: %w", err)
 		}
+
 		defer resp.Body.Close()
 
 		if resp.StatusCode/100 != 2 {
