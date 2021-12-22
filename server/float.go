@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"time"
 
 	avcli "github.com/byuoitav/av-cli"
@@ -21,9 +20,6 @@ func (s *Server) Float(id *avcli.ID, stream avcli.AvCli_FloatServer) error {
 	defer cancel()
 
 	return s.runPerPi(ctx, id, stream, func(pi avcli.Pi) error {
-		// Buildings that have been converted over to use Ansible
-		var buildings = []string{"ITB", "JKB"}
-		var buildingMatch = false
 		var req *http.Request
 		var err error
 
@@ -33,27 +29,10 @@ func (s *Server) Float(id *avcli.ID, stream avcli.AvCli_FloatServer) error {
 		ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 		defer cancel()
 
-		// Loop will interate over list of buildings and if it finds a match, it will change variable to true and break the loop
-		for _, building := range buildings {
-			if strings.Contains(pi.ID, building) {
-				buildingMatch = true
-				break
-			}
-		}
-
-		// if the building matches with the list of buildings above, run that ansible endpoint verses running the old flightdeck endpoint
-		if buildingMatch {
-			req, err = http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/dev/refloat/%v", pi.ID), nil)
-			if err != nil {
-				log.Warn("Unable to build request:", zap.Error(err))
-				return fmt.Errorf("unable to build request: %w", err)
-			}
-		} else {
-			req, err = http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/%v/webhook_device/%v", id.Designation, pi.ID), nil)
-			if err != nil {
-				log.Warn("unable to build request", zap.Error(err))
-				return fmt.Errorf("unable to build request: %w", err)
-			}
+		req, err = http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.byu.edu/domains/av/flight-deck/v2/refloat/%v", pi.ID), nil)
+		if err != nil {
+			log.Warn("Unable to build request:", zap.Error(err))
+			return fmt.Errorf("unable to build request: %w", err)
 		}
 
 		resp, err := s.Client.Do(req)
@@ -61,6 +40,7 @@ func (s *Server) Float(id *avcli.ID, stream avcli.AvCli_FloatServer) error {
 			log.Warn("unable to do request", zap.Error(err))
 			return fmt.Errorf("unable to do request: %w", err)
 		}
+
 		defer resp.Body.Close()
 
 		if resp.StatusCode/100 != 2 {
