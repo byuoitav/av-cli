@@ -59,7 +59,7 @@ module "api" {
   container_env     = {}
   container_args = [
     "--port", "8080",
-    "--log-level", "debug",
+    "--log-level", "info",
     "--auth-addr", data.aws_ssm_parameter.auth_addr.value,
     "--auth-token", data.aws_ssm_parameter.auth_token.value,
     "--gateway-addr", "api.byu.edu",

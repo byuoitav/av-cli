@@ -25,7 +25,7 @@ func (d *DataService) prefixQuery(ctx context.Context, prefix string) ([]avcli.P
 				"$regex": "^" + prefix,
 			},
 			"type._id": map[string]interface{}{
-				"$regex": "(Pi3)", // TODO add other types
+				"$regex": "(Pi3|Scheduler|DividerSensors)",
 			},
 		},
 	}
@@ -87,6 +87,10 @@ func (d device) convert() avcli.Pi {
 func (d device) isPi() bool {
 	switch d.Type.ID {
 	case "Pi3":
+		return true
+	case "Scheduler":
+		return true
+	case "DividerSensors":
 		return true
 	}
 
