@@ -48,14 +48,14 @@ func main() {
 		dataServiceConfig   dataServiceConfig
 	)
 
-	pflag.IntVarP(&port, "port", "P", 8080, "port to run lazarette on")
+	pflag.IntVarP(&port, "port", "P", 8080, "port on which to run the api")
 	pflag.StringVarP(&logLevel, "log-level", "L", "", "level to log at. refer to https://godoc.org/go.uber.org/zap/zapcore#Level for options")
 	pflag.StringVar(&authAddr, "auth-addr", "", "address of the auth server")
 	pflag.StringVar(&authToken, "auth-token", "", "authorization token to use when calling the auth server")
 	pflag.BoolVar(&disableAuth, "disable-auth", false, "disables auth checks")
-	pflag.StringVar(&gatewayAddr, "gateway-addr", "api.byu.edu", "wso2 gateway address")
-	pflag.StringVar(&clientID, "client-id", "", "wso2 key")
-	pflag.StringVar(&clientSecret, "client-secret", "", "wso2 secret")
+	pflag.StringVar(&gatewayAddr, "gateway-addr", "api.byu.edu/", "tyk gateway address")
+	pflag.StringVar(&clientID, "client-id", "", "tyk key")
+	pflag.StringVar(&clientSecret, "client-secret", "", "tyk secret")
 	pflag.StringVar(&monitoringURL, "monitoring-url", "", "monitoring url (ie https://monitoring.com)")
 	pflag.StringVar(&monitoringSecret, "monitoring-secret", "", "monitoring secret")
 	pflag.StringVar(&monitoringRedisAddr, "monitoring-redis", "", "monitoring redis addr")
