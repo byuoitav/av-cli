@@ -64,9 +64,9 @@ build: deps
 	@echo Building api for linux-amd64
 	@cd cmd/api/ && env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o ../../dist/api-linux-amd64
 
-	@echo
-	@echo Building slack for linux-amd64
-	@cd cmd/slack/ && env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o ../../dist/slack-linux-amd64
+#	@echo
+#	@echo Building slack for linux-amd64
+#	@cd cmd/slack/ && env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o ../../dist/slack-linux-amd64
 
 	@echo
 	@echo Build output is located in ./dist/.
@@ -90,24 +90,24 @@ ifeq (${COMMIT_HASH}, ${TAG})
 	@echo Building container ${DOCKER_PKG}/api-dev:${COMMIT_HASH}
 	@docker build -f dockerfile --build-arg NAME=api-linux-amd64 -t ${DOCKER_PKG}/api-dev:${COMMIT_HASH} dist
 
-	@echo Building container ${DOCKER_PKG}/slack-dev:${COMMIT_HASH}
-	@docker build -f dockerfile --build-arg NAME=slack-linux-amd64 -t ${DOCKER_PKG}/slack-dev:${COMMIT_HASH} dist
+#	@echo Building container ${DOCKER_PKG}/slack-dev:${COMMIT_HASH}
+#	@docker build -f dockerfile --build-arg NAME=slack-linux-amd64 -t ${DOCKER_PKG}/slack-dev:${COMMIT_HASH} dist
 else ifneq ($(shell echo ${TAG} | grep -x -E ${DEV_TAG_REGEX}),)
 	@echo Building dev containers with tag ${TAG}
 
 	@echo Building container ${DOCKER_PKG}/api-dev:${TAG}
 	@docker build -f dockerfile --build-arg NAME=api-linux-amd64 -t ${DOCKER_PKG}/api-dev:${TAG} dist
 
-	@echo Building container ${DOCKER_PKG}/slack-dev:${TAG}
-	@docker build -f dockerfile --build-arg NAME=slack-linux-amd64 -t ${DOCKER_PKG}/slack-dev:${TAG} dist
+#	@echo Building container ${DOCKER_PKG}/slack-dev:${TAG}
+#	@docker build -f dockerfile --build-arg NAME=slack-linux-amd64 -t ${DOCKER_PKG}/slack-dev:${TAG} dist
 else ifneq ($(shell echo ${TAG} | grep -x -E ${PRD_TAG_REGEX}),)
 	@echo Building prd containers with tag ${TAG}
 
 	@echo Building container ${DOCKER_PKG}/api:${TAG}
 	@docker build -f dockerfile --build-arg NAME=api-linux-amd64 -t ${DOCKER_PKG}/api:${TAG} dist
 
-	@echo Building container ${DOCKER_PKG}/slack:${TAG}
-	@docker build -f dockerfile --build-arg NAME=slack-linux-amd64 -t ${DOCKER_PKG}/slack:${TAG} dist
+#	@echo Building container ${DOCKER_PKG}/slack:${TAG}
+#	@docker build -f dockerfile --build-arg NAME=slack-linux-amd64 -t ${DOCKER_PKG}/slack:${TAG} dist
 endif
 
 deploy: docker
@@ -120,24 +120,24 @@ ifeq (${COMMIT_HASH}, ${TAG})
 	@echo Pushing container ${DOCKER_PKG}/api-dev:${COMMIT_HASH}
 	@docker push ${DOCKER_PKG}/api-dev:${COMMIT_HASH}
 
-	@echo Pushing container ${DOCKER_PKG}/slack-dev:${COMMIT_HASH}
-	@docker push ${DOCKER_PKG}/slack-dev:${COMMIT_HASH}
+#	@echo Pushing container ${DOCKER_PKG}/slack-dev:${COMMIT_HASH}
+#	@docker push ${DOCKER_PKG}/slack-dev:${COMMIT_HASH}
 else ifneq ($(shell echo ${TAG} | grep -x -E ${DEV_TAG_REGEX}),)
 	@echo Pushing dev containers with tag ${TAG}
 
 	@echo Pushing container ${DOCKER_PKG}/api-dev:${TAG}
 	@docker push ${DOCKER_PKG}/api-dev:${TAG}
 
-	@echo Pushing container ${DOCKER_PKG}/slack-dev:${TAG}
-	@docker push ${DOCKER_PKG}/slack-dev:${TAG}
+#	@echo Pushing container ${DOCKER_PKG}/slack-dev:${TAG}
+#	@docker push ${DOCKER_PKG}/slack-dev:${TAG}
 else ifneq ($(shell echo ${TAG} | grep -x -E ${PRD_TAG_REGEX}),)
 	@echo Pushing prd containers with tag ${TAG}
 
 	@echo Pushing container ${DOCKER_PKG}/api:${TAG}
 	@docker push ${DOCKER_PKG}/api:${TAG}
 
-	@echo Pushing container ${DOCKER_PKG}/slack:${TAG}
-	@docker push ${DOCKER_PKG}/slack:${TAG}
+#	@echo Pushing container ${DOCKER_PKG}/slack:${TAG}
+#	@docker push ${DOCKER_PKG}/slack:${TAG}
 endif
 
 clean:
